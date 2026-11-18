@@ -34,15 +34,10 @@ Builds for the current OS into `release/`:
 
 macOS installers must be built on a Mac and Windows installers are best built on Windows. The included workflow does that for you:
 
-**GitHub Actions** — `.github/workflows/desktop.yml` runs the type check and full test suite, then builds on real `macos-latest`, `windows-latest` and `ubuntu-latest` runners. Run it from the Actions tab to get installers as artifacts, or push a tag to publish a GitHub Release with all installers attached:
+**GitHub Actions** — `.github/workflows/desktop.yml` runs the type check and full test suite, then builds on real `macos-latest`, `windows-latest` and `ubuntu-latest` runners.
 
-```bash
-git tag v0.2.0
-```
-
-```bash
-git push --tags
-```
+- **Publish a release:** on GitHub, open *Releases → Draft a new release*, create a tag such as `v0.2.0`, and click *Publish release*. The workflow builds every installer and attaches them to that release.
+- **Test build:** run *Desktop builds* from the Actions tab to get installers as downloadable artifacts without publishing.
 
 Point people at the Releases page — and set `ORBITAL_DOWNLOAD_URL` on your web server so Settings shows a **Download Orbital for desktop** button.
 
