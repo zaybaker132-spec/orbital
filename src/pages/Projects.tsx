@@ -10,6 +10,7 @@ import { Section } from "@/components/RightPanel";
 import { label, timeAgo } from "@/lib/format";
 import { localToday } from "@/lib/when";
 import { RemindMenu } from "@/components/RemindMenu";
+import { ContributionGraph } from "@/components/ContributionGraph";
 
 const daysUntil = (date: string, today = localToday()) => Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000);
 const shortDate = (date: string) => new Date(`${date}T12:00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric" });
@@ -143,6 +144,8 @@ function ProjectDetail({ id }: { id: string }) {
         </div>
 
         <Progress p={p} onDeadline={async (v) => { await api.patch(`/projects/${id}`, { deadline: v || null }).catch(toastError); reload(); }} />
+
+        <div className="mt-8"><ContributionGraph projectId={id} title="Project activity" /></div>
 
         <Brief id={id} />
 

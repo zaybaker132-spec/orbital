@@ -418,3 +418,34 @@ test("voice: server transcription and saving a conversation to memory", async ()
   await until(async () => (await db().query<any>("SELECT count(*)::int AS n FROM jobs WHERE status IN ('queued','running')")).rows[0].n === 0);
   assert.equal((await other.req("POST", `/api/conversations/${c.data.id}/remember`)).status, 404);
 });
+
+test("activity calendar: a year of days, colour-coded by kind, per project and in the viewer's time zone", async () => {
+  const { db } = await import("./db/client.js");
+  const me = (await owner.req("GET", "/api/auth/me")).data.user.id;
+  // Three tasks done on one day ten days ago (11:30 UTC), one note the day before.
+  for (let i = 0; i < 3; i++) await db().query("INSERT INTO activity_events(workspace_id, type, title, ref_type, ref_id, created_at) VALUES ($1,'task.completed','t','project',$2, date_trunc('day', now()) - interval '10 days' + interval '11 hours 30 minutes')", [me, projectId]);
+  await db().query("INSERT INTO documents(workspace_id, title, body, created_at) VALUES ($1,'Old note','x', date_trunc('day', now()) - interval '11 days' + interval '11 hours')", [me]);
+
+  const cal = (await owner.req("GET", "/api/activity/calendar?tz=UTC")).data;
+  assert.equal(cal.days.length, 371);
+  assert.equal(cal.days[cal.days.length - 1].date, new Date().toISOString().slice(0, 10), "ends today");
+  const tenAgo = new Date(Date.now() - 10 * 86_400_000).toISOString().slice(0, 10);
+  const d10 = cal.days.find((d: any) => d.date === tenAgo);
+  assert.ok(d10.build >= 3, JSON.stringify(d10));
+  assert.ok(cal.totals.knowledge >= 1 && cal.totals.thinking >= 1 && cal.totals.research >= 1);
+  assert.equal(cal.total, cal.days.reduce((s: number, d: any) => s + d.total, 0));
+  assert.ok(cal.currentStreak >= 1, "activity today starts a streak");
+
+  // In Tokyo (UTC+9) 11:30 UTC is 20:30 the same day, so the day doesn't move.
+  const tokyo = (await owner.req("GET", "/api/activity/calendar?tz=Asia/Tokyo")).data;
+  assert.ok(tokyo.days.find((d: any) => d.date === tenAgo).build >= 3);
+  const bogus = (await owner.req("GET", "/api/activity/calendar?tz=Not/AZone")).data;
+  assert.equal(bogus.timeZone, "UTC");
+
+  const proj = (await owner.req("GET", `/api/activity/calendar?tz=UTC&project=${projectId}`)).data;
+  assert.equal(proj.days.find((d: any) => d.date === tenAgo).build, 3, "only this project's work");
+  assert.equal(proj.totals.knowledge >= 1, true, "the focus note linked to the project counts");
+  assert.ok(proj.total < cal.total);
+  assert.equal((await other.req("GET", `/api/activity/calendar?project=${projectId}`)).status, 404);
+  assert.equal((await other.req("GET", "/api/activity/calendar")).data.totals.build, 0, "another person's workspace is separate");
+});

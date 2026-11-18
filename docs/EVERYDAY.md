@@ -75,6 +75,18 @@ Files are checked by their actual bytes, not just their extension, and parsed on
 
 "Overdue" uses your own calendar day, which the browser sends to the server.
 
+**Activity grid.** Like a GitHub contribution graph: one square per day for the last year, in your own time zone.
+- The **project page** shows the grid for that project. So does an **opportunity** you've turned into a project with **Track progress**.
+- The **Neural Core** page shows it for everything you do.
+- Each day takes the colour of the work that led it:
+  - green for build (tasks, milestones, focus)
+  - cyan for knowledge (notes, files, clips, memories)
+  - violet for research
+  - magenta for conversations
+  - yellow for opportunities
+- More work makes the square brighter. Click a colour to show only that kind of work.
+- Above the grid: total contributions, current and longest streak, active days and your busiest day.
+
 ## Smart reminders
 
 **Reminders you set:**

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { api } from "./api";
+import { api, onMutation } from "./api";
 
 /**
  * Minimal cached data layer: keyed GET resources with prefix invalidation.
@@ -15,6 +15,10 @@ export function invalidate(...prefixes: string[]) {
   for (const k of cache.keys()) if (prefixes.some((p) => k.startsWith(p))) cache.delete(k);
   notify();
 }
+
+// Activity calendars summarise everything, so any change refreshes them (batched).
+let activityTimer: ReturnType<typeof setTimeout> | undefined;
+onMutation(() => { clearTimeout(activityTimer); activityTimer = setTimeout(() => invalidate("/activity"), 800); });
 
 export function setCached(key: string, data: unknown) {
   cache.set(key, { data, at: Date.now() });

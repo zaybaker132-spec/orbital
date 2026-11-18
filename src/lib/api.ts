@@ -15,6 +15,10 @@ export function setWorkspaceId(id: string | null) {
 }
 const wsHeader = (): Record<string, string> => (workspaceId ? { "x-orbital-workspace": workspaceId } : {});
 
+/** Called after any successful change (so views that summarise activity can refresh). */
+const mutationListeners = new Set<() => void>();
+export const onMutation = (fn: () => void) => { mutationListeners.add(fn); return () => mutationListeners.delete(fn); };
+
 async function request<T>(method: string, url: string, body?: unknown): Promise<T> {
   const isForm = body instanceof FormData;
   const res = await fetch(`/api${url}`, {
@@ -32,6 +36,7 @@ async function request<T>(method: string, url: string, body?: unknown): Promise<
     } catch { /* not json */ }
     throw new ApiError(res.status, msg, code);
   }
+  if (method !== "GET") mutationListeners.forEach((fn) => fn());
   const ct = res.headers.get("content-type") ?? "";
   return (ct.includes("json") ? res.json() : res.text()) as Promise<T>;
 }

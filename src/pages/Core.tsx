@@ -8,6 +8,7 @@ import { usePanel, toast, toastError } from "@/state/ui";
 import { Badge, Button, Empty, Pulse, Stat, cx } from "@/components/ui";
 import { label, timeAgo } from "@/lib/format";
 import { Section } from "@/components/RightPanel";
+import { ContributionGraph } from "@/components/ContributionGraph";
 
 const STATE_COPY: Record<string, string> = {
   idle: "Resting. Particle density reflects what you've accumulated.",
@@ -126,6 +127,7 @@ function Dashboard({ data }: { data: any }) {
         </div>
       </div>
 
+      <div className="mt-10"><ContributionGraph title="Your activity" /></div>
       <Timeline weekly={data.timeline.weekly} />
     </>
   );

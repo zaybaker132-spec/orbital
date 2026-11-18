@@ -10,6 +10,7 @@ import { Badge, Button, Dialog, Empty, IconButton, Input, PageHeader, Pulse, Sel
 import { Section } from "@/components/RightPanel";
 import { label, timeAgo } from "@/lib/format";
 import { RemindMenu } from "@/components/RemindMenu";
+import { ContributionGraph } from "@/components/ContributionGraph";
 
 const STATUSES = ["identified", "investigating", "validated", "executing", "succeeded", "failed", "dismissed"];
 
@@ -67,7 +68,7 @@ function OpportunityCard({ o }: { o: any }) {
     try { const r = await api.post(`/opportunities/${o.id}/validate`); invalidate("/opportunities", "/research"); toast("Validation research started", { action: { label: "Follow", to: `/research/${r.researchId}` } }); } catch (e) { toastError(e); }
   };
   const plan = async () => {
-    if (!confirm("Create a project with an execution plan for this opportunity?")) return;
+    if (!confirm("Turn this opportunity into a project with milestones, so you can track progress?")) return;
     try { const r = await api.post(`/opportunities/${o.id}/plan`); invalidate("/opportunities", "/projects", "/graph"); navigate(`/projects/${r.projectId}`); } catch (e) { toastError(e); }
   };
   const rate = async (rating: 1 | -1) => { await api.post("/feedback", { targetType: "opportunity", targetId: o.id, rating }).catch(toastError); invalidate("/opportunities"); };
@@ -114,12 +115,13 @@ function OpportunityCard({ o }: { o: any }) {
               <Field title="Recommended next action"><span className="text-white">{o.next_action || "—"}</span></Field>
               {o.is_investment && <p className="col-span-full rounded-lg border border-amber-300/20 px-3 py-2 text-[0.78rem] text-amber-100/80">This is research and education, not personalised financial advice. Do your own due diligence and consider consulting a licensed professional before investing.</p>}
             </div>
+            {o.project_id && <div className="border-t border-line px-5 py-4"><ContributionGraph projectId={o.project_id} compact title="Progress on this opportunity" /></div>}
             <div className="flex flex-wrap items-center gap-2 border-t border-line px-5 py-3">
               {o.research_id ? (
                 <Link to={`/research/${o.research_id}`}><Button size="sm" icon={<Compass size={13} />}>Validation research · {o.research_status}</Button></Link>
               ) : <Button size="sm" icon={<Compass size={13} />} onClick={validate}>Validate demand & competitors</Button>}
-              {o.project_id ? <Link to={`/projects/${o.project_id}`}><Button size="sm" icon={<FolderKanban size={13} />}>Open project</Button></Link>
-                : <Button size="sm" icon={<FolderKanban size={13} />} onClick={plan}>Create execution plan</Button>}
+              {o.project_id ? <Link to={`/projects/${o.project_id}`}><Button size="sm" icon={<FolderKanban size={13} />}>Track progress</Button></Link>
+                : <Button size="sm" icon={<FolderKanban size={13} />} onClick={plan} title="Turn this opportunity into a project with milestones">Track progress</Button>}
               <Select label="Status" value={o.status} onChange={(v) => update({ status: v })} className="h-7 w-36 text-[0.78rem]" options={STATUSES.map((s) => ({ value: s, label: s }))} />
               <span className="flex-1" />
               <IconButton label="Useful suggestion" active={o.rating === 1} onClick={() => rate(1)}><ThumbsUp size={13} /></IconButton>
@@ -188,7 +190,7 @@ function EngineSide() {
           <li>Identify problems worth solving</li>
           <li>Validate demand and competitors with cited research</li>
           <li>Evaluate model, difficulty, resources and risks</li>
-          <li>Turn it into a project with an execution plan</li>
+          <li>Track progress: turn it into a project with milestones, and watch the work add up day by day</li>
           <li>Track outcomes — feedback shapes future suggestions</li>
         </ol>
       </Section>

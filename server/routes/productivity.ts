@@ -12,6 +12,7 @@ import { rateLimit } from "../lib/rateLimit.js";
 import { emit } from "../lib/events.js";
 import { getLLM, describeAiError } from "../ai/provider.js";
 import { extractMemories } from "../engines/memory.js";
+import { contributionCalendar } from "../engines/calendar.js";
 
 /** Personal productivity: reminders, nudges and focus sessions. Each person sees only their own. */
 export const productivity = Router();
@@ -211,4 +212,12 @@ productivity.post("/conversations/:id/remember", rateLimit({ windowMs: 60_000, m
   await logActivity(workspaceId, "conversation.remembered", c.title, { type: "conversation", id });
   if (memories) emit(workspaceId, { type: "knowledge", memoriesAdded: memories, pending });
   res.json({ documentId, memories, pending, ai, aiError });
+}));
+
+// ── Contribution calendar ──────────────────────────────────────────────────
+/** A year of activity, day by day, for the workspace or one project (?project=), in the viewer's time zone (?tz=). */
+productivity.get("/activity/calendar", ah(async (req, res) => {
+  const projectId = typeof req.query.project === "string" && req.query.project ? req.query.project : null;
+  if (projectId) await ownProject(ws(req), projectId);
+  res.json(await contributionCalendar(ws(req), actor(req), { projectId, tz: typeof req.query.tz === "string" ? req.query.tz : undefined }));
 }));
