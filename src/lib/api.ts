@@ -1,3 +1,4 @@
+import { language } from "@/i18n";
 /** Thin typed client. All state-changing requests carry the CSRF header the server requires. */
 export class ApiError extends Error {
   constructor(public status: number, message: string, public code?: string) {
@@ -24,7 +25,7 @@ async function request<T>(method: string, url: string, body?: unknown): Promise<
   const res = await fetch(`/api${url}`, {
     method,
     credentials: "same-origin",
-    headers: { "x-orbital-request": "1", ...wsHeader(), ...(body !== undefined && !isForm ? { "content-type": "application/json" } : {}) },
+    headers: { "x-orbital-request": "1", "x-orbital-language": language(), ...wsHeader(), ...(body !== undefined && !isForm ? { "content-type": "application/json" } : {}) },
     body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
   });
   if (!res.ok) {
@@ -55,7 +56,7 @@ export async function streamPost(url: string, body: unknown, onEvent: (event: st
   const res = await fetch(`/api${url}`, {
     method: "POST",
     credentials: "same-origin",
-    headers: { "content-type": "application/json", "x-orbital-request": "1", ...wsHeader() },
+    headers: { "content-type": "application/json", "x-orbital-request": "1", "x-orbital-language": language(), ...wsHeader() },
     body: JSON.stringify(body),
     signal,
   });

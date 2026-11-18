@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useResource } from "@/lib/resource";
 import { Pulse, cx } from "./ui";
+import { locale, tn, tx } from "@/i18n";
 
 /**
  * A year of work, one square per day, like a GitHub contribution graph. Each day takes the colour
@@ -25,7 +26,7 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 
 const hexA = (hex: string, a: number) => `rgba(${parseInt(hex.slice(1, 3), 16)},${parseInt(hex.slice(3, 5), 16)},${parseInt(hex.slice(5, 7), 16)},${a})`;
 const dow = (date: string) => new Date(`${date}T12:00:00Z`).getUTCDay();
-const longDate = (date: string) => new Date(`${date}T12:00:00Z`).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+const longDate = (date: string) => new Date(`${date}T12:00:00Z`).toLocaleDateString(locale(), { weekday: "short", month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 
 export function ContributionGraph({ projectId, title, compact = false }: { projectId?: string; title?: string; compact?: boolean }) {
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -90,27 +91,27 @@ export function ContributionGraph({ projectId, title, compact = false }: { proje
   const shown = only ? data.totals[only] : data.total;
   const describe = (d: Day) => {
     const parts = KIND_META.filter((k) => d[k.kind]).map((k) => `${d[k.kind]} ${k.label.toLowerCase()}`);
-    return `${d.total ? `${d.total} contribution${d.total === 1 ? "" : "s"}` : "No contributions"} on ${longDate(d.date)}${parts.length ? ` · ${parts.join(", ")}` : ""}`;
+    return `${d.total ? tn(d.total, "{n} contribution", "{n} contributions") : tx("No contributions")} · ${longDate(d.date)}${parts.length ? ` · ${parts.join(", ")}` : ""}`;
   };
 
   return (
-    <section aria-label={title ?? "Activity"}>
+    <section aria-label={title ?? tx("Activity")}>
       <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
         <h2 className={cx(compact ? "text-[0.92rem]" : "text-[1.05rem]", "font-normal text-white")}>
-          {shown} {only ? KIND_META.find((k) => k.kind === only)!.label.toLowerCase() : ""} contribution{shown === 1 ? "" : "s"} in the last year
+          {only ? `${shown} ${tx(KIND_META.find((k) => k.kind === only)!.label).toLowerCase()}` : tn(shown, "{n} contribution", "{n} contributions")} {tx("in the last year")}
         </h2>
         <div className="flex flex-wrap gap-x-4 text-[0.74rem] text-mute">
-          <span><b className="font-normal text-white/85">{data.currentStreak}</b> day streak</span>
-          <span>Longest <b className="font-normal text-white/85">{data.longestStreak}</b> days</span>
-          <span><b className="font-normal text-white/85">{data.activeDays}</b> active days</span>
-          {data.busiest && !compact && <span>Busiest {longDate(data.busiest.date).replace(/^\w+, /, "")} ({data.busiest.total})</span>}
+          <span><b className="font-normal text-white/85">{data.currentStreak}</b> {tx("day streak")}</span>
+          <span>{tx("Longest")} <b className="font-normal text-white/85">{data.longestStreak}</b> {tx("days")}</span>
+          <span><b className="font-normal text-white/85">{data.activeDays}</b> {tx("active days")}</span>
+          {data.busiest && !compact && <span>{tx("Busiest")} {longDate(data.busiest.date).replace(/^\w+, /, "")} ({data.busiest.total})</span>}
         </div>
       </div>
 
       <div className="mt-3 rounded-xl border border-line px-4 pb-3 pt-4">
         <div ref={scroller} className="overflow-x-auto pb-1">
-          <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${data.total} contributions in the last year, ${data.currentStreak} day current streak`} onMouseLeave={() => setHover(null)} className="block">
-            {monthLabels.map((m) => <text key={m.x} x={m.x} y={10} className="fill-[#8a8a93] text-[10px]">{m.label}</text>)}
+          <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={tx("{total} contributions in the last year, {currentStreak} day current streak", { total: data.total, currentStreak: data.currentStreak })} onMouseLeave={() => setHover(null)} className="block">
+            {monthLabels.map((m) => <text key={m.x} x={m.x} y={10} className="fill-[#8a8a93] text-[10px]">{tx(m.label)}</text>)}
             {[["Mon", 1], ["Wed", 3], ["Fri", 5]].map(([l, r]) => <text key={l} x={0} y={TOP + (r as number) * (CELL + GAP) + CELL - 2} className="fill-[#8a8a93] text-[10px]">{l}</text>)}
             {weeks.map((w, i) => w.map((d, r) => d && (
               <rect key={d.date} x={LEFT + i * (CELL + GAP)} y={TOP + r * (CELL + GAP)} width={CELL} height={CELL} rx={Math.max(2, CELL / 4.5)}
@@ -122,17 +123,17 @@ export function ContributionGraph({ projectId, title, compact = false }: { proje
           </svg>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2 text-[0.72rem] text-mute">
-          <span className="min-h-[1.2em] min-w-0 flex-1 truncate" aria-live="polite">{hover ? describe(hover) : "Hover a day for details · click a colour to show only that kind of work"}</span>
-          <span className="flex items-center gap-1">Less
+          <span className="min-h-[1.2em] min-w-0 flex-1 truncate" aria-live="polite">{hover ? describe(hover) : tx("Hover a day for details · click a colour to show only that kind of work")}</span>
+          <span className="flex items-center gap-1">{tx("Less")}
             {LEVEL_ALPHA.map((a, i) => <i key={i} className="inline-block h-[10px] w-[10px] rounded-[2px]" style={{ background: i ? hexA(only ? COLOR[only] : "#ffffff", a * (only ? 1 : 0.85)) : EMPTY }} />)}
-            More</span>
+            {tx("More")}</span>
         </div>
-        <div className="mt-2.5 flex flex-wrap gap-1.5" role="group" aria-label="Colour key">
+        <div className="mt-2.5 flex flex-wrap gap-1.5" role="group" aria-label={tx("Colour key")}>
           {KIND_META.map((k) => (
             <button key={k.kind} onClick={() => setOnly(only === k.kind ? null : k.kind)} aria-pressed={only === k.kind} title={k.hint}
               className={cx("inline-flex h-6 items-center gap-1.5 rounded-full border px-2.5 text-[0.72rem] transition-colors",
                 only === k.kind ? "border-white/60 text-white" : only ? "border-line text-mute-soft hover:text-white" : "border-line text-mute-bright hover:text-white")}>
-              <i className="inline-block h-2 w-2 rounded-[2px]" style={{ background: k.color }} />{k.label}<span className="opacity-60">{data.totals[k.kind]}</span>
+              <i className="inline-block h-2 w-2 rounded-[2px]" style={{ background: k.color }} />{tx(k.label)}<span className="opacity-60">{data.totals[k.kind]}</span>
             </button>
           ))}
         </div>

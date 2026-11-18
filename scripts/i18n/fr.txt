@@ -1,0 +1,1382 @@
+0|(bureau)
+1|La découverte nécessite un fournisseur d'IA ; vous pouvez tout de même suivre des opportunités manuellement.
+2|· terminé {date}
+3|· chaque action nécessite une approbation
+4|· les actions internes s'exécutent automatiquement
+5|· dernière exécution {v0}
+6|· dernière utilisation {v0}
+7|· prochaine {date}
+8|· proposé par {automation_name}
+9|· actualisé {date}
+10|· avec relecture par l'IA
+11|— votre sélection a été enregistrée ; la page complète n'a pas pu être récupérée.
+12|"expression exacte"
+13|=
+14|% · testé
+15|(facultatif)
+16|+ étiquette
+17|-exclure
+18|1 heure
+19|404 · Perdu en orbite
+20|@votrenom
+21|Un peu de rangement à faire
+22|Un système de connaissances privé qui grandit avec vous.
+23|Un projet rassemble ses objectifs, tâches, notes, recherches et conversations, et donne à Orbital le contexte pour vous aider à avancer.
+24|Un espace partagé pour une entreprise ou une équipe : connaissances, recherches et projets partagés, automatisations qui font tourner l'activité selon un planning, approbations et une API pour vos autres outils. Votre espace personnel reste privé.
+25|Un espace partagé : les connaissances, recherches et projets sont partagés avec ses membres ; les conversations, rappels et sessions de concentration de chacun restent privés.
+26|IA et recherche
+27|Mode d'IA
+28|Relecture par l'IA
+29|Classé par l'IA
+30|Généré par l'IA
+31|Identifié par l'IA
+32|Synthétisé par l'IA à partir de sources citées
+33|=
+34|=
+35|Jetons d'API pour votre CRM et vos outils →
+36|À propos
+37|Compte
+38|Activité
+39|Ajouter
+40|Ajouter un souvenir
+41|Ajouter un jalon
+42|Ajouter une note
+43|Ajouter une tâche
+44|Ajouter un connecteur webhook
+45|Ajouter un connecteur
+46|Ajouter manuellement
+47|Ajouter un souvenir
+48|Ajouter un jalon
+49|Ajouter une note
+50|Ajoutez-en un pour que les synthèses et l'agent d'opérations atteignent votre équipe là où elle travaille.
+51|Ajouter une étiquette
+52|Ajouter à la collection
+53|Ajouté par vous
+54|Ajouté à la collection
+55|Tout
+56|Toutes les connaissances
+57|Déjà un accès ? Se connecter
+58|Vous avez déjà un compte ?
+59|Vous avez déjà un compte ?
+60|Déjà dans Orbital
+61|Déjà mémorisé
+62|Un administrateur doit approuver ceci.
+63|Une intelligence qui se renforce avec tout ce que vous apprenez. Dites-nous comment vous pensez et travaillez, et nous vous ferons entrer.
+64|Clé d'API Anthropic
+65|Tout ce qui sort d'Orbital attend un administrateur, sauf si un administrateur a accordé une autorisation permanente à une automatisation précise
+66|Apparence
+67|Approuver
+68|Approuver et envoyer
+69|Approuvé et exécuté
+70|Archiver
+71|Demandez ce que vous voulez — Orbital s'appuiera sur ce que vous savez
+72|Évaluer les sources
+73|Joindre un fichier (PDF, Word, Excel, PowerPoint, image, texte)
+74|Extraction automatique des souvenirs
+75|Les automatisations s'exécutent selon leur planning sur le serveur
+76|Les automatisations s'exécutent sur le serveur selon leur planning — l'app n'a pas besoin d'être ouverte.
+77|Automatisations, approbations et connecteurs →
+78|Crédibilité moyenne
+79|Retour aux réunions
+80|Retour à Orbital
+81|Extraction de base (sans fournisseur d'IA) : dates, chiffres et termes fréquents
+82|Bloquées dans les paramètres du site de votre navigateur : les rappels apparaissent toujours dans Orbital.
+83|Bookmarklet
+84|Les deux sont vrais
+85|S'appuie sur
+86|Intégré (stocké sur ce serveur)
+87|Jour le plus actif
+88|Contexte de l'entreprise
+89|Espace entreprise · vous êtes {role}
+90|Entreprise · vous êtes {role}
+91|Entreprise · {role}
+92|Par numéro
+93|Caméra
+94|Caméra et micro
+95|Caméra {v0} (Ctrl E)
+96|Connexion impossible (réseau)
+97|Impossible d'ouvrir cette réunion
+98|Annuler
+99|Exécuter automatiquement les actions internes (créer des tâches, écrire des notes, lancer des recherches).
+100|Catégorie
+101|Modifier mes réponses
+102|Changer le mot de passe
+103|Discussion
+104|Message de discussion
+105|Consulter mes connaissances
+106|Vérifier maintenant
+107|Choisissez-en une
+108|Capturer une page
+109|Capturer une page web
+110|En capturer une autre
+111|Capturez depuis n'importe quel site : faites glisser ce bouton dans votre barre de favoris, puis cliquez dessus sur la page à conserver. Sélectionnez d'abord du texte pour enregistrer un extrait.
+112|Capturer dans Orbital
+113|Fermer
+114|Fermer le panneau
+115|Des groupes se forment à mesure que les idées se relient.
+116|Code : {code}
+117|Code : {c}
+118|Les codes comportent 10 lettres, comme abc-defg-hij.
+119|Réduire la barre latérale ({modKey}\)
+120|Nom de la collection
+121|Collections
+122|Légende des couleurs
+123|Palette de commandes
+124|Points communs
+125|Nom de l'entreprise ou de l'équipe
+126|Terminer le jalon
+127|Concept
+128|Titre du concept
+129|Conclusion
+130|Conclusions
+131|Confiance
+132|Confiance : {c}. Basé uniquement sur les sources récupérées ici.
+133|Confirmer
+134|Confirmer le conflit
+135|Confirmation
+136|Confirmé
+137|Connexions confirmées
+138|Preuves contradictoires
+139|Connecter
+140|Connectez un fournisseur d'IA et Orbital lira le texte et le contenu de cette image. En attendant, vous pouvez la décrire vous-même avec Modifier.
+141|Connectez un fournisseur d'IA pour actualiser les sections automatiquement.
+142|Relier à “
+143|Connectez votre CRM, votre service d'assistance, vos formulaires ou Zapier/Make/n8n.
+144|Connectez vos autres outils
+145|Connecté
+146|Concepts reliés
+147|Relié à :
+148|Connexion
+149|Connexion…
+150|Connexion créée
+151|Connexions
+152|Les connecteurs sont des webhooks sortants : webhooks entrants Slack ou Teams, catch hooks Zapier, Make ou n8n, ou votre propre endpoint. Les envois incluent
+153|Se relie à ce que vous savez :
+154|Connecter…
+155|Contexte
+156|Continuer
+157|Reprenez là où vous en étiez
+158|Conversation
+159|Titre de la conversation
+160|Conversations
+161|Copié
+162|Copier
+163|Copier le lien d'invitation
+164|Copiez votre jeton maintenant
+165|Le corriger
+166|Souvenir corrigé
+167|Impossible de capturer cette page.
+168|Impossible de rejoindre
+169|Créer
+170|Créez un espace entreprise depuis le menu des espaces en haut de la barre latérale pour inviter votre équipe, partager des connaissances et lancer des automatisations.
+171|Créez un espace entreprise depuis le menu des espaces pour partager des connaissances avec une équipe et lancer des automatisations.
+172|Créer une connexion
+173|Créer un projet
+174|Créer un compte
+175|Créer un compte
+176|Créer une automatisation
+177|Créer un lien d'invitation
+178|Créer un jeton
+179|Créer l'espace
+180|Créez votre Orbital
+181|Créer “
+182|Détails de crédibilité →
+183|Score de crédibilité
+184|Crédibilité {score} sur 100, {grade}
+185|Actuel
+186|Mot de passe actuel
+187|Verdict actuel
+188|Heure personnalisée
+189|Quotidien
+190|Données
+191|Base de données
+192|Date
+193|Jour
+194|Échéance
+195|Recherche approfondie
+196|Mode de discussion par défaut
+197|Durée de concentration par défaut
+198|Mode par défaut
+199|Supprimer
+200|Supprimer « {name} » ?
+201|Supprimer le compte
+202|Supprimer le connecteur ?
+203|Tout supprimer
+204|Supprimer l'hypothèse
+205|Supprimer le jalon
+206|Supprimer le nœud
+207|Supprimer le projet
+208|Supprimer le rappel
+209|Supprimer la tâche
+210|Supprimer ce document ?
+211|Supprimer cette hypothèse ? Ses rapports de recherche sont conservés.
+212|Supprimer définitivement ce souvenir ?
+213|Supprimer ce nœud ?
+214|Supprimer cette opportunité ?
+215|Supprimer ce projet et ses tâches ? Les notes et recherches liées sont conservées.
+216|Supprimer cette session de recherche et ses sources ?
+217|Envoyer à
+218|Description
+219|Bureau
+220|App de bureau
+221|Dicter
+222|Désactiver
+223|Discord
+224|Découvrir
+225|Découvrir des opportunités
+226|En discuter avec Orbital
+227|Ignorer
+228|Ne plus le signaler
+229|Terminé
+230|Télécharger Orbital pour ordinateur
+231|Faites-le glisser dans la barre de favoris de votre navigateur, puis cliquez dessus sur n'importe quelle page. Vous pouvez aussi utiliser Connaissances → Capturer une page.
+232|Date d'échéance
+233|À faire maintenant
+234|À rendre aujourd'hui
+235|Chaque résultat est étiqueté :
+236|Chaque test est conservé comme un rapport de recherche complet, pour voir comment les preuves ont évolué.
+237|Accès anticipé
+238|Modifier
+239|Modifier l'automatisation
+240|E-mail
+241|Embeddings
+242|Vide.
+243|Activer
+244|Chiffrée avec le trousseau de votre système et transmise uniquement au serveur Orbital local. Obtenez une clé sur console.anthropic.com.
+245|Fin
+246|Terminer la session de concentration
+247|Terminer pour tout le monde
+248|Terminer la session
+249|Saisissez une adresse web, comme https://example.com/article.
+250|Entrer en orbite
+251|Entrez en orbite.
+252|Entrée…
+253|Évaluer le modèle, la difficulté, les ressources et les risques
+254|Chaque conversation, note, document et session de recherche que vous ajoutez en fait partie. Le Noyau neuronal devient plus dense à mesure.
+255|Chaque conversation, note, fichier, capture web et rapport de recherche. Utilisez
+256|Chaque décision figure dans le journal d'audit
+257|Chaque fait est encore dans sa durée de validité
+258|Tous les autres appareils connectés à votre compte seront déconnectés.
+259|Tout ce qui est dans Orbital vous appartient. Exportez-le à tout moment, ou supprimez-le définitivement.
+260|Tout semble cohérent.
+261|Résumé
+262|Déplier la barre latérale ({modKey}\)
+263|Explication
+264|Exporter en CSV
+265|Exporter cet espace (JSON)
+266|Extraire les connaissances
+267|Extraire les connaissances de ce document
+268|Extrait par l'IA, chaque citation vérifiée dans le texte
+269|Extraction
+270|L'extraction a échoué
+271|Chiffre trouvé dans la source ; citation paraphrasée
+272|Filtrer
+273|Filtrer par type
+274|Filtrer par type
+275|Filtrer les connaissances extraites
+276|Filtres
+277|Trouver un nœud à relier
+278|Trouver des liens
+279|Trouver un nœud
+280|Trouver des schémas dans vos souvenirs et groupes de connaissances
+281|Terminés cette semaine
+282|Le premier est vrai
+283|Corriger le lien
+284|Concentration
+285|Se concentrer là-dessus
+286|Durée de la session de concentration
+287|Dossier
+288|Nom du dossier
+289|Dossiers
+290|Recherche complémentaire
+291|La recherche complémentaire rejoint vos connaissances, pour que le prochain test en tienne compte.
+292|Pour une équipe
+293|Trouvé en cherchant “{q}”
+294|Fréquence
+295|Des opportunités
+296|De la recherche
+297|De la recherche →
+298|De ce que vous savez déjà
+299|De votre base de connaissances
+300|De :
+301|Recherches complémentaires
+302|Générer une synthèse
+303|Retour
+304|Aller sur Orbital
+305|Objectifs
+306|Objectifs ·
+307|Objectifs — à quoi ressemble la réussite ?
+308|Vue graphe
+309|Fondé sur vos souvenirs
+310|Sujets en croissance · 30 jours
+311|Main levée
+312|Entendu via
+313|Utile
+314|Masquer le panneau de contexte ({modKey}.)
+315|Masquer le texte récupéré
+316|Historique
+317|Organisée par
+318|Survolez un jour pour les détails · cliquez sur une couleur pour n'afficher que ce type de travail
+319|Comment Orbital vous accueille
+320|Comment Orbital gère les opérations
+321|Comment ça s'est passé ?
+322|Comment avez-vous connu Orbital ?
+323|Comment ça marche
+324|L'évolution de vos connaissances · 12 semaines
+325|Hypothèses
+326|Hypothèse
+327|Verdict de l'hypothèse
+328|Identifié
+329|Identifier des problèmes qui valent la peine d'être résolus
+330|Au repos
+331|Importer
+332|Importer un fichier
+333|Statistiques importantes
+334|Importé de
+335|{name} importé
+336|{name} importé. {notice}
+337|En bon état
+338|Dans le graphe
+339|Dans la salle : {join}
+340|Indexation… les connaissances liées apparaîtront une fois cette note traitée.
+341|Basé sur {n} élément
+342|Basé sur {n} éléments
+343|Analyses
+344|Instagram
+345|Les installateurs sont générés à partir de ce code (voir docs/DESKTOP.md). Définissez
+346|Les actions internes peuvent s'exécuter automatiquement si vous l'autorisez
+347|Animation d'introduction
+348|Examiner au labo
+349|Lié à l'investissement
+350|Inviter
+351|Lien d'invitation
+352|Inviter dans l'espace
+353|Est
+354|Elle a peut-être été supprimée, ou appartient à un espace dont vous ne faites pas partie en ce moment.
+355|Il fonctionne une fois, pour cette adresse e-mail, pendant 7 jours. Orbital n'envoie pas d'e-mails — partagez-le comme vous voulez.
+356|Rejoindre
+357|Rejoindre maintenant
+358|Rejoindre la liste d'attente
+359|Rejoindre avec un code
+360|Inscrit
+361|Continuer
+362|Garder le premier
+363|Garder le second
+364|Conserver cette conversation comme note consultable et retenir ce que vous avez dit
+365|Clé supprimée
+366|Clé enregistrée — Orbital a redémarré avec l'IA activée
+367|Clavier
+368|Type
+369|Type de recherche
+370|Connaissances
+371|Groupes de connaissances
+372|Connaissances extraites
+373|Graphe de connaissances avec {length} nœuds et {length1} connexions. Utilisez la vue liste pour naviguer au clavier.
+374|Santé des connaissances
+375|Maintenance des connaissances
+376|Nœuds de connaissances
+377|Les connaissances, recherches, projets et automatisations sont partagés. Les conversations de chacun restent privées.
+378|Langue
+379|Plus grands groupes
+380|Apprendre des conversations
+381|Appris d'une conversation
+382|Quitter
+383|Quitter la réunion
+384|Laisser la session tourner et revenir à Orbital
+385|Quitter cet espace ?
+386|Quitter l'espace
+387|Légende
+388|Durée
+389|Moins
+390|Probablement à jour
+391|Limites
+392|La généalogie se construit quand Orbital synthétise un rapport à partir de ses sources.
+393|Lien
+394|Lien copié
+395|Vue liste
+396|La recherche web en direct est disponible avec le fournisseur Anthropic. Ce serveur utilise des sources encyclopédiques et scientifiques.
+397|Chargement…
+398|Verrouiller la réunion
+399|Verrouillée
+400|Les longs documents prennent quelques minutes. Vous pouvez quitter cette page ; Orbital vous préviendra quand ce sera fini.
+401|Plus longue série
+402|Baisser la main
+403|Ordinateur principal
+404|Principaux résultats
+405|Le principal d'abord, puis jusqu'à deux autres
+406|Marquer comme terminé
+407|Marquer comme non terminé
+408|Marquer le jalon comme non terminé
+409|Données de marché
+410|Comme cet appareil ({name})
+411|Croissance significative
+412|Réunion
+413|Code de réunion
+414|Lien de la réunion copié
+415|Réunion verrouillée : personne de nouveau ne peut entrer
+416|Titre de la réunion
+417|Réunion déverrouillée
+418|Réunions
+419|Réunions →
+420|Membres, rôles, invitations, contexte de l'entreprise, API et intégrations, journal d'audit →
+421|Souvenirs
+422|Mémoire
+423|Souvenir ajouté
+424|Écrire à Orbital
+425|Message à tous
+426|Message à envoyer
+427|Les messages ne sont visibles que par les personnes présentes dans la réunion, et ne sont pas enregistrés.
+428|Les messages proposés par l'agent d'opérations attendent toujours une approbation.
+429|Jalon
+430|Minute de chaque heure
+431|Plus
+432|Stocker plus d'informations ne rend pas plus intelligent. Ces indicateurs suivent les connaissances vérifiées, confirmées ou mises en pratique.
+433|Les plus crédibles d'abord
+434|Déplacez le curseur parmi les particules. Cliquez pour envoyer une onde.
+435|En plusieurs étapes, citée, vérifiée.
+436|Couper le micro
+437|Nom
+438|Nom (facultatif)
+439|Nom enregistré
+440|Nom — par ex. Lancer mon SaaS
+441|Nom, par ex. #ops sur Slack
+442|À traiter
+443|Noyau neuronal
+444|Activité neuronale
+445|Nouvelle automatisation
+446|Nouvel espace entreprise
+447|Nouvelle collection
+448|Nouveau concept
+449|Nouveaux concepts · 30 jours
+450|Nouvelle conversation
+451|Nouvelle conversation (⌥N)
+452|Nouveau dossier
+453|Nouvelle hypothèse
+454|Nouvelle réunion
+455|Nouveau jalon
+456|Nouvelle note
+457|Nouveau mot de passe
+458|Nouveau mot de passe (au moins 10 caractères)
+459|Confirmez le nouveau mot de passe
+460|Nouveau projet
+461|Nouveau rappel
+462|Nouvelle recherche
+463|Nouvelle tâche
+464|Nouveau sur Orbital ?
+465|Prochaine action
+466|Prochaine échéance
+467|Aucun fournisseur d'IA n'est configuré : Orbital rassemblera et stockera les sources, mais ne synthétisera pas de résultats tant qu'il n'y en aura pas.
+468|Aucun fournisseur d'IA n'est configuré : les tests rassemblent des sources des deux côtés, mais un verdict nécessite un fournisseur d'IA.
+469|Pas de fournisseur d'IA — les réponses n'utilisent que vos connaissances
+470|Pas de fournisseur d'IA : les synthèses sont compilées à partir de vos données sans résumé par l'IA ; les veilles rassemblent des sources ; l'agent d'opérations nécessite l'IA.
+471|Aucune activité pour l'instant.
+472|Aucun connecteur
+473|Aucune contribution
+474|Aucune conversation pour l'instant
+475|Aucun doublon, conflit, souvenir obsolète ni point en suspens pour le moment. Orbital vérifie à nouveau chaque jour.
+476|Aucun événement pour l'instant.
+477|Aucune hypothèse pour l'instant.
+478|Aucun chiffre d'affaires inventé ni garantie. Les données de marché renvoient à de vraies sources récupérées. Rien n'est fait sans vous.
+479|Pas encore de connaissances à relier
+480|Aucune réunion pour l'instant
+481|Aucun souvenir pour l'instant
+482|Aucun nouveau problème trouvé
+483|Aucune nouvelle relation trouvée
+484|Aucune note pour l'instant
+485|Personne d'autre n'est encore là.
+486|Aucune question ouverte. Les sessions de Réflexion approfondie, d'Apprentissage et de recherche font émerger les questions qui méritent une réponse.
+487|Aucune tâche ouverte dans ce projet.
+488|Aucune opportunité pour l'instant
+489|Aucun projet
+490|Aucun projet pour l'instant
+491|Pas de serveur relais : certaines personnes sur des réseaux d'entreprise ou mobiles pourraient ne pas se connecter. Voir docs/MEETINGS.md (TURN).
+492|Aucun rappel programmé
+493|Aucune recherche pour l'instant.
+494|Aucun résultat
+495|Aucune source récupérée ne défend directement cette position.
+496|Aucune phrase ne correspond vraiment au résultat : lisez la source complète.
+497|Aucune session pour l'instant
+498|Aucune source ne l'appuie directement : c'est
+499|Aucun contexte enregistré utilisé
+500|Aucune suggestion pour le moment.
+501|Aucune tâche
+502|Aucun test pour l'instant
+503|Aucune opportunité bien fondée trouvée pour l'instant
+504|Rien trouvé dans les sources récupérées.
+505|Rien trouvé.
+506|Rien de rassemblé pour l'instant. Validez pour étudier la demande et la concurrence.
+507|Aucun pour l'instant
+508|Aucun pour l'instant.
+509|Aucun.
+510|Pas un conflit
+511|Indisponible : la recherche utilise Wikipédia et OpenAlex
+512|Pas encore vérifié
+513|Non configuré
+514|Pas utile
+515|Non pris en charge ici : les rappels apparaissent dans Orbital.
+516|Pas utile
+517|Note
+518|Note (facultatif)
+519|Corps de la note (Markdown)
+520|Notes et documents
+521|Les notes, les documents et ce dont Orbital se souvient — tout est consultable et peut être relié.
+522|Les notes, souvenirs, résultats de recherche et projets apparaissent ici sous forme de nœuds. Orbital suggère des relations ; vous les confirmez.
+523|Rien dans votre base de connaissances n'était pertinent pour cette réponse. À mesure que vous ajoutez des notes, souvenirs et recherches, les réponses s'en serviront.
+524|Rien ne sort d'Orbital sans approbation.
+525|Rien n'existe à l'adresse
+526|Aucune correspondance
+527|Rien ne correspond au filtre.
+528|Rien ne correspond à “{q}” dans les types sélectionnés.
+529|Rien ne correspond à “{q}”.
+530|Rien de nouveau ce mois-ci.
+531|Rien de ce type n'a été trouvé.
+532|Rien de lié pour l'instant.
+533|Rien ne vous échappe. Orbital surveille les tâches en retard, les échéances proches, les projets à l'arrêt, les idées que vous n'avez pas reprises (notes étiquetées #idea ou #draft), les opportunités en sommeil et les questions ouvertes depuis longtemps.
+534|Rien à ranger
+535|Rien en attente d'approbation
+536|Rien en attente.
+537|Rien pour l'instant.
+538|Notifications
+539|Les notifications sont bloquées pour ce site : les rappels s'affichent dans Orbital.
+540|Notifications retenues
+541|=
+542|=
+543|=
+544|=
+545|Objectif
+546|Objectif :
+547|En une ligne : que construiriez-vous si vous n'oubliiez jamais rien ?
+548|Un objectif, un minuteur et rien d'autre. Orbital retient les notifications jusqu'à la fin.
+549|Seuls les administrateurs peuvent modifier ceci.
+550|Ouvrir
+551|Ouvrir Connexions →
+552|Ouvrir le dossier de données
+553|Ouvrir dans Connexions →
+554|Ouvrir dans Orbital
+555|Ouvrir les notes
+556|Question ouverte :
+557|Questions ouvertes
+558|Questions ouvertes examinées
+559|Ouvrir le rapport →
+560|Ouvrir la source
+561|Tâches ouvertes
+562|Ouvrir l'hypothèse →
+563|Ouvrir le labo
+564|Opérations
+565|Opportunités
+566|Découverte d'opportunités lancée — vous serez prévenu quand elle sera terminée.
+567|Facultatif
+568|Orientation facultative — par ex. logiciels pour les commerces de proximité
+569|Ou un résultat
+570|Ou choisissez une heure
+571|Ou dirigez Orbital vers n'importe quel endpoint compatible OpenAI avec
+572|Orbital
+573|Orbital s'en souvient déjà — souvenir renforcé
+574|Orbital analyse vos objectifs, compétences, centres d'intérêt, groupes de connaissances, sources de recherche et vos retours sur les suggestions précédentes. Il propose au plus trois opportunités, chacune fondée sur des souvenirs précis.
+575|Orbital découpe la question en sous-questions, cherche dans Wikipédia et la littérature scientifique (OpenAlex), extrait des résultats, compare les points de vue et vérifie chaque citation et statistique dans le texte de la source avant de l'afficher.
+576|Orbital découpe la question en sous-questions, cherche sur le web, dans Wikipédia et la littérature scientifique (OpenAlex), extrait des résultats, compare les points de vue et vérifie chaque citation et statistique dans le texte de la source avant de l'afficher.
+577|Orbital peut se tromper. Les réponses citent ce qui les a nourries — consultez le panneau de contexte.
+578|Orbital recherche chaque jour les notes en double, les souvenirs contradictoires, les informations obsolètes et les idées isolées. Rien ne change sans votre accord, et chaque modification peut être annulée.
+579|Orbital recherche chaque jour les doublons, les conflits, les connaissances obsolètes ou isolées. Rien ne change tant que vous n'avez pas choisi.
+580|Orbital vérifie chaque jour de lui-même. Vous pouvez aussi lancer une vérification maintenant.
+581|Orbital récupère la page et conserve le texte de l'article, pour qu'il soit consultable et rejoigne votre graphe de connaissances.
+582|Orbital est conçu en noir, la couleur étant réservée au Noyau neuronal.
+583|Orbital réfléchit
+584|Orbital garde le contexte de chaque projet pour que vous repreniez là où vous en étiez.
+585|Orbital cherche les doublons, les conflits, les informations obsolètes et les idées isolées. Il suggère ; vous décidez. Chaque modification peut être annulée.
+586|Orbital cherche des schémas dans vos objectifs, compétences, centres d'intérêt et recherches, puis propose quelques opportunités précises et fondées. Il lui faut au moins trois souvenirs sur vous pour commencer.
+587|Orbital a remarqué
+588|Orbital a proposé un souvenir à valider
+589|Orbital lit le document en entier, quelle que soit sa longueur, et en extrait les concepts clés, des preuves avec citations exactes, une chronologie des événements datés et les relations entre les idées. Les concepts rejoignent votre graphe de connaissances et tout devient consultable.
+590|Orbital retient les choses durables que vous lui dites — objectifs, compétences, décisions, projets. Dites « souviens-toi que… » dans une conversation, ou ajoutez-en un ici.
+591|Orbital fonctionne comme une app native sur macOS, Windows et Linux, avec sa propre base de données privée sur votre ordinateur.
+592|Orbital n'enregistre automatiquement des souvenirs que lorsque vous les avez clairement énoncés. Ce qui est moins sûr vous attend ici.
+593|Orbital cherche des preuves qui l'appuient
+594|Orbital travaille pour l'entreprise selon un planning — synthèses, veille et agent d'opérations — et vous approuvez tout ce qui sort du système.
+595|Orbital {v0} · vos données ne vivent que sur cet ordinateur.
+596|L'IA d'Orbital tourne sur votre serveur. Les clés d'API sont dans les variables d'environnement du serveur (ou le trousseau de l'app de bureau) et ne sont jamais envoyées au navigateur.
+597|Le Noyau neuronal d'Orbital : un graphe de connaissances qui se rassemble en sphère quand vous rejoignez
+598|Recherche d'origine
+599|Autres tâches
+600|Suivi des résultats
+601|Tâches en retard, échéances proches, projets à l'arrêt, idées inachevées et rapports dépassés, sur la page Rappels.
+602|Page
+603|Pages
+604|Densité des particules
+605|Mot de passe
+606|Mot de passe (10 caractères ou plus)
+607|Mot de passe modifié : les autres appareils ont été déconnectés
+608|Collez un code comme
+609|Pause
+610|Les envois sont signés avec HMAC-SHA256 si vous définissez un secret. Les URL et secrets sont chiffrés au repos et ne sont visibles par personne après enregistrement.
+611|Invitations en attente
+612|Personnes
+613|Personnes inscrites depuis la page publique de liste d'attente (/waitlist).
+614|Personnes ·
+615|Période
+616|Personnel
+617|Choisissez-en au moins une
+618|Positions
+619|Contradictions possibles dans votre graphe de connaissances
+620|PostgreSQL
+621|Modèle économique possible
+622|Des opportunités concrètes fondées sur ce que vous savez — étudiées, évaluées et suivies jusqu'aux résultats.
+623|Présentation
+624|Aperçu
+625|Principal
+626|Principes
+627|Privé
+628|Problème
+629|Avancement
+630|Avancement de cette opportunité
+631|Projet
+632|Activité du projet
+633|Échéance du projet
+634|Projet mis à jour
+635|Projets
+636|Souvenirs proposés
+637|Fournisseur
+638|Question :
+639|En file d'attente
+640|Aide-mémoire
+641|Citation trouvée dans le texte de la source
+642|Lever la main
+643|Justification
+644|Réévaluer
+645|Ré-extraire
+646|Retester avec de nouvelles preuves
+647|Lecture de la partie {done} sur {total}
+648|Prêt à rejoindre ?
+649|Raisonnement ·
+650|Récents
+651|Changements récents
+652|Sessions récentes
+653|Terminés récemment
+654|Traités récemment
+655|Prochaine action recommandée
+656|Mouvements réduits
+657|Actualiser
+658|Actualisé
+659|L'actualisation nécessite un fournisseur d'IA
+660|Actualisation des sections avec de nouvelles sources…
+661|Actualisation : Orbital vérifie ces faits avec de nouvelles sources
+662|La réfute si ·
+663|Rejeter
+664|Rejeté
+665|Connaissances liées
+666|Relation
+667|Relations
+668|Les relations qu'Orbital a remarquées. Elles restent marquées comme suggestions jusqu'à ce que vous les confirmiez.
+669|Les relations nécessitent un fournisseur d'IA.
+670|Souvenirs pertinents
+671|Me le rappeler
+672|Rappelle-moi de…
+673|Rappel
+674|Rappel créé
+675|Rappel prévu demain matin
+676|Rappel prévu {v0}
+677|Rappel : {title}
+678|Rappels
+679|Rappels et concentration
+680|Les rappels vous préviennent quand Orbital est en arrière-plan (retenus pendant les sessions de concentration).
+681|Retirer
+682|Retirer du graphe
+683|Retirer l'étiquette {t}
+684|Retirer {email} ?
+685|Retirer {title}
+686|Renommer
+687|Répétez le nouveau mot de passe
+688|Rejouer la formation
+689|La rejouer la prochaine fois
+690|Rapports
+691|Ressources nécessaires
+692|Nécessite un fournisseur d'IA
+693|Recherche
+694|La recherche n'a pas pu aboutir
+695|Recherches pour ce projet
+696|Question de recherche
+697|Questions de recherche
+698|Rapport de recherche
+699|Rapport de recherche prêt
+700|Sessions de recherche
+701|Recherche lancée
+702|Approfondir cette recherche
+703|Recherche →
+704|Redimensionner la barre latérale
+705|Résolu
+706|S'appuie sur {findings} et {sources}.
+707|Reprendre
+708|Réessayer
+709|Examiner
+710|Examiner toutes les suggestions →
+711|Examiner et actualiser
+712|Examiner les suggestions de rangement →
+713|Révoquer
+714|Révoquer l'invitation
+715|Révoquer ce jeton ? Les systèmes qui l'utilisent cesseront immédiatement de fonctionner.
+716|Pour l'instant, c'est un graphe d'idées éparses. Rejoignez-nous et regardez-les se mettre en orbite.
+717|Risques
+718|Rôle
+719|Taille de la salle
+720|Lancez un test pour rassembler des preuves pour et contre.
+721|Lancer la découverte
+722|Exécuter maintenant
+723|En cours — les résultats apparaissent ici et dans Approbations
+724|Enregistrer
+725|Enregistrer et confirmer
+726|Enregistrer et tester
+727|Enregistrez n'importe quelle page web, ou la partie sélectionnée, dans Connaissances.
+728|Enregistrer comme note
+729|Enregistrer dans Orbital
+730|Enregistrer en mémoire
+731|Enregistré
+732|Conversation enregistrée comme note. Les souvenirs n'ont pas été extraits : {aiError}
+733|Conversation enregistrée comme note consultable
+734|Enregistré dans Connaissances
+735|Enregistré dans Connaissances pendant la saisie
+736|Enregistré dans Orbital
+737|Enregistré en mémoire
+738|Enregistré en mémoire{v0}
+739|Enregistrement…
+740|Les scores pondèrent l'autorité (30 %), la méthodologie (25 %), l'actualité, l'indépendance et la corroboration (15 % chacune), à partir de l'adresse de la source, de ses dates et du texte récupéré, lu par l'IA pour la conception de l'étude et les conflits d'intérêts.
+741|Les scores pondèrent l'autorité (30 %), la méthodologie (25 %), l'actualité, l'indépendance et la corroboration (15 % chacune), à partir de l'adresse de la source, de ses dates et du texte récupéré.
+742|Brouillon
+743|Faites défiler pour zoomer · glissez pour vous déplacer · déplacez les nœuds · cliquez pour inspecter · pointillés = suggéré
+744|Rechercher
+745|Tout rechercher
+746|La recherche trouve des mots dans vos conversations, notes, fichiers importés, captures web et rapports de recherche, pas seulement dans les titres.
+747|Rechercher “{words}”
+748|Cherchez dans les connaissances, projets, conversations… ou tapez une commande
+749|Rechercher des souvenirs
+750|Rechercher des nœuds
+751|Rechercher des notes
+752|Rechercher notes et documents
+753|Rechercher ou lancer une commande
+754|Le second est vrai
+755|Le stockage sécurisé n'est pas disponible sur ce système, la clé ne peut donc pas être enregistrée.
+756|Voir le README.
+757|Envoyer
+758|Envoyer automatiquement sans approbation.
+759|Envoyer un test
+760|Envoyez ce lien à
+761|Session terminée
+762|Définir
+763|Fixer une échéance
+764|Créez-en un ici, ou utilisez la cloche sur n'importe quelle tâche, note, projet ou opportunité.
+765|Créer le rappel
+766|Fixer l'échéance du projet
+767|Définir {toLowerCase}
+768|Réglages
+769|Réglages (g s)
+770|Sections des réglages
+771|Partager l'écran
+772|Afficher le panneau de contexte ({modKey}.)
+773|Afficher le texte récupéré
+774|Afficher les suggestions
+775|Voir ce qui a nourri cette réponse
+776|Se connecter
+777|Se connecter à Orbital →
+778|Connectez-vous pour continuer.
+779|Se déconnecter
+780|Déconnecter les autres appareils
+781|Connecté
+782|{n} autre appareil déconnecté
+783|{n} autres appareils déconnectés
+784|Secret de signature
+785|Secret de signature (facultatif)
+786|Inscriptions
+787|Aller au contenu
+788|Reporter
+789|Les traits pleins sont confirmés. Les pointillés sont des suggestions d'Orbital — inspectez un nœud pour les confirmer ou les rejeter. Les traits ambrés signalent des contradictions possibles.
+790|Certains faits sont peut-être dépassés
+791|Autre chose qu'Orbital devrait faire fructifier
+792|Autre chose : dites-le-nous
+793|Trier les sources
+794|Source {n}
+795|Source ↗
+796|Sources
+797|Sources rassemblées ({n}). Configurez un fournisseur d'IA pour synthétiser les résultats.
+798|Sources du dernier test
+799|Espace pour mettre en pause ·
+800|Lire les réponses à voix haute
+801|Lire les réponses à voix haute
+802|Vitesse de parole
+803|Vitesse
+804|Objectif permanent, par ex. Faire avancer le pipeline commercial et ne laisser aucune demande client sans réponse.
+805|Démarrer
+806|Démarrer une conversation
+807|Ouvrez une salle maintenant et partagez son code ou son lien.
+808|Démarrer la concentration
+809|Démarrez-en une ci-dessus, ou rejoignez-en une avec un code qu'on vous a partagé.
+810|Démarrer ou rejoindre
+811|Lancer la recherche
+812|Démarrée
+813|Statut
+814|S'absenter
+815|Toujours vrai
+816|Arrêter
+817|Arrêter la dictée
+818|Arrêter l'écoute
+819|Arrêter le partage
+820|Arrêter la lecture
+821|Réseaux restrictifs
+822|Connexions suggérées
+823|Prochaines étapes suggérées
+824|Connaissances liées suggérées
+825|À conserver (suggestion)
+826|Suggéré — non vérifié
+827|Suggestions
+828|Les suggestions sur le travail en retard et les idées inachevées sont désactivées.
+829|Résume l'avancement récent, le travail en cours, les recherches et les discussions de ce projet.
+830|Résumé
+831|Preuves à l'appui
+832|L'appuie si ·
+833|Étiquettes
+834|Repris de la page si vide
+835|Parler
+836|Parler à Orbital (conversation vocale)
+837|Parlez à Orbital depuis la zone de discussion. Les réponses parlées utilisent les voix de votre ordinateur.
+838|Date cible
+839|Tâches
+840|Tâches et jalons
+841|Équipe et entreprise
+842|Réglages de l'équipe et de l'espace
+843|Les équipes vivent dans les espaces entreprise
+844|Dites à Orbital ce qu'est cette entreprise : ce que vous vendez, à qui, comment vous travaillez, vos priorités et votre ton. C'est inclus comme référence chaque fois que quelqu'un ici pose une question et quand les automatisations s'exécutent, pour que les réponses correspondent à l'entreprise sans que chacun le répète.
+845|Tester
+846|Historique des tests
+847|La tester
+848|Message de test envoyé
+849|Tester maintenant
+850|Confrontez ce que vous croyez aux preuves.
+851|Test en cours
+852|Test de l'hypothèse
+853|Test : collecte de preuves pour et contre
+854|Test…
+855|L'export est un fichier JSON de cet espace : conversations, souvenirs, notes et texte des fichiers, recherches avec leurs sources, hypothèses, connaissances extraites, projets, opportunités, le graphe de connaissances, ainsi que vos propres rappels, sessions de concentration et préférences.
+856|La première vérification aura lieu sous peu.
+857|La formation sera rejouée la prochaine fois que le Noyau neuronal s'ouvrira
+858|L'organisateur a mis fin à la réunion
+859|L'organisateur a verrouillé cette réunion.
+860|Le lien est peut-être mal saisi, ou la page a été déplacée.
+861|La réunion est peut-être complète, verrouillée ou terminée.
+862|Plus vous apprenez, plus votre Orbital prend de la valeur.
+863|Les nouveaux mots de passe ne correspondent pas.
+864|Toute l'interface, les réponses d'Orbital, les rapports de recherche, la voix et les dates utilisent cette langue.
+865|Ils lisent l'espace : projets, tâches, recherches, connaissances
+866|Ils rédigent des synthèses, des recherches et des actions proposées
+867|C'est un guide de ce qu'il faut vérifier, pas un verdict sur un éditeur.
+868|Ils sont différents
+869|Ce que vous avez demandé à Orbital de vous rappeler, et ce qu'il a remarqué qui pourrait vous échapper.
+870|Ce que vous écrivez et les documents que vous importez restent dans leur propre langue. Modifier ce réglage recharge Orbital.
+871|Pensez à voix haute. Brouillons, décisions, prochaines étapes…
+872|Ce navigateur ne peut pas parler, les réponses s'affichent donc en texte.
+873|Cela accorde une autorisation permanente en votre nom ; c'est consigné dans le journal d'audit.
+874|Voici tout ce dont Orbital se souvient à votre sujet, et pourquoi. Corrigez ce qui est faux — les souvenirs corrigés sont prioritaires. Supprimez ce que vous préférez qu'il oublie.
+875|Il s'agit de recherche et d'information, pas de conseil financier personnalisé. Faites vos propres vérifications et envisagez de consulter un professionnel agréé avant d'investir.
+876|C'est la seule fois qu'il est affiché. Conservez-le dans les réglages de secrets de votre autre système.
+877|Cette réunion est terminée
+878|Ce nœud n'existe plus.
+879|Cette page est sortie de son orbite.
+880|Cela supprime définitivement votre compte et tout ce qu'il contient — conversations, souvenirs, notes, recherches, projets et opportunités. C'est irréversible.
+881|Ce rapport n'a pas encore de résultats à retracer.
+882|Ce rapport n'a pas de résultats à retracer.
+883|Cet élément ({what}) a quitté l'orbite.
+884|TikTok
+885|Heure
+886|Fuseau horaire :
+887|Titre
+888|Titre (facultatif)
+889|Pour activer l'IA, définissez ceci sur le serveur et redémarrez :
+890|Aujourd'hui
+891|Aujourd'hui {time}
+892|Jeton
+893|Nom du jeton
+894|Nom du jeton, par ex. Synchro HubSpot
+895|Demain
+896|Demain {time}
+897|Retracer
+898|Retracer une conclusion
+899|Retracer depuis
+900|Retracer le verdict jusqu'à ses sources →
+901|Retracer ce résultat jusqu'à ses sources
+902|Suivre une opportunité
+903|Suivre les résultats — vos retours orientent les suggestions futures
+904|Suivre l'avancement
+905|Suivre l'avancement : transformez-la en projet avec des jalons, et voyez le travail s'accumuler jour après jour
+906|Transcription
+907|Transcription…
+908|Réessayer
+909|Éteindre la caméra
+910|Allumer la caméra
+911|Activer les notifications
+912|Activez-les dans Réglages
+913|Transformer cette opportunité en projet avec des jalons
+914|Transformer cette opportunité en projet avec des jalons, pour suivre son avancement ?
+915|Tapez "DELETE" pour confirmer
+916|Compréhension
+917|Annuler
+918|Annulé
+919|Déverrouiller la réunion
+920|Réactiver le micro
+921|Questions non résolues
+922|Sans titre
+923|Réunion sans titre
+924|Jusqu'à
+925|À venir
+926|Le mettre à jour
+927|Envoi
+928|Utile
+929|Suggestion utile
+930|Valider la demande et la concurrence
+931|Valider la demande et la concurrence avec une recherche sourcée
+932|Recherche de validation lancée
+933|Recherche de validation ·
+934|La vérification a retiré {stats} et {cites}.
+935|Version
+936|Des salles vidéo que l'on rejoint avec un code. L'audio et la vidéo passent directement entre les participants.
+937|Des salles vidéo que vous rejoignez avec un code. L'audio et la vidéo passent directement entre les participants.
+938|Voir
+939|Les notes des spectateurs ne sont pas enregistrées
+940|Voix
+941|Conversation vocale
+942|Liste d'attente
+943|Veut Orbital pour
+944|Nous gérons Acme Salons, 4 salons à Austin.\nClientèle : clients sans rendez-vous et sur réservation, surtout 25–45 ans.\nPriorités ce trimestre : adoption de la réservation en ligne, réduire les absences.\nTon : chaleureux, concis.
+945|Nous ne vous écrirons qu'au sujet d'Orbital.
+946|Nous écrirons à
+947|Capture web
+948|Recherche web
+949|URL du webhook
+950|Semaine du {w} : {v1} événements
+951|Hebdomadaire
+952|Activité hebdomadaire sur 12 semaines ; la semaine la plus active a compté {max} événements
+953|Poids des preuves
+954|Bon retour
+955|À quoi réfléchit-on ?
+956|Que pensez-vous être vrai ?
+957|Que voulez-vous comprendre ?
+958|Que s'est-il passé quand vous avez agi ? Orbital utilise les résultats et les notes pour améliorer les suggestions futures.
+959|Qu'est-ce que c'est et pourquoi cela pourrait marcher ?
+960|Qu'est-ce que c'est ?
+961|Qu'est-ce que c'est ? (aide Orbital à trouver des liens)
+962|Que devrait faire fructifier Orbital pour vous ?
+963|Sur quoi Orbital devrait-il enquêter ?
+964|Que devrait continuer à étudier Orbital ? par ex. Que lancent et facturent les concurrents dans les logiciels de réservation pour salons ?
+965|Que devrait étudier Orbital ?
+966|Ce qui trancherait ·
+967|Ce qui la testerait davantage
+968|Que construiriez-vous si vous n'oubliiez jamais rien ?
+969|Ce que vous avez accompli, ou où reprendre la prochaine fois (facultatif)
+970|Ce qui est disponible
+971|Qu'est-ce qui est contesté ?
+972|Quelle est la chose à faire ?
+973|Ce qui reste incertain
+974|Quand Orbital répond, les souvenirs, connaissances et sources sur lesquels il s'est appuyé apparaissent ici.
+975|Quand une automatisation propose quelque chose qui sort d'Orbital — comme publier dans le canal de votre équipe — cela attend ici un administrateur.
+976|Où et pourquoi elles divergent
+977|Où sont vos notes aujourd'hui ?
+978|Où Orbital devrait-il chercher des opportunités ?
+979|Quels outils d'IA utilisez-vous le plus ?
+980|Quels ordinateurs utilisez-vous ?
+981|Quels téléphones ou tablettes ?
+982|Qui
+983|Pour qui est-ce ?
+984|Pourquoi Orbital l'a identifiée
+985|Pourquoi sont-ils liés ? (facultatif)
+986|Pourquoi vous le pensez
+987|Pourquoi vous le pensez (facultatif) : vos raisons sont conservées avec l'hypothèse.
+988|Pourquoi vous le pensez ·
+989|Pourquoi vous l'enregistrez
+990|Pourquoi ·
+991|Journal d'activité
+992|Espace
+993|Nom de l'espace
+994|Espaces
+995|Écrire une note
+996|Écrivez en Markdown. Liez d'autres notes avec [[Titre de la note]].
+997|Écrivez des notes ou importez des PDF, des fichiers Word, Excel et PowerPoint, et des images. Tout devient consultable, nourrit les réponses d'Orbital et rejoint votre graphe de connaissances. Liez les notes avec [[Titre de la note]].
+998|Hier {time}
+999|Vous
+1000|Vous êtes
+1001|Vous avez demandé à Orbital de retenir
+1002|Vous pouvez aussi installer cette app web depuis la barre d'adresse de votre navigateur (Chrome, Edge) pour avoir une icône dans le Dock ou la barre des tâches.
+1003|Vous avez été retiré de la réunion
+1004|Vous êtes en orbite.
+1005|Votre Orbital prend forme.
+1006|Votre activité
+1007|Vos données
+1008|Vos données restent sur ce serveur et ne servent jamais à répondre aux questions de quelqu'un d'autre.
+1009|Votre historique de concentration apparaît ici, avec le temps passé et les tâches terminées.
+1010|Votre extrait
+1011|Votre intelligence. Démultipliée.
+1012|Votre univers de connaissances est vide
+1013|Votre nom
+1014|Votre espace personnel est privé.
+1015|=
+1016|jours actifs
+1017|et
+1018|pièce jointe
+1019|automatique ·
+1020|body
+1021|synthèse
+1022|changement
+1023|change en quelques mois
+1024|change en quelques semaines
+1025|change sur des années
+1026|vérifié {v0}
+1027|collegue@entreprise.com
+1028|terminé
+1029|confiance
+1030|confirmé
+1031|contredit
+1032|corrigé par vous
+1033|jours de série
+1034|jours
+1035|jours)
+1036|échéance {v0}
+1037|envoie à {name} après approbation
+1038|envoie à {name} automatiquement (autorisation permanente)
+1039|difficulté
+1040|désactivé
+1041|ignoré
+1042|par ex. Créer un outil de réservation pour les salons indépendants
+1043|par ex. Le télétravail augmente-t-il ou réduit-il la productivité ?
+1044|par ex. Rédiger la page des tarifs
+1045|par ex. Les salons indépendants paieront pour une réservation par IA si elle réduit les absences d'un cinquième.
+1046|par ex. Étudie la croissance de l'intelligence artificielle et identifie ses plus grandes opportunités commerciales.
+1047|activé
+1048|terminée
+1049|échap
+1050|des preuves contre avec le même effort, tient compte de ce que vous savez déjà, rend un verdict avec un niveau de confiance et suggère les prochains tests qui le feraient changer d'avis.
+1051|expirée
+1052|expire {date}
+1053|échec
+1054|résultat
+1055|de concentration
+1056|de concentration jusqu'ici
+1057|de concentration cette semaine
+1058|pour un accès anticipé
+1059|pour :
+1060|trouvées, validées, mises en pratique
+1061|organisateur
+1062|organisée par {host_name}
+1063|=
+1064|=
+1065|hypothèse
+1066|dans le graphe →
+1067|ces 7 derniers jours
+1068|sur la dernière année
+1069|dans la salle
+1070|déduction
+1071|ingest
+1072|à l'instant
+1073|labo
+1074|la dernière exécution a échoué
+1075|sort d'Orbital
+1076|permet à un système d'ajouter des documents et de proposer des souvenirs (qui attendent une validation).
+1077|lui permet de chercher et de poser des questions fondées sur les connaissances de cet espace.
+1078|peut-être dépassé
+1079|jalons
+1080|jalons atteints
+1081|min
+1082|plus →
+1083|nécessite Chrome, Edge ou Safari, ou la transcription côté serveur
+1084|nécessite un fournisseur d'IA
+1085|nécessite le fournisseur Anthropic
+1086|jamais utilisé
+1087|pas encore vérifié
+1088|note →
+1089|notes
+1090|notes, fichiers, captures, souvenirs
+1091|sur
+1092|sur {planned_minutes} min
+1093|activé
+1094|sur la liste
+1095|sur le serveur pour afficher ici un bouton de téléchargement.
+1096|ouvrir →
+1097|facultatif
+1098|ou
+1099|ou un lien de réunion.
+1100|dépassé
+1101|tâche en retard
+1102|tâches en retard
+1103|partie
+1104|au-delà du temps prévu
+1105|en pause
+1106|personnes
+1107|auparavant “{v}”.
+1108|query
+1109|déduit d'autres résultats
+1110|actualisé
+1111|relais configuré
+1112|rapports de recherche et questions
+1113|recherche →
+1114|recherche, pas un conseil
+1115|enregistrée de façon sécurisée
+1116|sélectionné
+1117|session cette semaine
+1118|sessions cette semaine
+1119|similaire
+1120|depuis
+1121|=
+1122|sources évaluées
+1123|spéculation
+1124|tâche →
+1125|tâches faites
+1126|tâches, jalons, sessions de concentration
+1127|text
+1128|texte relu par l'IA
+1129|cet appareil
+1130|cette semaine
+1131|title
+1132|total ·
+1133|non daté
+1134|spéculation sans appui
+1135|mis à jour {v0}
+1136|utilisé dans {n} réponse
+1137|utilisé dans {n} réponses
+1138|utilisé {v0}
+1139|vérifié
+1140|via
+1141|ce que vous avez demandé à Orbital
+1142|quand votre Orbital sera prêt. D'ici là, chaque idée que vous avez est une idée qu'il retiendra.
+1143|vous
+1144|vous êtes l'organisateur
+1145|vous@domaine.com
+1146|votrenom
+1147|{aging} vieillissants
+1148|{aria} : en retard
+1149|{due} à faire
+1150|{name} a rejoint
+1151|{name} est parti
+1152|{n} citation vers des sources non récupérées
+1153|{n} citations vers des sources non récupérées
+1154|{n} concept a rejoint votre graphe de connaissances.
+1155|{n} concepts ont rejoint votre graphe de connaissances.
+1156|{n} connexion
+1157|{n} connexions
+1158|{n} contribution
+1159|{n} contributions
+1160|{n} jour restant
+1161|{n} jour de retard
+1162|{n} jours restants
+1163|{n} jours de retard
+1164|{n} fait a dépassé sa durée de validité
+1165|{n} faits ont dépassé leur durée de validité
+1166|{n} résultat
+1167|{n} résultats
+1168|{n} à valider
+1169|{n} élément écarté car la citation n'était pas dans le texte
+1170|{n} éléments écartés car la citation n'était pas dans le texte
+1171|{n} suggestion de rangement des connaissances
+1172|{n} suggestions de rangement des connaissances
+1173|{n} nouveaux souvenirs
+1174|{n} nouveau souvenir
+1175|{n} nouvelles opportunités identifiées
+1176|{n} nouvelle opportunité identifiée
+1177|{n} nouvelle suggestion
+1178|{n} nouvelles suggestions
+1179|{n} notification a été retenue pendant votre concentration. Consultez Rappels et Opérations pour voir ce qui attend.
+1180|{n} notifications ont été retenues pendant votre concentration. Consultez Rappels et Opérations pour voir ce qui attend.
+1181|{n} suggestion ouverte
+1182|{n} suggestions ouvertes
+1183|{n} tâche en retard
+1184|{n} tâches en retard
+1185|{n} partie lue
+1186|{n} parties lues
+1187|{n} contradiction possible dans vos connaissances
+1188|{n} contradictions possibles dans vos connaissances
+1189|{n} souvenirs proposés en attente de validation
+1190|{n} souvenir proposé en attente de validation
+1191|{n} suggestion reportée reviendra plus tard.
+1192|{n} suggestions reportées reviendront plus tard.
+1193|{n} source
+1194|{n} sources
+1195|{n} statistique absente des sources
+1196|{n} statistiques absentes des sources
+1197|{n} connexion suggérée entre eux.
+1198|{n} connexions suggérées entre eux.
+1199|{n} tâche faite
+1200|{n} tâches faites
+1201|{n} test
+1202|{n} tests
+1203|{n} question non résolue
+1204|{n} questions non résolues
+1205|{pendingMemories} en attente de validation
+1206|{pending} en attente d'approbation
+1207|{suggestedEdges} suggérées, en attente de validation
+1208|{total} contributions sur la dernière année, série actuelle de {currentStreak} jours
+1209|{v0} (Ctrl D)
+1210|{v0} j de retard
+1211|{what} introuvable
+1212| · confiance
+1213| · preuves à la date du
+1214| · importance
+1215| · inscrit
+1216| · micro
+1217| · seule la première partie d'un très long document a été lue
+1218| · présente
+1219| · auparavant : “
+1220| · changez depuis le menu en haut de la barre latérale
+1221| · mis à jour
+1222| — plausible, sans appui.
+1223| — déduit de ceux-ci ·
+1224| — selon les sources citées ·
+1225|← Connaissances
+1226|← Projets
+2000|25 minutes
+2001|50 minutes
+2002|90 minutes
+2003|API et intégrations
+2004|Actions
+2005|Ajouter à la collection…
+2006|Toutes les catégories
+2007|Toutes les hypothèses
+2008|Tous les projets
+2009|Toutes les recherches
+2010|Une opportunité a été identifiée dans vos connaissances.
+2011|Approbations
+2012|Journal d'audit
+2013|Autorité
+2014|Automatique (s'adapte à la fréquence d'images)
+2015|Automatique (la meilleure disponible)
+2016|Automatisations
+2017|Synthèse
+2018|Liens cassés
+2019|Construire
+2020|Une analyse attentive de tout ce que vous avez accumulé
+2021|Composition d'une réponse à partir de votre contexte.
+2022|Concepts
+2023|Conflits
+2024|Connecteurs
+2025|Contesté
+2026|Corroboration
+2027|Couvre les dernières 24 heures
+2028|Couvre les 7 derniers jours
+2029|Créer et modifier les connaissances, recherches et projets partagés
+2030|Créer une tâche
+2031|Recherche approfondie
+2032|Réflexion approfondie
+2033|Bureau et capture web
+2034|Données différentes
+2035|Définitions différentes
+2036|Méthodes différentes
+2037|Lectures différentes des preuves
+2038|Périmètre ou population différents
+2039|Périodes différentes
+2040|Valeurs différentes
+2041|Isolé
+2042|Découverte de relations entre les idées.
+2043|Document
+2044|Documents
+2045|Échéance proche
+2046|Souvenirs en double
+2047|Notes en double
+2048|Questions du quotidien avec votre contexte
+2049|Tout, y compris la propriété et la suppression de l'espace
+2050|Preuves
+2051|Explications, lacunes et parcours d'apprentissage
+2052|Extrait
+2053|Connaissances extraites
+2054|Fichiers
+2055|Trouver des opportunités concrètes fondées sur vos connaissances
+2056|Suivi
+2057|Suivre le système
+2058|Mouvements complets
+2059|Collecte de preuves pour et contre
+2060|Véritable incertitude
+2061|Aller à
+2062|Élevée
+2063|Crédibilité élevée
+2064|Toutes les heures
+2065|Son actualité
+2066|Importer un fichier (PDF, Word, Excel, PowerPoint, image)
+2067|Dans 1 heure
+2068|Incitations / financement
+2069|Indépendance
+2070|Preuves insuffisantes
+2071|Santé et rangement des connaissances
+2072|Connaissances reliées à rien
+2073|Apprentissage
+2074|Généalogie
+2075|Faible
+2076|Crédibilité faible
+2077|Gérer les membres, connecteurs, automatisations et jetons d'API ; approuver les actions
+2078|Moyenne
+2079|Membres
+2080|Souvenirs qui ne peuvent pas être vrais en même temps
+2081|Souvenirs qui se répètent
+2082|Méthodologie
+2083|Modérée
+2084|Veille
+2085|Recherche en plusieurs étapes avec sources externes et citations
+2086|De nouvelles connaissances se forment. Les régions se densifient à mesure qu'elles s'accumulent.
+2087|La semaine prochaine
+2088|Aucun dossier
+2089|Aucun jalon
+2090|Pas assez de preuves dans un sens ou dans l'autre
+2091|Pas encore testée
+2092|Notes
+2093|Notes qui disent la même chose
+2094|Désactivé : seulement quand je le demande
+2095|Activé : proposer des souvenirs
+2096|Seulement les rappels que je crée
+2097|Ouvrir la note
+2098|Question ouverte
+2099|Agent d'opérations
+2100|Opportunité
+2101|Opportunité détectée
+2102|Dépassé
+2103|En retard
+2104|Lire les réponses à voix haute
+2105|Tout lire et poser des questions à Orbital ; ne peut pas modifier les connaissances partagées
+2106|Actualité
+2107|Réduire les mouvements
+2108|Réfutée
+2109|Rapport
+2110|Recherche en cours — l'activité se déplace entre les régions à mesure que les sous-questions sont étudiées.
+2111|Recherche en cours
+2112|Au repos. La densité des particules reflète ce que vous avez accumulé.
+2113|Envoyer un message
+2114|Créer un rappel
+2115|Afficher les réponses en texte seulement
+2116|Montrer ce qu'Orbital voit vous échapper
+2117|Signes de conflits d'intérêts
+2118|À l'arrêt
+2119|Standard
+2120|Démarrer une réunion
+2121|Lancer le mode concentration
+2122|Preuves solides contre
+2123|Preuves solides pour, peu contre
+2124|Preuves substantielles dans les deux sens
+2125|Étayée
+2126|Parler à Orbital
+2127|Réflexion
+2128|Ce soir
+2129|Le temps a dépassé ce qu'ils décrivent
+2130|Chronologie
+2131|Afficher/masquer le panneau de contexte
+2132|Afficher/masquer la barre latérale
+2133|Demain matin
+2134|Idée inachevée
+2135|Non testée
+2136|Captures web
+2137|Le type de preuve
+2138|Si des résultats en dépendent et si d'autres concordent
+2139|Qui l'a publiée
+2140|Écrire une note
+2141|[[Liens]] vers des notes inexistantes
+3000|Caméra : {camera} · Micro : {microphone}
+3001|Bon après-midi, {name}.
+3002|Bon après-midi.
+3003|Bonsoir, {name}.
+3004|Bonsoir.
+3005|Bonjour, {name}.
+3006|Bonjour.
+3007|Jusqu'à {n} personnes
+3008|On travaille tard, {name}.
+3009|On travaille tard.
+3010|autorisé
+3011|demandé à l'entrée
+3012|bloqué

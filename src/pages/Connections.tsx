@@ -9,6 +9,7 @@ import { Button, Dialog, Empty, IconButton, Input, Pulse, Select, Textarea, cx }
 import { Section } from "@/components/RightPanel";
 import { label, pct } from "@/lib/format";
 import { useCan, useMotionPrefs } from "@/state/app";
+import { tn, tx } from "@/i18n";
 
 const KIND_COLOR: Record<string, string> = {
   concept: "#e5e7eb", note: "#7dd3fc", document: "#38bdf8", memory: "#c4b5fd", finding: "#fcd34d", research: "#fbbf24", project: "#86efac", opportunity: "#fb923c",
@@ -62,13 +63,13 @@ export function ConnectionsPage() {
   return (
     <div className="flex h-full flex-col">
       <div className="flex flex-wrap items-center gap-2 px-6 py-3">
-        <h1 className="mr-3 text-[1.05rem] font-normal">Connections</h1>
+        <h1 className="mr-3 text-[1.05rem] font-normal">{tx("Connections")}</h1>
         <div className="relative w-64">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-mute" />
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search nodes" aria-label="Search nodes" className="h-8 pl-9 text-[0.84rem]"
+          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={tx("Search nodes")} aria-label={tx("Search nodes")} className="h-8 pl-9 text-[0.84rem]"
             onKeyDown={(e) => { if (e.key === "Enter" && matches.size) select([...matches][0]); }} />
         </div>
-        <div className="flex flex-wrap items-center gap-1" role="group" aria-label="Filter by kind">
+        <div className="flex flex-wrap items-center gap-1" role="group" aria-label={tx("Filter by kind")}>
           {KINDS.map((k) => (
             <button key={k} aria-pressed={kinds.includes(k)} onClick={() => setKinds((ks) => ks.includes(k) ? ks.filter((x) => x !== k) : [...ks, k])}
               className={cx("flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.74rem] transition-colors", kinds.includes(k) ? "bg-white/[0.1] text-white" : "text-mute hover:text-white")}>
@@ -77,19 +78,19 @@ export function ConnectionsPage() {
           ))}
         </div>
         <label className="ml-2 flex cursor-pointer items-center gap-2 text-[0.78rem] text-mute">
-          <input type="checkbox" checked={showSuggested} onChange={(e) => setShowSuggested(e.target.checked)} className="accent-white" /> Show suggested
+          <input type="checkbox" checked={showSuggested} onChange={(e) => setShowSuggested(e.target.checked)} className="accent-white" /> {tx("Show suggested")}
         </label>
         <div className="ml-auto flex items-center gap-1">
-          <IconButton label="Graph view" active={view === "graph"} onClick={() => setView("graph")}><NetIcon size={15} /></IconButton>
-          <IconButton label="List view" active={view === "list"} onClick={() => setView("list")}><List size={15} /></IconButton>
-          {can.write && <Button size="sm" icon={<Plus size={13} />} onClick={() => setAdding(true)}>Concept</Button>}
+          <IconButton label={tx("Graph view")} active={view === "graph"} onClick={() => setView("graph")}><NetIcon size={15} /></IconButton>
+          <IconButton label={tx("List view")} active={view === "list"} onClick={() => setView("list")}><List size={15} /></IconButton>
+          {can.write && <Button size="sm" icon={<Plus size={13} />} onClick={() => setAdding(true)}>{tx("Concept")}</Button>}
         </div>
       </div>
       <div className="relative min-h-0 flex-1 border-t border-line">
         {loading && <div className="py-16 text-center"><Pulse /></div>}
         {graph && graph.nodes.length === 0 && (
-          <Empty title="No knowledge to connect yet" action={<Link to="/knowledge"><Button variant="primary">Add a note</Button></Link>}>
-            Notes, memories, research findings and projects appear here as nodes. Orbital suggests relationships; you confirm them.
+          <Empty title={tx("No knowledge to connect yet")} action={<Link to="/knowledge"><Button variant="primary">{tx("Add a note")}</Button></Link>}>
+            {tx("Notes, memories, research findings and projects appear here as nodes. Orbital suggests relationships; you confirm them.")}
           </Empty>
         )}
         {graph && graph.nodes.length > 0 && (view === "graph"
@@ -214,7 +215,7 @@ function GraphCanvas({ graph, selected, matches, onSelect }: { graph: { nodes: N
 
   return (
     <div className="absolute inset-0">
-      <canvas ref={canvasRef} className="h-full w-full cursor-grab active:cursor-grabbing" role="img" aria-label={`Knowledge graph with ${graph.nodes.length} nodes and ${graph.edges.length} connections. Use list view for keyboard navigation.`}
+      <canvas ref={canvasRef} className="h-full w-full cursor-grab active:cursor-grabbing" role="img" aria-label={tx("Knowledge graph with {length} nodes and {length1} connections. Use list view for keyboard navigation.", { length: graph.nodes.length, length1: graph.edges.length })}
         onWheel={(e) => {
           const c = canvasRef.current!.getBoundingClientRect();
           const mx = e.clientX - c.left - c.width / 2, my = e.clientY - c.top - c.height / 2;
@@ -252,10 +253,10 @@ function GraphCanvas({ graph, selected, matches, onSelect }: { graph: { nodes: N
       {tip && (
         <div className="pointer-events-none absolute z-10 max-w-xs rounded-lg border border-line-strong bg-ink-2/95 px-3 py-2 text-[0.78rem] shadow-xl" style={{ left: tip.x + 14, top: tip.y + 10 }}>
           <div className="text-white">{tip.n.title}</div>
-          <div className="mt-0.5 text-mute">{tip.n.kind}{tip.n.category ? ` · ${label(tip.n.category)}` : ""} · {tip.n.degree} connection{tip.n.degree === 1 ? "" : "s"}</div>
+          <div className="mt-0.5 text-mute">{tip.n.kind}{tip.n.category ? ` · ${label(tip.n.category)}` : ""} · {tn(tip.n.degree, "{n} connection", "{n} connections")}</div>
         </div>
       )}
-      <div className="pointer-events-none absolute bottom-3 left-4 text-[0.7rem] text-mute-soft">Scroll to zoom · drag to pan · drag nodes · click to inspect · dashed = suggested</div>
+      <div className="pointer-events-none absolute bottom-3 left-4 text-[0.7rem] text-mute-soft">{tx("Scroll to zoom · drag to pan · drag nodes · click to inspect · dashed = suggested")}</div>
     </div>
   );
 }
@@ -270,7 +271,7 @@ function GraphList({ graph, onSelect, selected, q }: { graph: { nodes: N[]; edge
             <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: KIND_COLOR[n.kind] }} />
             <span className="min-w-0 flex-1 truncate text-[0.88rem] text-white/90">{n.title}</span>
             <span className="text-[0.72rem] text-mute">{n.kind}</span>
-            <span className="w-24 text-right text-[0.72rem] text-mute">{n.degree} connection{n.degree === 1 ? "" : "s"}</span>
+            <span className="w-24 text-right text-[0.72rem] text-mute">{tn(n.degree, "{n} connection", "{n} connections")}</span>
           </button>
         </li>
       ))}
@@ -291,7 +292,7 @@ function Inspector({ id, onSelect }: { id: string; onSelect: (id: string | null)
   const { data, error } = useResource<any>(`/nodes/${id}`);
   const [connecting, setConnecting] = useState(false);
   const navigate = useNavigate();
-  if (error) return <p className="text-[0.82rem] text-mute">This node no longer exists.</p>;
+  if (error) return <p className="text-[0.82rem] text-mute">{tx("This node no longer exists.")}</p>;
   if (!data) return <Pulse />;
   const n = data.node;
   const edge = async (eid: string, status: "confirmed" | "rejected") => {
@@ -306,26 +307,26 @@ function Inspector({ id, onSelect }: { id: string; onSelect: (id: string | null)
       <h2 className="mt-1.5 text-[1rem] leading-snug text-white">{n.title}</h2>
       {n.summary && n.summary !== n.title && <p className="mt-2 line-clamp-[10] text-[0.83rem] leading-relaxed text-mute-bright">{n.summary}</p>}
       <div className="mt-3 flex flex-wrap gap-2">
-        {src && <Button size="sm" onClick={() => navigate(src)}>Open source</Button>}
-        <Button size="sm" onClick={() => setConnecting(true)}>Connect…</Button>
-        <Button size="sm" variant="ghost" icon={<Sparkles size={12} />} onClick={async () => { const r = await api.post(`/nodes/${id}/suggest`).catch(toastError); invalidate("/graph", `/nodes/${id}`); if (r) toast(r.added ? `${r.added} new suggestion${r.added === 1 ? "" : "s"}` : "No new relationships found"); }}>Find links</Button>
-        {(n.kind === "concept" || n.kind === "finding") && <IconButton label="Delete node" onClick={async () => { if (!confirm("Delete this node?")) return; await api.del(`/nodes/${id}`).catch(toastError); invalidate("/graph", "/growth"); onSelect(null); }}><Trash2 size={13} /></IconButton>}
+        {src && <Button size="sm" onClick={() => navigate(src)}>{tx("Open source")}</Button>}
+        <Button size="sm" onClick={() => setConnecting(true)}>{tx("Connect…")}</Button>
+        <Button size="sm" variant="ghost" icon={<Sparkles size={12} />} onClick={async () => { const r = await api.post(`/nodes/${id}/suggest`).catch(toastError); invalidate("/graph", `/nodes/${id}`); if (r) toast(r.added ? tn(r.added, "{n} new suggestion", "{n} new suggestions") : tx("No new relationships found")); }}>{tx("Find links")}</Button>
+        {(n.kind === "concept" || n.kind === "finding") && <IconButton label={tx("Delete node")} onClick={async () => { if (!confirm(tx("Delete this node?"))) return; await api.del(`/nodes/${id}`).catch(toastError); invalidate("/graph", "/growth"); onSelect(null); }}><Trash2 size={13} /></IconButton>}
       </div>
       {data.sources?.length > 0 && (
-        <Section title="Sources" count={data.sources.length}>
+        <Section title={tx("Sources")} count={data.sources.length}>
           <ul className="space-y-1.5">{data.sources.map((s: any) => <li key={s.ref_number + s.url} className="text-[0.8rem] leading-snug"><a href={s.url} target="_blank" rel="noreferrer noopener" className="text-white/85 hover:text-white">{s.title}</a> <span className="text-mute">· {s.provider}</span></li>)}</ul>
         </Section>
       )}
-      <Section title="Confirmed connections" count={confirmed.length}>
-        {confirmed.length === 0 && <p className="text-[0.8rem] text-mute">None yet.</p>}
+      <Section title={tx("Confirmed connections")} count={confirmed.length}>
+        {confirmed.length === 0 && <p className="text-[0.8rem] text-mute">{tx("None yet.")}</p>}
         <ul className="space-y-1">{confirmed.map((e: any) => <EdgeRow key={e.id} e={e} onSelect={onSelect} />)}</ul>
       </Section>
       {suggested.length > 0 && (
-        <Section title="Suggested — not verified" count={suggested.length}>
+        <Section title={tx("Suggested — not verified")} count={suggested.length}>
           <ul className="space-y-2">{suggested.map((e: any) => (
             <li key={e.id}>
               <EdgeRow e={e} onSelect={onSelect} />
-              <div className="ml-4 mt-1 flex gap-1"><Button size="sm" variant="secondary" onClick={() => edge(e.id, "confirmed")}>Confirm</Button><Button size="sm" variant="ghost" onClick={() => edge(e.id, "rejected")}>Reject</Button></div>
+              <div className="ml-4 mt-1 flex gap-1"><Button size="sm" variant="secondary" onClick={() => edge(e.id, "confirmed")}>{tx("Confirm")}</Button><Button size="sm" variant="ghost" onClick={() => edge(e.id, "rejected")}>{tx("Reject")}</Button></div>
             </li>
           ))}</ul>
         </Section>
@@ -354,22 +355,22 @@ function ConnectDialog({ open, onClose, sourceId }: { open: boolean; onClose: ()
   const { data } = useResource<any>(open ? "/graph" : null);
   const results = (data?.nodes ?? []).filter((n: any) => n.id !== sourceId && q && n.title.toLowerCase().includes(q.toLowerCase())).slice(0, 8);
   const submit = async () => {
-    try { await api.post("/edges", { sourceId, targetId: target.id, relation, rationale }); invalidate("/graph", `/nodes/${sourceId}`, "/growth"); toast("Connection created"); onClose(); setTarget(null); setQ(""); } catch (e) { toastError(e); }
+    try { await api.post("/edges", { sourceId, targetId: target.id, relation, rationale }); invalidate("/graph", `/nodes/${sourceId}`, "/growth"); toast(tx("Connection created")); onClose(); setTarget(null); setQ(""); } catch (e) { toastError(e); }
   };
   return (
-    <Dialog open={open} onClose={onClose} title="Create a connection">
+    <Dialog open={open} onClose={onClose} title={tx("Create a connection")}>
       <div className="space-y-3">
         {target ? (
-          <div className="flex items-center gap-2 rounded-lg border border-line px-3 py-2 text-[0.86rem]"><span className="flex-1">{target.title}</span><button className="text-mute hover:text-white" onClick={() => setTarget(null)}>change</button></div>
+          <div className="flex items-center gap-2 rounded-lg border border-line px-3 py-2 text-[0.86rem]"><span className="flex-1">{target.title}</span><button className="text-mute hover:text-white" onClick={() => setTarget(null)}>{tx("change")}</button></div>
         ) : (
           <>
-            <Input autoFocus placeholder="Find a node to connect to" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Find node" />
+            <Input autoFocus placeholder={tx("Find a node to connect to")} value={q} onChange={(e) => setQ(e.target.value)} aria-label={tx("Find node")} />
             <ul className="max-h-48 overflow-y-auto">{results.map((n: any) => <li key={n.id}><button className="w-full rounded-md px-2 py-1.5 text-left text-[0.85rem] hover:bg-white/[0.06]" onClick={() => setTarget(n)}>{n.title} <span className="text-[0.72rem] text-mute">{n.kind}</span></button></li>)}</ul>
           </>
         )}
-        <Select label="Relationship" value={relation} onChange={setRelation} options={RELATIONS.map((r) => ({ value: r, label: label(r) }))} />
-        <Textarea rows={2} placeholder="Why are these connected? (optional)" value={rationale} onChange={(e) => setRationale(e.target.value)} aria-label="Rationale" />
-        <div className="flex justify-end gap-2"><Button variant="ghost" onClick={onClose}>Cancel</Button><Button variant="primary" disabled={!target} onClick={submit}>Connect</Button></div>
+        <Select label={tx("Relationship")} value={relation} onChange={setRelation} options={RELATIONS.map((r) => ({ value: r, label: label(r) }))} />
+        <Textarea rows={2} placeholder={tx("Why are these connected? (optional)")} value={rationale} onChange={(e) => setRationale(e.target.value)} aria-label={tx("Rationale")} />
+        <div className="flex justify-end gap-2"><Button variant="ghost" onClick={onClose}>{tx("Cancel")}</Button><Button variant="primary" disabled={!target} onClick={submit}>{tx("Connect")}</Button></div>
       </div>
     </Dialog>
   );
@@ -382,11 +383,11 @@ function AddConcept({ open, onClose, onCreated }: { open: boolean; onClose: () =
     try { const r = await api.post("/nodes", { title, summary }); invalidate("/graph", "/growth"); onCreated(r.id); onClose(); setTitle(""); setSummary(""); } catch (e) { toastError(e); }
   };
   return (
-    <Dialog open={open} onClose={onClose} title="New concept">
+    <Dialog open={open} onClose={onClose} title={tx("New concept")}>
       <div className="space-y-3">
-        <Input placeholder="Concept" value={title} onChange={(e) => setTitle(e.target.value)} aria-label="Concept title" />
-        <Textarea rows={3} placeholder="What is it? (helps Orbital find connections)" value={summary} onChange={(e) => setSummary(e.target.value)} aria-label="Summary" />
-        <div className="flex justify-end gap-2"><Button variant="ghost" onClick={onClose}>Cancel</Button><Button variant="primary" disabled={!title.trim()} onClick={submit}>Create</Button></div>
+        <Input placeholder={tx("Concept")} value={title} onChange={(e) => setTitle(e.target.value)} aria-label={tx("Concept title")} />
+        <Textarea rows={3} placeholder={tx("What is it? (helps Orbital find connections)")} value={summary} onChange={(e) => setSummary(e.target.value)} aria-label={tx("Summary")} />
+        <div className="flex justify-end gap-2"><Button variant="ghost" onClick={onClose}>{tx("Cancel")}</Button><Button variant="primary" disabled={!title.trim()} onClick={submit}>{tx("Create")}</Button></div>
       </div>
     </Dialog>
   );
@@ -395,13 +396,13 @@ function AddConcept({ open, onClose, onCreated }: { open: boolean; onClose: () =
 function GraphHelp() {
   return (
     <>
-      <Section title="Legend">
+      <Section title={tx("Legend")}>
         <ul className="space-y-1.5">{KINDS.map((k) => <li key={k} className="flex items-center gap-2 text-[0.82rem] text-mute-bright"><span className="h-2 w-2 rounded-full" style={{ background: KIND_COLOR[k] }} />{k}</li>)}</ul>
       </Section>
-      <Section title="Relationships">
-        <p className="text-[0.82rem] leading-relaxed text-mute">Solid lines are confirmed. Dashed lines are Orbital's suggestions — inspect a node to confirm or reject them. Amber lines mark possible contradictions.</p>
+      <Section title={tx("Relationships")}>
+        <p className="text-[0.82rem] leading-relaxed text-mute">{tx("Solid lines are confirmed. Dashed lines are Orbital's suggestions — inspect a node to confirm or reject them. Amber lines mark possible contradictions.")}</p>
       </Section>
-      <Section title="Review"><Link to="/knowledge?tab=review" className="text-[0.83rem] text-mute-bright hover:text-white">Review all suggestions →</Link></Section>
+      <Section title={tx("Review")}><Link to="/knowledge?tab=review" className="text-[0.83rem] text-mute-bright hover:text-white">{tx("Review all suggestions →")}</Link></Section>
     </>
   );
 }

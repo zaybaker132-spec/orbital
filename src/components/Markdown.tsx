@@ -2,6 +2,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import { memo } from "react";
+import { tx } from "@/i18n";
 
 /**
  * Markdown renderer. Context references like [M2] / [K1] / [C3] / [D1] become chips that
@@ -20,7 +21,7 @@ export const Markdown = memo(function Markdown({ text, onRef, sources }: { text:
             if (href?.startsWith("#ref-")) {
               const ref = href.slice(5);
               return (
-                <button type="button" onClick={() => onRef?.(ref)} title="Show what informed this"
+                <button type="button" onClick={() => onRef?.(ref)} title={tx("Show what informed this")}
                   className="mx-px inline-flex translate-y-[-1px] items-center rounded border border-white/15 px-1 font-mono text-[0.68rem] leading-4 text-white/70 no-underline hover:border-white/40 hover:text-white">
                   {ref}
                 </button>

@@ -500,6 +500,7 @@ workspace.put("/preferences", ah(async (req, res) => {
     voiceRate: z.number().min(0.7).max(1.5).optional(),
     focusMinutes: z.union([z.literal(25), z.literal(50), z.literal(90)]).optional(),
     nudges: z.boolean().optional(),
+    language: z.enum(["auto", "en", "es", "fr", "pt", "de"]).optional(),
   }), req.body);
   const r = await db().query("INSERT INTO user_preferences(user_id, settings) VALUES ($1,$2) ON CONFLICT (user_id) DO UPDATE SET settings = user_preferences.settings || $2, updated_at=now() RETURNING settings", [actor(req), JSON.stringify(b)]);
   res.json(r.rows[0].settings);

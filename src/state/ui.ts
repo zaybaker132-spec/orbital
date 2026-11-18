@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { ReactNode } from "react";
+import { t } from "@/i18n";
 
 export interface Toast { id: number; message: string; tone?: "info" | "error"; action?: { label: string; to: string }; /** Stays until dismissed. */ sticky?: boolean }
 interface ToastStore { toasts: Toast[]; push(t: Omit<Toast, "id">): void; dismiss(id: number): void }
@@ -24,7 +25,7 @@ export const toast = (message: string, extra: Partial<Omit<Toast, "id" | "messag
   if (useQuiet.getState().on && extra.tone !== "error") return useQuiet.getState().hold(message);
   useToasts.getState().push({ message, ...extra });
 };
-export const toastError = (e: unknown) => toast(e instanceof Error ? e.message : String(e), { tone: "error" });
+export const toastError = (e: unknown) => toast(t(e instanceof Error ? e.message : String(e)), { tone: "error" });
 
 /** Context shown in the right panel: the retrieval behind an answer, or page-provided content. */
 export interface AnswerContext {

@@ -23,6 +23,7 @@ import { startFreshnessChecks } from "./engines/freshness.js";
 import { startMaintenance } from "./engines/maintenance.js";
 import "./engines/extraction.js";
 import { isAppRoute } from "../shared/routes.js";
+import { languageFromRequest } from "./lib/language.js";
 
 export async function createApp(opts: { jobs?: boolean } = {}) {
   const database = await getDb();
@@ -41,7 +42,7 @@ export async function createApp(opts: { jobs?: boolean } = {}) {
   app.use(cookieParser());
   // Token-authenticated public API: no cookies, so no CSRF exposure; mounted before the session middleware.
   app.use("/api/v1", v1, (_req: express.Request, _res: express.Response, next: express.NextFunction) => next(new HttpError(404, "Not found", "not_found")));
-  app.use("/api", loadUser, requireCsrfHeader);
+  app.use("/api", languageFromRequest, loadUser, requireCsrfHeader);
   app.get("/api/health", (_req, res) => res.json({ ok: true, db: database.kind, ai: aiStatus() }));
   app.use("/api/auth", authRouter);
   app.use("/api/public", waitlistPublic); // no account needed

@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { useEffect, useState } from "react";
 import { api, getWorkspaceId, setWorkspaceId } from "@/lib/api";
 import { invalidate } from "@/lib/resource";
+import { languagePref, setLanguage, type Lang } from "@/i18n";
 
 export interface User { id: string; email: string; displayName: string }
 export interface AiStatus { provider: "anthropic" | "openai" | "none"; model: string | null; webSearch: boolean; embeddings: string }
@@ -9,7 +10,7 @@ export type Role = "owner" | "admin" | "member" | "viewer";
 export interface Workspace { id: string; name: string; kind: "personal" | "business"; role: Role }
 export interface Preferences {
   reducedMotion?: "system" | "on" | "off"; particleDensity?: "auto" | "low" | "medium" | "high"; defaultMode?: string; autoExtractMemories?: boolean;
-  speakAnswers?: boolean; voiceName?: string; voiceRate?: number; focusMinutes?: 25 | 50 | 90; nudges?: boolean;
+  speakAnswers?: boolean; voiceName?: string; voiceRate?: number; focusMinutes?: 25 | 50 | 90; nudges?: boolean; language?: "auto" | Lang;
 }
 export interface ServerInfo { version: string; database: "embedded" | "postgres"; transcription: boolean; turn: boolean; maxParticipants: number }
 
@@ -64,6 +65,9 @@ export const useApp = create<AppStore>((set, get) => ({
     const workspaces: Workspace[] = me.workspaces ?? [];
     const current = workspaces.find((w) => w.id === getWorkspaceId()) ?? workspaces[0] ?? null;
     setWorkspaceId(current?.id ?? null);
+    // The account's language wins over this device's: switch and reload once if they differ (e.g. a new device).
+    const lang = me.preferences?.language;
+    if (lang && lang !== languagePref()) { setLanguage(lang); location.reload(); return; }
     set({ loaded: true, user: me.user, ai: me.ai, prefs: me.preferences ?? {}, signupAllowed: me.signupAllowed, workspaces, workspace: current, desktop: !!me.desktop, downloadUrl: me.downloadUrl ?? "", serverAdmin: !!me.serverAdmin, server: me.server ?? null });
   },
   async setPrefs(p) {

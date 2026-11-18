@@ -7,6 +7,7 @@ import { toastError, useQuiet } from "@/state/ui";
 import { useApp, useCan } from "@/state/app";
 import { Button, Empty, Input, PageHeader, Pulse, Select, Textarea, cx } from "@/components/ui";
 import { timeAgo } from "@/lib/format";
+import { tn, tx } from "@/i18n";
 
 /**
  * Focus mode: one objective, a timer, the tasks that serve it and a scratchpad. The rest of
@@ -45,37 +46,37 @@ function FocusSetup({ week, recent }: { week: { seconds: number; sessions: numbe
   };
   return (
     <div className="h-full overflow-y-auto pb-16">
-      <PageHeader title="Focus" subtitle="One objective, a timer and nothing else. Orbital holds notifications until you're done." />
+      <PageHeader title={tx("Focus")} subtitle={tx("One objective, a timer and nothing else. Orbital holds notifications until you're done.")} />
       <div className="grid gap-10 px-8 lg:grid-cols-[minmax(0,560px)_1fr]">
         <form className="grid gap-4" onSubmit={(e) => { e.preventDefault(); start(); }}>
-          <label className="grid gap-2"><span className="label">What's the one thing?</span>
-            <Input autoFocus value={objective} onChange={(e) => setObjective(e.target.value)} placeholder="e.g. Draft the pricing page" className="h-11 text-[1rem]" aria-label="Objective" /></label>
+          <label className="grid gap-2"><span className="label">{tx("What's the one thing?")}</span>
+            <Input autoFocus value={objective} onChange={(e) => setObjective(e.target.value)} placeholder={tx("e.g. Draft the pricing page")} className="h-11 text-[1rem]" aria-label={tx("Objective")} /></label>
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="grid gap-2"><span className="label">Project</span>
-              <Select label="Project" value={projectId} onChange={setProjectId} options={[{ value: "", label: "No project" }, ...(projects ?? []).filter((p) => p.status === "active" || p.id === projectId).map((p) => ({ value: p.id, label: p.name }))]} /></div>
-            <div className="grid gap-2"><span className="label">Length</span>
+            <div className="grid gap-2"><span className="label">{tx("Project")}</span>
+              <Select label={tx("Project")} value={projectId} onChange={setProjectId} options={[{ value: "", label: "No project" }, ...(projects ?? []).filter((p) => p.status === "active" || p.id === projectId).map((p) => ({ value: p.id, label: p.name }))]} /></div>
+            <div className="grid gap-2"><span className="label">{tx("Length")}</span>
               <div className="flex gap-1.5">
                 {[25, 50, 90].map((m) => (
-                  <button key={m} type="button" onClick={() => setPlanned(m)} className={cx("h-9 flex-1 rounded-lg border text-[0.84rem]", planned === m ? "border-white bg-white text-black" : "border-line text-mute-bright hover:text-white")}>{m} min</button>
+                  <button key={m} type="button" onClick={() => setPlanned(m)} className={cx("h-9 flex-1 rounded-lg border text-[0.84rem]", planned === m ? "border-white bg-white text-black" : "border-line text-mute-bright hover:text-white")}>{m} {tx("min")}</button>
                 ))}
               </div></div>
           </div>
-          <Button variant="primary" type="submit" icon={<Target size={14} />} loading={busy} disabled={!objective.trim()} className="h-11 justify-self-start px-6">Start focus</Button>
+          <Button variant="primary" type="submit" icon={<Target size={14} />} loading={busy} disabled={!objective.trim()} className="h-11 justify-self-start px-6">{tx("Start focus")}</Button>
         </form>
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-xl border border-line px-4 py-3"><div className="text-[1.4rem] font-light">{minutes(week.seconds)}</div><div className="text-[0.74rem] text-mute">focused this week</div></div>
-            <div className="rounded-xl border border-line px-4 py-3"><div className="text-[1.4rem] font-light">{week.sessions}</div><div className="text-[0.74rem] text-mute">session{week.sessions === 1 ? "" : "s"} this week</div></div>
+            <div className="rounded-xl border border-line px-4 py-3"><div className="text-[1.4rem] font-light">{minutes(week.seconds)}</div><div className="text-[0.74rem] text-mute">{tx("focused this week")}</div></div>
+            <div className="rounded-xl border border-line px-4 py-3"><div className="text-[1.4rem] font-light">{week.sessions}</div><div className="text-[0.74rem] text-mute">{week.sessions === 1 ? tx("session this week") : tx("sessions this week")}</div></div>
           </div>
           <section>
-            <h2 className="label mb-2">Recent sessions</h2>
-            {recent.length === 0 ? <Empty title="No sessions yet">Your focus history appears here, with time spent and tasks finished.</Empty> : (
+            <h2 className="label mb-2">{tx("Recent sessions")}</h2>
+            {recent.length === 0 ? <Empty title={tx("No sessions yet")}>{tx("Your focus history appears here, with time spent and tasks finished.")}</Empty> : (
               <ul className="divide-y divide-line">
                 {recent.map((r) => (
                   <li key={r.id} className="py-2.5">
                     <div className="flex items-baseline gap-3"><span className="flex-1 truncate text-[0.88rem] text-white/90">{r.objective}</span><span className="shrink-0 text-[0.72rem] text-mute">{timeAgo(r.started_at)}</span></div>
-                    <div className="text-[0.74rem] text-mute">{minutes(r.focused_seconds)}{r.tasks_completed ? ` · ${r.tasks_completed} task${r.tasks_completed === 1 ? "" : "s"} done` : ""}{r.project_name ? ` · ${r.project_name}` : ""}
-                      {r.document_id && <> · <Link to={`/knowledge/${r.document_id}`} className="underline decoration-white/20 hover:text-white">notes</Link></>}</div>
+                    <div className="text-[0.74rem] text-mute">{minutes(r.focused_seconds)}{r.tasks_completed ? " · " + tn(r.tasks_completed, "{n} task done", "{n} tasks done") : ""}{r.project_name ? ` · ${r.project_name}` : ""}
+                      {r.document_id && <> · <Link to={`/knowledge/${r.document_id}`} className="underline decoration-white/20 hover:text-white">{tx("notes")}</Link></>}</div>
                     {r.outcome && <p className="mt-0.5 text-[0.8rem] text-mute-bright">{r.outcome}</p>}
                   </li>
                 ))}
@@ -185,13 +186,13 @@ function FocusSession({ session }: { session: any }) {
     return (
       <div className="fixed inset-0 z-40 flex items-center justify-center bg-black px-6">
         <div className="grid max-w-md justify-items-center gap-3 text-center">
-          <div className="label">Session complete</div>
+          <div className="label">{tx("Session complete")}</div>
           <h1 className="text-[1.8rem] font-light tracking-[-0.02em]">{summary.objective}</h1>
-          <p className="text-mute-bright">{minutes(summary.focused_seconds)} focused{summary.tasks_completed ? ` · ${summary.tasks_completed} task${summary.tasks_completed === 1 ? "" : "s"} done` : ""}</p>
-          {summary.held > 0 && <p className="text-[0.84rem] text-mute">{summary.held} notification{summary.held === 1 ? " was" : "s were"} held while you focused. Check Reminders and Operations for anything waiting.</p>}
+          <p className="text-mute-bright">{minutes(summary.focused_seconds)} {tx("focused")}{summary.tasks_completed ? " · " + tn(summary.tasks_completed, "{n} task done", "{n} tasks done") : ""}</p>
+          {summary.held > 0 && <p className="text-[0.84rem] text-mute">{tn(summary.held, "{n} notification was held while you focused. Check Reminders and Operations for anything waiting.", "{n} notifications were held while you focused. Check Reminders and Operations for anything waiting.")}</p>}
           <div className="mt-3 flex gap-2">
-            {summary.document_id && <Button onClick={() => navigate(`/knowledge/${summary.document_id}`)}>Open notes</Button>}
-            <Button variant="primary" onClick={() => { invalidate("/focus", "/growth"); navigate("/focus"); }}>Done</Button>
+            {summary.document_id && <Button onClick={() => navigate(`/knowledge/${summary.document_id}`)}>{tx("Open notes")}</Button>}
+            <Button variant="primary" onClick={() => { invalidate("/focus", "/growth"); navigate("/focus"); }}>{tx("Done")}</Button>
           </div>
         </div>
       </div>
@@ -201,11 +202,11 @@ function FocusSession({ session }: { session: any }) {
   return (
     <div className="fixed inset-0 z-40 flex flex-col bg-black">
       <header className="flex items-center gap-3 px-6 py-4">
-        <span className="flex items-center gap-2 text-[0.74rem] uppercase tracking-[0.18em] text-mute"><Target size={13} /> Focus{session.project_name ? ` · ${session.project_name}` : ""}</span>
-        <span className="text-[0.74rem] text-mute-soft">Notifications held</span>
+        <span className="flex items-center gap-2 text-[0.74rem] uppercase tracking-[0.18em] text-mute"><Target size={13} /> {tx("Focus")}{session.project_name ? ` · ${session.project_name}` : ""}</span>
+        <span className="text-[0.74rem] text-mute-soft">{tx("Notifications held")}</span>
         <div className="ml-auto flex items-center gap-2">
-          <Button size="sm" variant="ghost" icon={<Minimize2 size={13} />} title="Leave the session running and go back to Orbital" onClick={() => { persist(); navigate("/"); }}>Step out</Button>
-          <Button size="sm" onClick={() => { setRunning(false); setEnding(true); }}>End session</Button>
+          <Button size="sm" variant="ghost" icon={<Minimize2 size={13} />} title={tx("Leave the session running and go back to Orbital")} onClick={() => { persist(); navigate("/"); }}>{tx("Step out")}</Button>
+          <Button size="sm" onClick={() => { setRunning(false); setEnding(true); }}>{tx("End session")}</Button>
         </div>
       </header>
 
@@ -219,58 +220,58 @@ function FocusSession({ session }: { session: any }) {
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <div className="font-mono text-[2.4rem] font-light tabular-nums" role="timer" aria-live="off">{remaining >= 0 ? fmt(remaining) : `+${fmt(-remaining)}`}</div>
-              <div className="text-[0.74rem] text-mute">{remaining >= 0 ? `of ${session.planned_minutes} min` : "past your planned time"}</div>
+              <div className="text-[0.74rem] text-mute">{remaining >= 0 ? tx("of {planned_minutes} min", { planned_minutes: session.planned_minutes }) : tx("past your planned time")}</div>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="primary" icon={running ? <Pause size={14} /> : <Play size={14} />} onClick={() => setRunning(!running)}>{running ? "Pause" : elapsed > 0 ? "Resume" : "Start"}</Button>
+            <Button variant="primary" icon={running ? <Pause size={14} /> : <Play size={14} />} onClick={() => setRunning(!running)}>{running ? tx("Pause") : elapsed > 0 ? tx("Resume") : tx("Start")}</Button>
           </div>
-          <p className="text-[0.74rem] text-mute-soft">Space to pause · {minutes(elapsed)} focused so far</p>
+          <p className="text-[0.74rem] text-mute-soft">{tx("Space to pause ·")} {minutes(elapsed)} {tx("focused so far")}</p>
         </div>
 
         <div className="flex min-h-0 flex-col gap-6 py-6">
           {session.project_id && (
             <section>
-              <h2 className="label mb-2">Tasks</h2>
+              <h2 className="label mb-2">{tx("Tasks")}</h2>
               <ul className="space-y-0.5">
                 {open.slice(0, 12).map((t) => (
                   <li key={t.id} className="flex items-center gap-3 py-1">
-                    <button aria-label="Mark complete" onClick={() => toggle(t)} className="flex h-4 w-4 shrink-0 items-center justify-center rounded border border-white/30 hover:border-white/70" />
+                    <button aria-label={tx("Mark complete")} onClick={() => toggle(t)} className="flex h-4 w-4 shrink-0 items-center justify-center rounded border border-white/30 hover:border-white/70" />
                     <span className="text-[0.9rem] text-white/90">{t.title}</span>
                   </li>
                 ))}
                 {doneHere.map((t) => (
                   <li key={t.id} className="flex items-center gap-3 py-1">
-                    <button aria-label="Mark incomplete" onClick={() => toggle(t)} className="flex h-4 w-4 shrink-0 items-center justify-center rounded border border-white bg-white text-black"><Check size={11} /></button>
+                    <button aria-label={tx("Mark incomplete")} onClick={() => toggle(t)} className="flex h-4 w-4 shrink-0 items-center justify-center rounded border border-white bg-white text-black"><Check size={11} /></button>
                     <span className="text-[0.9rem] text-mute line-through">{t.title}</span>
                   </li>
                 ))}
-                {project && open.length === 0 && doneHere.length === 0 && <li className="text-[0.84rem] text-mute">No open tasks in this project.</li>}
+                {project && open.length === 0 && doneHere.length === 0 && <li className="text-[0.84rem] text-mute">{tx("No open tasks in this project.")}</li>}
               </ul>
               {can.write && (
                 <form className="mt-2 flex gap-2" onSubmit={(e) => { e.preventDefault(); addTask(); }}>
-                  <Input value={newTask} onChange={(e) => setNewTask(e.target.value)} placeholder="Add a task" className="h-8 text-[0.84rem]" aria-label="New task" />
-                  <Button size="sm" type="submit" icon={<Plus size={12} />}>Add</Button>
+                  <Input value={newTask} onChange={(e) => setNewTask(e.target.value)} placeholder={tx("Add a task")} className="h-8 text-[0.84rem]" aria-label={tx("New task")} />
+                  <Button size="sm" type="submit" icon={<Plus size={12} />}>{tx("Add")}</Button>
                 </form>
               )}
             </section>
           )}
           <section className="flex min-h-[240px] flex-1 flex-col">
-            <div className="mb-2 flex items-center gap-2"><h2 className="label">Scratchpad</h2><span className="text-[0.7rem] text-mute-soft">{saved === "saving" ? "Saving…" : saved === "saved" ? "Saved to Knowledge" : can.write ? "Saved to Knowledge as you type" : "Viewers' notes aren't saved"}</span></div>
-            <Textarea value={notes} onChange={(e) => editNotes(e.target.value)} disabled={!can.write} placeholder="Think out loud. Drafts, decisions, next steps…"
-              className="min-h-[200px] flex-1 border-line bg-white/[0.02] font-mono text-[0.86rem] leading-[1.7]" aria-label="Scratchpad" />
+            <div className="mb-2 flex items-center gap-2"><h2 className="label">{tx("Scratchpad")}</h2><span className="text-[0.7rem] text-mute-soft">{saved === "saving" ? tx("Saving…") : saved === "saved" ? tx("Saved to Knowledge") : can.write ? tx("Saved to Knowledge as you type") : tx("Viewers' notes aren't saved")}</span></div>
+            <Textarea value={notes} onChange={(e) => editNotes(e.target.value)} disabled={!can.write} placeholder={tx("Think out loud. Drafts, decisions, next steps…")}
+              className="min-h-[200px] flex-1 border-line bg-white/[0.02] font-mono text-[0.86rem] leading-[1.7]" aria-label={tx("Scratchpad")} />
           </section>
         </div>
       </div>
 
       {ending && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-6" role="dialog" aria-label="End focus session">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-6" role="dialog" aria-label={tx("End focus session")}>
           <form className="grid w-full max-w-md gap-3 rounded-2xl border border-line-strong bg-ink-2 p-6" onSubmit={(e) => { e.preventDefault(); end(); }}>
-            <div className="text-[1rem]">How did it go?</div>
-            <Textarea autoFocus rows={3} value={outcome} onChange={(e) => setOutcome(e.target.value)} placeholder="What you got done, or where to pick up next time (optional)" />
+            <div className="text-[1rem]">{tx("How did it go?")}</div>
+            <Textarea autoFocus rows={3} value={outcome} onChange={(e) => setOutcome(e.target.value)} placeholder={tx("What you got done, or where to pick up next time (optional)")} />
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" type="button" onClick={() => { setEnding(false); setRunning(true); }}>Keep going</Button>
-              <Button variant="primary" type="submit">End session</Button>
+              <Button variant="ghost" type="button" onClick={() => { setEnding(false); setRunning(true); }}>{tx("Keep going")}</Button>
+              <Button variant="primary" type="submit">{tx("End session")}</Button>
             </div>
           </form>
         </div>

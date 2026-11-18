@@ -8,6 +8,7 @@ import { invalidate } from "@/lib/resource";
 import { modKey } from "@/lib/format";
 import { toastError } from "@/state/ui";
 import { cx } from "./ui";
+import { tx } from "@/i18n";
 
 interface Item { id: string; label: string; hint?: string; group: string; icon: any; run: () => void | Promise<void>; keywords?: string }
 
@@ -98,7 +99,7 @@ export function CommandPalette() {
       const meta = TYPE_META[r.type];
       return { id: `${r.type}-${r.id}`, label: r.title, hint: r.snippet && r.type !== "document" ? String(r.snippet).slice(0, 40) : undefined, group: meta.group, icon: meta.icon, run: go(meta.to(r.id)) };
     });
-    const acts = actions.filter((a) => !needle || a.id === "search-all" || a.id === "research" || a.id === "note" || a.id === "learn" || a.id === "lab" || a.id === "hypothesis" || `${a.label} ${a.keywords ?? ""}`.toLowerCase().includes(needle));
+    const acts = actions.filter((a) => !needle || a.id === "search-all" || a.id === "research" || a.id === "note" || a.id === "learn" || a.id === "lab" || a.id === "hypothesis" || `${a.label} ${tx(a.label)} ${a.keywords ?? ""}`.toLowerCase().includes(needle));
     return needle ? [...found, ...acts.filter((a) => a.id === "search-all"), ...acts.filter((a) => a.id !== "search-all")] : acts;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [results, actions, q]);
@@ -121,28 +122,28 @@ export function CommandPalette() {
       {paletteOpen && (
         <motion.div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4 pt-[14vh] backdrop-blur-[2px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.12 }}
           onMouseDown={(e) => e.target === e.currentTarget && close()}>
-          <motion.div role="dialog" aria-modal="true" aria-label="Command palette" className="w-full max-w-[600px] overflow-hidden rounded-xl border border-line-strong bg-ink-1 shadow-[0_30px_80px_rgba(0,0,0,0.8)]"
+          <motion.div role="dialog" aria-modal="true" aria-label={tx("Command palette")} className="w-full max-w-[600px] overflow-hidden rounded-xl border border-line-strong bg-ink-1 shadow-[0_30px_80px_rgba(0,0,0,0.8)]"
             initial={{ y: -6, scale: 0.99 }} animate={{ y: 0, scale: 1 }} exit={{ y: -4, opacity: 0 }} transition={{ duration: 0.14 }}>
             <div className="flex items-center gap-3 border-b border-line px-4">
               <Search size={15} className="text-mute" />
-              <input ref={inputRef} value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onKey} placeholder="Search knowledge, projects, conversations… or type a command"
+              <input ref={inputRef} value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onKey} placeholder={tx("Search knowledge, projects, conversations… or type a command")}
                 role="combobox" aria-expanded="true" aria-controls="palette-list" aria-activedescendant={items[sel] ? `pi-${sel}` : undefined}
                 className="h-12 flex-1 bg-transparent text-[0.95rem] outline-none placeholder:text-mute-soft" />
-              <span className="kbd">esc</span>
+              <span className="kbd">{tx("esc")}</span>
             </div>
             <ul id="palette-list" ref={listRef} role="listbox" className="max-h-[420px] overflow-y-auto p-1.5">
-              {items.length === 0 && <li className="px-3 py-6 text-center text-sm text-mute">No results</li>}
+              {items.length === 0 && <li className="px-3 py-6 text-center text-sm text-mute">{tx("No results")}</li>}
               {items.map((it, i) => {
                 const header = it.group !== lastGroup ? it.group : null;
                 lastGroup = it.group;
                 return (
                   <li key={it.id} role="presentation">
-                    {header && <div className="label px-3 pb-1.5 pt-2.5">{header}</div>}
+                    {header && <div className="label px-3 pb-1.5 pt-2.5">{tx(header)}</div>}
                     <div id={`pi-${i}`} data-idx={i} role="option" aria-selected={i === sel} onMouseMove={() => setSel(i)} onClick={() => it.run()}
                       className={cx("flex h-9 cursor-pointer items-center gap-3 rounded-lg px-3 text-[0.88rem]", i === sel ? "bg-white/[0.08] text-white" : "text-white/80")}>
                       <it.icon size={15} strokeWidth={1.6} className="shrink-0 text-mute" />
-                      <span className="truncate">{it.label}</span>
-                      {it.hint && <span className="ml-auto shrink-0 text-[0.72rem] text-mute">{it.hint}</span>}
+                      <span className="truncate">{tx(it.label)}</span>
+                      {it.hint && <span className="ml-auto shrink-0 text-[0.72rem] text-mute">{tx(it.hint)}</span>}
                     </div>
                   </li>
                 );

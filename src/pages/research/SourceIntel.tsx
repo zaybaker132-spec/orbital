@@ -4,6 +4,7 @@ import { api } from "@/lib/api";
 import { invalidate } from "@/lib/resource";
 import { toastError } from "@/state/ui";
 import { Badge, Button, cx } from "@/components/ui";
+import { tx } from "@/i18n";
 
 export const GRADE_STYLE: Record<string, { label: string; color: string }> = {
   high: { label: "High credibility", color: "#2cff7a" },
@@ -23,7 +24,7 @@ export function ScoreRing({ score, grade, size = 44 }: { score: number; grade: s
   const r = size / 2 - 3, c = 2 * Math.PI * r;
   const color = GRADE_STYLE[grade]?.color ?? "#8a8a93";
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={`Credibility ${score} of 100, ${grade}`} className="shrink-0">
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={tx("Credibility {score} of 100, {grade}", { score: score, grade: grade })} className="shrink-0">
       <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="3" />
       <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeDasharray={`${(score / 100) * c} ${c}`} transform={`rotate(-90 ${size / 2} ${size / 2})`} />
       <text x="50%" y="54%" textAnchor="middle" dominantBaseline="middle" fill="#fff" fontSize={size * 0.3} fontWeight="300">{score}</text>
@@ -46,19 +47,19 @@ export function SourceIntelligence({ researchId, sources, canAssess }: { researc
   return (
     <section>
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-        {avg !== null && <div className="flex items-center gap-3"><ScoreRing score={avg} grade={avg >= 75 ? "high" : avg >= 55 ? "moderate" : "low"} size={52} /><div><div className="text-[0.95rem] text-white">Average credibility</div><div className="text-[0.76rem] text-mute">{assessed.length} of {sources.length} sources assessed</div></div></div>}
+        {avg !== null && <div className="flex items-center gap-3"><ScoreRing score={avg} grade={avg >= 75 ? "high" : avg >= 55 ? "moderate" : "low"} size={52} /><div><div className="text-[0.95rem] text-white">{tx("Average credibility")}</div><div className="text-[0.76rem] text-mute">{assessed.length} {tx("of")} {sources.length} {tx("sources assessed")}</div></div></div>}
         <div className="flex gap-3 text-[0.78rem] text-mute">
           {Object.entries(counts).map(([g, n]) => <span key={g} className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full" style={{ background: GRADE_STYLE[g].color }} />{n} {g}</span>)}
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <select aria-label="Sort sources" value={sort} onChange={(e) => setSort(e.target.value as any)} className="input h-8 w-auto py-0 text-[0.8rem]">
-            <option value="ref">By number</option><option value="score">Most credible first</option>
+          <select aria-label={tx("Sort sources")} value={sort} onChange={(e) => setSort(e.target.value as any)} className="input h-8 w-auto py-0 text-[0.8rem]">
+            <option value="ref">{tx("By number")}</option><option value="score">{tx("Most credible first")}</option>
           </select>
-          {canAssess && <Button size="sm" icon={<RefreshCw size={12} />} loading={busy} onClick={assess}>{assessed.length ? "Re-assess" : "Assess sources"}</Button>}
+          {canAssess && <Button size="sm" icon={<RefreshCw size={12} />} loading={busy} onClick={assess}>{assessed.length ? tx("Re-assess") : tx("Assess sources")}</Button>}
         </div>
       </div>
       <p className="mt-3 max-w-[70ch] text-[0.78rem] leading-relaxed text-mute">
-        Scores weigh authority (30%), methodology (25%), recency, independence and corroboration (15% each), using the source's address, dates and retrieved text{assessed.some((s) => s.assessment.ai) ? ", read by the AI for study design and conflicts of interest" : ""}. They're a guide to what to check, not a verdict on a publisher.
+        {assessed.some((s) => s.assessment.ai) ? tx("Scores weigh authority (30%), methodology (25%), recency, independence and corroboration (15% each), using the source's address, dates and retrieved text, read by the AI for study design and conflicts of interest.") : tx("Scores weigh authority (30%), methodology (25%), recency, independence and corroboration (15% each), using the source's address, dates and retrieved text.")} {tx("They're a guide to what to check, not a verdict on a publisher.")}
       </p>
       <ol className="mt-5 space-y-3">
         {list.map((s) => <SourceCard key={s.ref_number} s={s} />)}
@@ -82,10 +83,10 @@ function SourceCard({ s }: { s: any }) {
             <a href={s.url} target="_blank" rel="noreferrer noopener" className="inline-flex min-w-0 items-center gap-1.5 text-[0.9rem] text-white hover:underline decoration-white/30 underline-offset-2"><span className="truncate">{s.title}</span><ExternalLink size={11} className="shrink-0 text-mute" /></a>
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-[0.72rem] text-mute">
-            {a && <span style={{ color: GRADE_STYLE[a.grade].color }}>{GRADE_STYLE[a.grade].label}</span>}
+            {a && <span style={{ color: GRADE_STYLE[a.grade].color }}>{tx(GRADE_STYLE[a.grade].label)}</span>}
             <Badge>{s.source_type}</Badge><span>{host}</span>{s.published && <span>· {s.published}</span>}
-            {s.position && <Badge tone="info">for: {s.position}</Badge>}
-            {a?.ai && <span className="flex items-center gap-1"><ShieldCheck size={11} /> text reviewed by AI</span>}
+            {s.position && <Badge tone="info">{tx("for:")} {s.position}</Badge>}
+            {a?.ai && <span className="flex items-center gap-1"><ShieldCheck size={11} /> {tx("text reviewed by AI")}</span>}
           </div>
         </div>
       </div>
@@ -95,7 +96,7 @@ function SourceCard({ s }: { s: any }) {
             const v = a.factors[f.key];
             return (
               <div key={f.key} title={f.hint}>
-                <div className="flex items-baseline justify-between text-[0.74rem]"><span className="text-white/80">{f.label}</span><span className="tabular-nums text-mute">{v.score}</span></div>
+                <div className="flex items-baseline justify-between text-[0.74rem]"><span className="text-white/80">{tx(f.label)}</span><span className="tabular-nums text-mute">{v.score}</span></div>
                 <div className="mt-1 h-1 rounded-full bg-white/[0.07]"><div className="h-1 rounded-full" style={{ width: `${v.score}%`, background: v.score >= 75 ? "#2cff7a" : v.score >= 55 ? "#ffd23a" : "#ff5a1f", opacity: 0.85 }} /></div>
                 <div className="mt-1 text-[0.74rem] leading-snug text-mute">{v.note}</div>
               </div>
@@ -103,7 +104,7 @@ function SourceCard({ s }: { s: any }) {
           })}
         </div>
       )}
-      <button onClick={() => setOpen(!open)} className={cx("mt-3 text-[0.74rem] text-mute hover:text-white")}>{open ? "Hide retrieved text" : "Show retrieved text"}</button>
+      <button onClick={() => setOpen(!open)} className={cx("mt-3 text-[0.74rem] text-mute hover:text-white")}>{open ? tx("Hide retrieved text") : tx("Show retrieved text")}</button>
       {open && <p className="mt-1.5 whitespace-pre-wrap text-[0.8rem] leading-relaxed text-mute-bright">{s.excerpt}</p>}
     </li>
   );

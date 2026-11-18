@@ -1,4 +1,5 @@
 import { db } from "../db/client.js";
+import { currentLanguage, runInLanguage } from "./language.js";
 
 /**
  * Durable in-process job queue backed by the `jobs` table. Jobs survive restarts
@@ -15,6 +16,8 @@ export function registerJob(type: string, handler: Handler) {
 }
 
 export async function enqueue(workspaceId: string, type: string, payload: Record<string, unknown> = {}) {
+  // Remember who's waiting on it and in which language, so its output is written in that language.
+  if (payload._lang === undefined && currentLanguage() !== "en") payload = { ...payload, _lang: currentLanguage() };
   const r = await db().query<{ id: string }>("INSERT INTO jobs(workspace_id, type, payload) VALUES ($1,$2,$3) RETURNING id", [workspaceId, type, JSON.stringify(payload)]);
   setImmediate(tick);
   return r.rows[0].id;
@@ -34,7 +37,7 @@ async function tick() {
     (async () => {
       try {
         if (!handler) throw new Error(`No handler for job type ${job.type}`);
-        await handler({ id: job.id, workspaceId: job.workspace_id, payload: job.payload });
+        await runInLanguage(job.payload?._lang, () => handler({ id: job.id, workspaceId: job.workspace_id, payload: job.payload }));
         await db().query("UPDATE jobs SET status='done', updated_at=now() WHERE id=$1", [job.id]);
       } catch (e: any) {
         console.error(`[jobs] ${job.type} failed:`, e?.message ?? e);

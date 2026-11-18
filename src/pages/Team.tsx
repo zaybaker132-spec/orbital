@@ -7,6 +7,7 @@ import { useApp, useCan } from "@/state/app";
 import { usePanel, toast, toastError } from "@/state/ui";
 import { Badge, Button, Dialog, Empty, IconButton, Input, PageHeader, Select, Tabs, Textarea } from "@/components/ui";
 import { timeAgo } from "@/lib/format";
+import { locale, tx } from "@/i18n";
 
 type Tab = "members" | "context" | "api" | "audit";
 
@@ -18,13 +19,13 @@ export function TeamPage() {
   const setContent = usePanel((s) => s.setContent);
   useEffect(() => () => setContent("", null), [setContent]);
   if (ws?.kind !== "business") {
-    return <Empty title="Teams live in business workspaces">Create a business workspace from the workspace menu at the top of the sidebar to invite your team, share knowledge, and run automations.</Empty>;
+    return <Empty title={tx("Teams live in business workspaces")}>{tx("Create a business workspace from the workspace menu at the top of the sidebar to invite your team, share knowledge, and run automations.")}</Empty>;
   }
   const tabs: { value: Tab; label: string }[] = [{ value: "members", label: "Members" }, { value: "context", label: "Business context" }];
   if (can.admin) tabs.push({ value: "api", label: "API & integrations" }, { value: "audit", label: "Audit log" });
   return (
     <div className="flex h-full flex-col">
-      <PageHeader title={ws.name} subtitle={`Business workspace · you are ${ws.role}`} />
+      <PageHeader title={ws.name} subtitle={tx("Business workspace · you are {role}", { role: ws.role })} />
       <Tabs className="mx-8" value={tab} onChange={(t) => setParams(t === "members" ? {} : { tab: t })} tabs={tabs} />
       <div className="min-h-0 flex-1 overflow-y-auto px-8 pb-16 pt-5">
         {tab === "members" && <Members />}
@@ -54,7 +55,7 @@ function Members() {
   const setRole = async (id: string, role: string) => { try { await api.patch(`/workspace/members/${id}`, { role }); invalidate("/workspace/members"); } catch (e) { toastError(e); } };
   const remove = async (m: any) => {
     const self = m.id === me?.id;
-    if (!confirm(self ? "Leave this workspace?" : `Remove ${m.email}?`)) return;
+    if (!confirm(self ? tx("Leave this workspace?") : tx("Remove {email}?", { email: m.email }))) return;
     try {
       await api.del(`/workspace/members/${m.id}`);
       if (self) { await refreshWorkspaces(); navigate("/"); } else invalidate("/workspace/members");
@@ -63,21 +64,21 @@ function Members() {
   return (
     <>
       <div className="mb-4 flex items-center">
-        <p className="flex-1 text-[0.84rem] text-mute">Knowledge, research, projects and automations are shared. Each person's conversations stay private to them.</p>
-        {can.admin && <Button variant="primary" icon={<UserPlus size={14} />} onClick={() => setInviting(true)}>Invite</Button>}
+        <p className="flex-1 text-[0.84rem] text-mute">{tx("Knowledge, research, projects and automations are shared. Each person's conversations stay private to them.")}</p>
+        {can.admin && <Button variant="primary" icon={<UserPlus size={14} />} onClick={() => setInviting(true)}>{tx("Invite")}</Button>}
       </div>
       <ul className="divide-y divide-line">
         {members?.map((m) => (
           <li key={m.id} className="flex items-center gap-4 py-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/[0.07] text-[0.8rem] uppercase text-white">{(m.display_name || m.email)[0]}</div>
             <div className="min-w-0 flex-1">
-              <div className="text-[0.9rem] text-white">{m.display_name || m.email}{m.id === me?.id && <span className="ml-2 text-[0.75rem] text-mute">you</span>}</div>
-              <div className="text-[0.75rem] text-mute">{m.email} · joined {timeAgo(m.created_at)}</div>
+              <div className="text-[0.9rem] text-white">{m.display_name || m.email}{m.id === me?.id && <span className="ml-2 text-[0.75rem] text-mute">{tx("you")}</span>}</div>
+              <div className="text-[0.75rem] text-mute">{m.email} {tx("· joined")} {timeAgo(m.created_at)}</div>
             </div>
             {can.admin && m.id !== me?.id ? (
-              <Select label="Role" value={m.role} onChange={(v) => setRole(m.id, v)} className="h-8 w-32 text-[0.8rem]" options={["owner", "admin", "member", "viewer"].map((r) => ({ value: r, label: r }))} />
-            ) : <span title={ROLE_HELP[m.role]}><Badge>{m.role}</Badge></span>}
-            {(can.admin || m.id === me?.id) && <IconButton label={m.id === me?.id ? "Leave workspace" : "Remove"} onClick={() => remove(m)}><Trash2 size={14} /></IconButton>}
+              <Select label={tx("Role")} value={m.role} onChange={(v) => setRole(m.id, v)} className="h-8 w-32 text-[0.8rem]" options={["owner", "admin", "member", "viewer"].map((r) => ({ value: r, label: r }))} />
+            ) : <span title={tx(ROLE_HELP[m.role])}><Badge>{m.role}</Badge></span>}
+            {(can.admin || m.id === me?.id) && <IconButton label={m.id === me?.id ? tx("Leave workspace") : tx("Remove")} onClick={() => remove(m)}><Trash2 size={14} /></IconButton>}
           </li>
         ))}
       </ul>
@@ -86,12 +87,12 @@ function Members() {
       </dl>
       {can.admin && invites && invites.filter((i) => !i.accepted_at).length > 0 && (
         <section className="mt-8">
-          <h2 className="label mb-2">Pending invites</h2>
+          <h2 className="label mb-2">{tx("Pending invites")}</h2>
           <ul className="divide-y divide-line">{invites.filter((i) => !i.accepted_at).map((i) => (
             <li key={i.id} className="flex items-center gap-3 py-2 text-[0.85rem]">
               <span className="flex-1">{i.email}</span><Badge>{i.role}</Badge>
-              <span className="text-[0.72rem] text-mute">{new Date(i.expires_at) < new Date() ? "expired" : `expires ${new Date(i.expires_at).toLocaleDateString()}`}</span>
-              <IconButton label="Revoke invite" onClick={async () => { await api.del(`/workspace/invites/${i.id}`).catch(toastError); invalidate("/workspace/invites"); }}><Trash2 size={13} /></IconButton>
+              <span className="text-[0.72rem] text-mute">{new Date(i.expires_at) < new Date() ? tx("expired") : tx("expires {date}", { date: new Date(i.expires_at).toLocaleDateString(locale()) })}</span>
+              <IconButton label={tx("Revoke invite")} onClick={async () => { await api.del(`/workspace/invites/${i.id}`).catch(toastError); invalidate("/workspace/invites"); }}><Trash2 size={13} /></IconButton>
             </li>
           ))}</ul>
         </section>
@@ -110,18 +111,18 @@ function InviteDialog({ open, onClose }: { open: boolean; onClose: () => void })
   };
   const close = () => { setLink(null); setEmail(""); onClose(); };
   return (
-    <Dialog open={open} onClose={close} title="Invite to workspace">
+    <Dialog open={open} onClose={close} title={tx("Invite to workspace")}>
       {link ? (
         <div className="space-y-3">
-          <p className="text-[0.84rem] text-mute-bright">Send this link to <span className="text-white">{email}</span>. It works once, for that email address, for 7 days. Orbital doesn't send email — share it however you like.</p>
-          <div className="flex gap-2"><Input readOnly value={link} aria-label="Invite link" onFocus={(e) => e.target.select()} /><Button icon={<Copy size={13} />} onClick={() => { navigator.clipboard.writeText(link); toast("Link copied"); }}>Copy</Button></div>
-          <div className="flex justify-end"><Button variant="primary" onClick={close}>Done</Button></div>
+          <p className="text-[0.84rem] text-mute-bright">{tx("Send this link to")} <span className="text-white">{email}</span>. {tx("It works once, for that email address, for 7 days. Orbital doesn't send email — share it however you like.")}</p>
+          <div className="flex gap-2"><Input readOnly value={link} aria-label={tx("Invite link")} onFocus={(e) => e.target.select()} /><Button icon={<Copy size={13} />} onClick={() => { navigator.clipboard.writeText(link); toast(tx("Link copied")); }}>{tx("Copy")}</Button></div>
+          <div className="flex justify-end"><Button variant="primary" onClick={close}>{tx("Done")}</Button></div>
         </div>
       ) : (
         <div className="space-y-3">
-          <Input type="email" placeholder="colleague@company.com" value={email} onChange={(e) => setEmail(e.target.value)} aria-label="Email" />
-          <Select label="Role" value={role} onChange={setRole} options={["admin", "member", "viewer"].map((r) => ({ value: r, label: `${r} — ${ROLE_HELP[r]}` }))} />
-          <div className="flex justify-end gap-2"><Button variant="ghost" onClick={close}>Cancel</Button><Button variant="primary" disabled={!email.includes("@")} onClick={create}>Create invite link</Button></div>
+          <Input type="email" placeholder={tx("colleague@company.com")} value={email} onChange={(e) => setEmail(e.target.value)} aria-label={tx("Email")} />
+          <Select label={tx("Role")} value={role} onChange={setRole} options={["admin", "member", "viewer"].map((r) => ({ value: r, label: `${r} — ${tx(ROLE_HELP[r])}` }))} />
+          <div className="flex justify-end gap-2"><Button variant="ghost" onClick={close}>{tx("Cancel")}</Button><Button variant="primary" disabled={!email.includes("@")} onClick={create}>{tx("Create invite link")}</Button></div>
         </div>
       )}
     </Dialog>
@@ -135,11 +136,11 @@ function Context() {
   const value = text ?? data?.settings?.context ?? "";
   return (
     <div className="max-w-[720px]">
-      <p className="text-[0.84rem] leading-relaxed text-mute">Tell Orbital what this business is: what you sell, to whom, how you work, priorities and tone. It's included as reference whenever anyone here asks a question and when automations run, so answers fit the business without everyone repeating it.</p>
-      <Textarea rows={12} value={value} onChange={(e) => setText(e.target.value)} disabled={!can.admin} className="mt-4 text-[0.88rem]" aria-label="Business context"
-        placeholder={"We run Acme Salons, 4 locations in Austin.\nCustomers: walk-in and booked clients, mostly 25–45.\nPriorities this quarter: online booking adoption, reduce no-shows.\nTone: friendly, concise."} />
-      {can.admin ? <Button className="mt-3" variant="primary" disabled={text === null} onClick={async () => { try { await api.patch("/workspace", { settings: { context: value } }); setText(null); invalidate("/workspace"); toast("Saved"); } catch (e) { toastError(e); } }}>Save</Button>
-        : <p className="mt-2 text-[0.78rem] text-mute">Only admins can edit this.</p>}
+      <p className="text-[0.84rem] leading-relaxed text-mute">{tx("Tell Orbital what this business is: what you sell, to whom, how you work, priorities and tone. It's included as reference whenever anyone here asks a question and when automations run, so answers fit the business without everyone repeating it.")}</p>
+      <Textarea rows={12} value={value} onChange={(e) => setText(e.target.value)} disabled={!can.admin} className="mt-4 text-[0.88rem]" aria-label={tx("Business context")}
+        placeholder={tx("We run Acme Salons, 4 locations in Austin.\nCustomers: walk-in and booked clients, mostly 25–45.\nPriorities this quarter: online booking adoption, reduce no-shows.\nTone: friendly, concise.")} />
+      {can.admin ? <Button className="mt-3" variant="primary" disabled={text === null} onClick={async () => { try { await api.patch("/workspace", { settings: { context: value } }); setText(null); invalidate("/workspace"); toast(tx("Saved")); } catch (e) { toastError(e); } }}>{tx("Save")}</Button>
+        : <p className="mt-2 text-[0.78rem] text-mute">{tx("Only admins can edit this.")}</p>}
     </div>
   );
 }
@@ -155,13 +156,13 @@ function ApiTokens() {
   const origin = location.origin;
   return (
     <div className="max-w-[820px]">
-      <p className="text-[0.84rem] leading-relaxed text-mute">Connect your CRM, help desk, forms or Zapier/Make/n8n. <b className="font-normal text-white/80">ingest</b> lets a system add documents and propose memories (which wait for review). <b className="font-normal text-white/80">query</b> lets it search and ask questions grounded in this workspace's knowledge.</p>
+      <p className="text-[0.84rem] leading-relaxed text-mute">{tx("Connect your CRM, help desk, forms or Zapier/Make/n8n.")} <b className="font-normal text-white/80">{tx("ingest")}</b> {tx("lets a system add documents and propose memories (which wait for review).")} <b className="font-normal text-white/80">{tx("query")}</b> {tx("lets it search and ask questions grounded in this workspace's knowledge.")}</p>
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        <Input className="w-64" placeholder="Token name, e.g. HubSpot sync" value={name} onChange={(e) => setName(e.target.value)} aria-label="Token name" />
+        <Input className="w-64" placeholder={tx("Token name, e.g. HubSpot sync")} value={name} onChange={(e) => setName(e.target.value)} aria-label={tx("Token name")} />
         {["ingest", "query"].map((s) => (
           <label key={s} className="flex items-center gap-1.5 text-[0.84rem] text-mute-bright"><input type="checkbox" className="accent-white" checked={scopes.includes(s)} onChange={(e) => setScopes((x) => e.target.checked ? [...x, s] : x.filter((y) => y !== s))} />{s}</label>
         ))}
-        <Button variant="primary" icon={<KeyRound size={13} />} disabled={!name.trim() || !scopes.length} onClick={create}>Create token</Button>
+        <Button variant="primary" icon={<KeyRound size={13} />} disabled={!name.trim() || !scopes.length} onClick={create}>{tx("Create token")}</Button>
       </div>
       <ul className="mt-6 divide-y divide-line">
         {data?.map((t) => (
@@ -169,31 +170,19 @@ function ApiTokens() {
             <span className="font-mono text-[0.78rem] text-mute">{t.prefix}…</span>
             <span className="flex-1 text-white/90">{t.name}</span>
             {t.scopes.map((s: string) => <Badge key={s}>{s}</Badge>)}
-            <span className="w-36 text-right text-[0.72rem] text-mute">{t.revoked_at ? "revoked" : t.last_used_at ? `used ${timeAgo(t.last_used_at)}` : "never used"}</span>
-            {!t.revoked_at && <Button size="sm" variant="ghost" onClick={async () => { if (!confirm("Revoke this token? Systems using it stop working immediately.")) return; await api.del(`/workspace/tokens/${t.id}`).catch(toastError); invalidate("/workspace/tokens"); }}>Revoke</Button>}
+            <span className="w-36 text-right text-[0.72rem] text-mute">{t.revoked_at ? "revoked" : t.last_used_at ? tx("used {v0}", { v0: timeAgo(t.last_used_at) }) : tx("never used")}</span>
+            {!t.revoked_at && <Button size="sm" variant="ghost" onClick={async () => { if (!confirm(tx("Revoke this token? Systems using it stop working immediately."))) return; await api.del(`/workspace/tokens/${t.id}`).catch(toastError); invalidate("/workspace/tokens"); }}>{tx("Revoke")}</Button>}
           </li>
         ))}
       </ul>
       <section className="mt-8">
-        <h2 className="label mb-2">Quick reference</h2>
-        <pre className="overflow-x-auto rounded-lg border border-line bg-black p-4 font-mono text-[0.76rem] leading-relaxed text-white/80">{`# Add a document (scope: ingest)
-curl -X POST ${origin}/api/v1/documents \\
-  -H "Authorization: Bearer $ORBITAL_TOKEN" -H "Content-Type: application/json" \\
-  -d '{"title":"Call notes: Bella Salon","body":"Wants SMS reminders…","tags":["crm"]}'
-
-# Propose a memory (scope: ingest; waits for review)
-curl -X POST ${origin}/api/v1/memories -H "Authorization: Bearer $ORBITAL_TOKEN" \\
-  -H "Content-Type: application/json" -d '{"content":"Bella Salon renews in March","category":"context"}'
-
-# Search, or ask a grounded question (scope: query)
-curl "${origin}/api/v1/search?q=reminders" -H "Authorization: Bearer $ORBITAL_TOKEN"
-curl -X POST ${origin}/api/v1/ask -H "Authorization: Bearer $ORBITAL_TOKEN" \\
-  -H "Content-Type: application/json" -d '{"question":"What do our customers ask for most?"}'`}</pre>
+        <h2 className="label mb-2">{tx("Quick reference")}</h2>
+        <pre className="overflow-x-auto rounded-lg border border-line bg-black p-4 font-mono text-[0.76rem] leading-relaxed text-white/80">{tx("# Add a document (scope: ingest)\ncurl -X POST {origin}/api/v1/documents \\\n  -H \"Authorization: Bearer $ORBITAL_TOKEN\" -H \"Content-Type: application/json\" \\\n  -d '{\"title\":\"Call notes: Bella Salon\",\"body\":\"Wants SMS reminders…\",\"tags\":[\"crm\"]}'\n\n# Propose a memory (scope: ingest; waits for review)\ncurl -X POST {origin1}/api/v1/memories -H \"Authorization: Bearer $ORBITAL_TOKEN\" \\\n  -H \"Content-Type: application/json\" -d '{\"content\":\"Bella Salon renews in March\",\"category\":\"context\"}'\n\n# Search, or ask a grounded question (scope: query)\ncurl \"{origin2}/api/v1/search?q=reminders\" -H \"Authorization: Bearer $ORBITAL_TOKEN\"\ncurl -X POST {origin3}/api/v1/ask -H \"Authorization: Bearer $ORBITAL_TOKEN\" \\\n  -H \"Content-Type: application/json\" -d '{\"question\":\"What do our customers ask for most?\"}'", { origin: origin, origin1: origin, origin2: origin, origin3: origin })}</pre>
       </section>
-      <Dialog open={!!shown} onClose={() => setShown(null)} title="Copy your token now">
-        <p className="text-[0.84rem] text-mute-bright">This is the only time it's shown. Store it in your other system's secret settings.</p>
-        <div className="mt-3 flex gap-2"><Input readOnly value={shown ?? ""} onFocus={(e) => e.target.select()} aria-label="Token" className="font-mono text-[0.8rem]" /><Button icon={<Copy size={13} />} onClick={() => { navigator.clipboard.writeText(shown!); toast("Copied"); }}>Copy</Button></div>
-        <div className="mt-4 flex justify-end"><Button variant="primary" onClick={() => setShown(null)}>Done</Button></div>
+      <Dialog open={!!shown} onClose={() => setShown(null)} title={tx("Copy your token now")}>
+        <p className="text-[0.84rem] text-mute-bright">{tx("This is the only time it's shown. Store it in your other system's secret settings.")}</p>
+        <div className="mt-3 flex gap-2"><Input readOnly value={shown ?? ""} onFocus={(e) => e.target.select()} aria-label={tx("Token")} className="font-mono text-[0.8rem]" /><Button icon={<Copy size={13} />} onClick={() => { navigator.clipboard.writeText(shown!); toast(tx("Copied")); }}>{tx("Copy")}</Button></div>
+        <div className="mt-4 flex justify-end"><Button variant="primary" onClick={() => setShown(null)}>{tx("Done")}</Button></div>
       </Dialog>
     </div>
   );
@@ -203,10 +192,10 @@ function Audit() {
   const { data } = useResource<any[]>("/audit");
   return (
     <ul className="divide-y divide-line">
-      {data?.length === 0 && <li className="py-3 text-[0.84rem] text-mute">No events yet.</li>}
+      {data?.length === 0 && <li className="py-3 text-[0.84rem] text-mute">{tx("No events yet.")}</li>}
       {data?.map((e) => (
         <li key={e.id} className="grid grid-cols-[150px_200px_1fr] gap-4 py-2 text-[0.82rem]">
-          <span className="text-mute">{new Date(e.created_at).toLocaleString()}</span>
+          <span className="text-mute">{new Date(e.created_at).toLocaleString(locale())}</span>
           <span className="truncate text-mute-bright">{e.actor || "system"}</span>
           <span className="min-w-0"><span className="font-mono text-[0.76rem] text-white">{e.action}</span> <span className="text-mute">{Object.entries(e.detail ?? {}).filter(([, v]) => typeof v !== "object").map(([k, v]) => `${k}: ${v}`).join(" · ").slice(0, 200)}</span></span>
         </li>

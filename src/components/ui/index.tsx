@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useRef, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type TextareaHTMLAttributes } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
+import { tx } from "@/i18n";
 
 const cx = (...c: (string | false | null | undefined)[]) => c.filter(Boolean).join(" ");
 export { cx };
@@ -47,7 +48,7 @@ export function Select({ value, onChange, options, className, label }: { value: 
   return (
     <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value)} className={cx("input h-9 py-0 pr-8 cursor-pointer appearance-none bg-[length:12px] bg-[right_10px_center] bg-no-repeat", className)}
       style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5l3 3 3-3' stroke='%23888' fill='none' stroke-width='1.3'/%3E%3C/svg%3E\")" }}>
-      {options.map((o) => <option key={o.value} value={o.value} className="bg-ink-2">{o.label}</option>)}
+      {options.map((o) => <option key={o.value} value={o.value} className="bg-ink-2">{tx(o.label)}</option>)}
     </select>
   );
 }
@@ -59,7 +60,7 @@ export function Spinner({ className }: { className?: string }) {
 /** Dots that breathe — the app's loading signature, echoing the Neural Core. */
 export function Pulse({ label = "Loading" }: { label?: string }) {
   return (
-    <span className="inline-flex items-center gap-1" role="status" aria-label={label}>
+    <span className="inline-flex items-center gap-1" role="status" aria-label={tx(label)}>
       {[0, 1, 2].map((i) => (
         <motion.span key={i} className="h-1 w-1 rounded-full bg-white/70" animate={{ opacity: [0.2, 1, 0.2] }} transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.18 }} />
       ))}
@@ -128,7 +129,7 @@ export function Dialog({ open, onClose, title, children, width = "max-w-lg" }: {
             initial={{ y: 8, scale: 0.985 }} animate={{ y: 0, scale: 1 }} exit={{ y: 6, opacity: 0 }} transition={{ duration: 0.16 }}>
             <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
               <h2 className="text-[0.95rem] font-normal">{title}</h2>
-              <IconButton label="Close" onClick={onClose} data-close><X size={15} /></IconButton>
+              <IconButton label={tx("Close")} onClick={onClose} data-close><X size={15} /></IconButton>
             </div>
             <div className="p-5">{children}</div>
           </motion.div>
@@ -144,7 +145,7 @@ export function Tabs<T extends string>({ value, onChange, tabs, className }: { v
       {tabs.map((t) => (
         <button key={t.value} role="tab" aria-selected={value === t.value} onClick={() => onChange(t.value)}
           className={cx("relative -mb-px pb-2.5 pt-1 text-[0.86rem] transition-colors", value === t.value ? "text-white" : "text-mute hover:text-white/80")}>
-          {t.label}
+          {tx(t.label)}
           {t.count !== undefined && t.count > 0 && <span className="ml-1.5 text-mute">{t.count}</span>}
           {value === t.value && <motion.span layoutId={`tab-${tabs.map((x) => x.value).join()}`} className="absolute inset-x-0 -bottom-px h-px bg-white" />}
         </button>
@@ -169,7 +170,7 @@ export function Stat({ label, value, hint }: { label: string; value: ReactNode; 
   return (
     <div className="min-w-0" title={hint}>
       <div className="text-[1.6rem] font-light tabular-nums tracking-tight text-white">{value}</div>
-      <div className="mt-0.5 text-[0.78rem] text-mute">{label}</div>
+      <div className="mt-0.5 text-[0.78rem] text-mute">{tx(label)}</div>
     </div>
   );
 }

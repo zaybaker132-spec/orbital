@@ -1,4 +1,5 @@
 /** Times for reminders, in the person's own time zone. */
+import { locale, t } from "@/i18n";
 
 const at = (d: Date, h: number, m = 0) => { const x = new Date(d); x.setHours(h, m, 0, 0); return x; };
 
@@ -17,13 +18,13 @@ export function quickTimes(now = new Date()): { label: string; date: Date }[] {
 /** "Today 6:00 PM", "Tomorrow 9:00 AM", "Mon, Nov 24 9:00 AM" */
 export function formatWhen(iso: string, now = new Date()) {
   const d = new Date(iso);
-  const time = d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  const time = d.toLocaleTimeString(locale(), { hour: "numeric", minute: "2-digit" });
   const day = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
   const diff = Math.round((day(d) - day(now)) / 86_400_000);
-  if (diff === 0) return `Today ${time}`;
-  if (diff === 1) return `Tomorrow ${time}`;
-  if (diff === -1) return `Yesterday ${time}`;
-  return `${d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", ...(d.getFullYear() !== now.getFullYear() ? { year: "numeric" } : {}) })} ${time}`;
+  if (diff === 0) return t("Today {time}", { time });
+  if (diff === 1) return t("Tomorrow {time}", { time });
+  if (diff === -1) return t("Yesterday {time}", { time });
+  return `${d.toLocaleDateString(locale(), { weekday: "short", month: "short", day: "numeric", ...(d.getFullYear() !== now.getFullYear() ? { year: "numeric" } : {}) })} ${time}`;
 }
 
 /** The local date as YYYY-MM-DD (for "is this task overdue?" in the person's own day). */

@@ -4,6 +4,7 @@ import { Brain, CheckSquare, Compass, FileText, FolderKanban, Globe, Lightbulb, 
 import { api } from "@/lib/api";
 import { PageHeader, Pulse, cx } from "@/components/ui";
 import { timeAgo } from "@/lib/format";
+import { tx } from "@/i18n";
 
 const TYPES = [
   { value: "conversation", label: "Conversations", icon: MessageSquare },
@@ -67,11 +68,11 @@ export function SearchPage() {
 
   return (
     <div className="h-full overflow-y-auto pb-16">
-      <PageHeader title="Search" subtitle={<>Every conversation, note, file, web clip and research report. Use <span className="font-mono text-[0.8rem]">"exact phrase"</span>, <span className="font-mono text-[0.8rem]">or</span> and <span className="font-mono text-[0.8rem]">-exclude</span>.</>} />
+      <PageHeader title={tx("Search")} subtitle={<>{tx("Every conversation, note, file, web clip and research report. Use")} <span className="font-mono text-[0.8rem]">{tx("\"exact phrase\"")}</span>, <span className="font-mono text-[0.8rem]">{tx("or")}</span> {tx("and")} <span className="font-mono text-[0.8rem]">{tx("-exclude")}</span>.</>} />
       <div className="mx-auto max-w-[900px] px-8">
         <div className="relative">
           <SearchIcon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-mute" />
-          <input ref={inputRef} autoFocus value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search everything" placeholder="Search everything"
+          <input ref={inputRef} autoFocus value={q} onChange={(e) => setQ(e.target.value)} aria-label={tx("Search everything")} placeholder={tx("Search everything")}
             onKeyDown={(e) => {
               if (!results?.length) return;
               if (e.key === "ArrowDown") { e.preventDefault(); setCursor((c) => Math.min(results.length - 1, c + 1)); }
@@ -80,11 +81,11 @@ export function SearchPage() {
             }}
             className="input h-12 pl-11 text-[1rem]" />
         </div>
-        <div className="mt-3 flex flex-wrap gap-1.5" role="group" aria-label="Filter by type">
+        <div className="mt-3 flex flex-wrap gap-1.5" role="group" aria-label={tx("Filter by type")}>
           {TYPES.map((t) => (
             <button key={t.value} onClick={() => toggleType(t.value)} aria-pressed={types.includes(t.value)}
               className={cx("inline-flex h-7 items-center gap-1.5 rounded-full border px-3 text-[0.78rem] transition-colors", types.includes(t.value) ? "border-white bg-white text-black" : "border-line text-mute-bright hover:text-white")}>
-              <t.icon size={12} />{t.label}{results && !types.length && counts[t.value] ? <span className="opacity-60">{counts[t.value]}</span> : null}
+              <t.icon size={12} />{tx(t.label)}{results && !types.length && counts[t.value] ? <span className="opacity-60">{counts[t.value]}</span> : null}
             </button>
           ))}
         </div>
@@ -92,8 +93,8 @@ export function SearchPage() {
         <div className="mt-6" aria-live="polite">
           {loading && !results && <div className="py-8 text-center"><Pulse /></div>}
           {error && <p className="text-[0.86rem] text-red-300">{error}</p>}
-          {!query && <p className="py-8 text-center text-[0.88rem] text-mute">Search finds words inside your conversations, notes, imported files, web clips and research reports, not just titles.</p>}
-          {results && results.length === 0 && !loading && <p className="py-8 text-center text-[0.88rem] text-mute">Nothing matches “{query}”{types.length ? " in the selected types" : ""}.</p>}
+          {!query && <p className="py-8 text-center text-[0.88rem] text-mute">{tx("Search finds words inside your conversations, notes, imported files, web clips and research reports, not just titles.")}</p>}
+          {results && results.length === 0 && !loading && <p className="py-8 text-center text-[0.88rem] text-mute">{types.length ? tx("Nothing matches “{q}” in the selected types.", { q: query }) : tx("Nothing matches “{q}”.", { q: query })}</p>}
           <ul className={cx("divide-y divide-line", loading && "opacity-60")}>
             {results?.map((r, i) => {
               const Icon = ICON[r.type] ?? FileText;

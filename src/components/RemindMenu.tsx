@@ -5,6 +5,7 @@ import { invalidate } from "@/lib/resource";
 import { toast, toastError } from "@/state/ui";
 import { formatWhen, quickTimes, toLocalInput } from "@/lib/when";
 import { IconButton, cx } from "./ui";
+import { tx } from "@/i18n";
 
 export type RemindItem = "task" | "document" | "project" | "opportunity" | "gap" | "conversation";
 
@@ -26,25 +27,25 @@ export function RemindMenu({ itemType, itemId, title, className, size = 14 }: { 
     try {
       await api.post("/reminders", { itemType, itemId, title, dueAt: date.toISOString() });
       invalidate("/reminders");
-      toast(`Reminder set for ${formatWhen(date.toISOString())}`, { action: { label: "Reminders", to: "/reminders" } });
+      toast(tx("Reminder set for {v0}", { v0: formatWhen(date.toISOString()) }), { action: { label: "Reminders", to: "/reminders" } });
       setOpen(false);
     } catch (e) { toastError(e); }
   };
 
   return (
     <div ref={ref} className={cx("relative", className)}>
-      <IconButton label="Remind me" onClick={() => setOpen((o) => !o)} active={open}><BellPlus size={size} /></IconButton>
+      <IconButton label={tx("Remind me")} onClick={() => setOpen((o) => !o)} active={open}><BellPlus size={size} /></IconButton>
       {open && (
         <div role="menu" className="absolute right-0 top-9 z-30 w-56 rounded-xl border border-line-strong bg-ink-2 p-1.5 shadow-2xl">
-          <div className="label px-2 pb-1 pt-1">Remind me</div>
+          <div className="label px-2 pb-1 pt-1">{tx("Remind me")}</div>
           {quickTimes().map((q) => (
             <button key={q.label} role="menuitem" onClick={() => set(q.date)} className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-[0.84rem] text-white/90 hover:bg-white/[0.06]">
-              {q.label}<span className="text-[0.72rem] text-mute">{formatWhen(q.date.toISOString()).replace(/^(Today|Tomorrow) /, "")}</span>
+              {tx(q.label)}<span className="text-[0.72rem] text-mute">{formatWhen(q.date.toISOString()).replace(/^(Today|Tomorrow) /, "")}</span>
             </button>
           ))}
           <form className="mt-1 flex gap-1 border-t border-line px-1 pt-2" onSubmit={(e) => { e.preventDefault(); if (custom) set(new Date(custom)); }}>
-            <input type="datetime-local" aria-label="Custom time" value={custom} min={toLocalInput(new Date())} onChange={(e) => setCustom(e.target.value)} className="input h-7 min-w-0 flex-1 px-2 py-0 text-[0.76rem]" />
-            <button type="submit" disabled={!custom} className="rounded-md bg-white px-2 text-[0.76rem] text-black disabled:opacity-40">Set</button>
+            <input type="datetime-local" aria-label={tx("Custom time")} value={custom} min={toLocalInput(new Date())} onChange={(e) => setCustom(e.target.value)} className="input h-7 min-w-0 flex-1 px-2 py-0 text-[0.76rem]" />
+            <button type="submit" disabled={!custom} className="rounded-md bg-white px-2 text-[0.76rem] text-black disabled:opacity-40">{tx("Set")}</button>
           </form>
         </div>
       )}

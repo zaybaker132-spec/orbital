@@ -6,6 +6,7 @@ import { useApp } from "@/state/app";
 import { api } from "@/lib/api";
 import { toastError } from "@/state/ui";
 import { Button, Dialog, Input, cx } from "./ui";
+import { tx } from "@/i18n";
 
 /** Switch between the personal workspace and business workspaces; create a new business workspace. */
 export function WorkspaceSwitcher({ collapsed }: { collapsed: boolean }) {
@@ -46,7 +47,7 @@ export function WorkspaceSwitcher({ collapsed }: { collapsed: boolean }) {
           <>
             <span className="min-w-0 flex-1">
               <span className="block truncate text-[0.85rem] text-white">{workspace?.name ?? "…"}</span>
-              <span className="block text-[0.68rem] text-mute">{workspace?.kind === "business" ? `Business · ${workspace.role}` : "Private"}</span>
+              <span className="block text-[0.68rem] text-mute">{workspace?.kind === "business" ? tx("Business · {role}", { role: workspace.role }) : tx("Private")}</span>
             </span>
             <ChevronsUpDown size={13} className="shrink-0 text-mute" />
           </>
@@ -56,7 +57,7 @@ export function WorkspaceSwitcher({ collapsed }: { collapsed: boolean }) {
         {open && (
           <motion.div role="menu" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.12 }}
             className="absolute left-2.5 top-11 z-40 w-64 rounded-xl border border-line-strong bg-ink-1 p-1.5 shadow-2xl">
-            <div className="label px-2.5 pb-1 pt-1.5">Workspaces</div>
+            <div className="label px-2.5 pb-1 pt-1.5">{tx("Workspaces")}</div>
             {workspaces.map((w) => (
               <button key={w.id} role="menuitem" onClick={() => go(w.id)} className="flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 text-left text-[0.85rem] hover:bg-white/[0.06]">
                 {w.kind === "business" ? <Building2 size={14} className="text-mute" /> : <User size={14} className="text-mute" />}
@@ -68,19 +69,19 @@ export function WorkspaceSwitcher({ collapsed }: { collapsed: boolean }) {
             <div className="my-1 h-px bg-line" />
             {workspace?.kind === "business" && (
               <button role="menuitem" onClick={() => { setOpen(false); navigate("/team"); }} className="flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 text-left text-[0.85rem] text-mute-bright hover:bg-white/[0.06] hover:text-white">
-                <Users size={14} /> Team & workspace settings
+                <Users size={14} /> {tx("Team & workspace settings")}
               </button>
             )}
             <button role="menuitem" onClick={() => { setOpen(false); setCreating(true); }} className="flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 text-left text-[0.85rem] text-mute-bright hover:bg-white/[0.06] hover:text-white">
-              <Plus size={14} /> New business workspace
+              <Plus size={14} /> {tx("New business workspace")}
             </button>
           </motion.div>
         )}
       </AnimatePresence>
-      <Dialog open={creating} onClose={() => setCreating(false)} title="New business workspace">
-        <p className="text-[0.84rem] leading-relaxed text-mute">A shared space for a company or team: shared knowledge, research and projects, automations that run the business on a schedule, approvals, and an API for your other tools. Your personal workspace stays private.</p>
-        <Input className="mt-4" placeholder="Company or team name" value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && name.trim() && create()} aria-label="Workspace name" />
-        <div className="mt-4 flex justify-end gap-2"><Button variant="ghost" onClick={() => setCreating(false)}>Cancel</Button><Button variant="primary" disabled={!name.trim()} onClick={create}>Create workspace</Button></div>
+      <Dialog open={creating} onClose={() => setCreating(false)} title={tx("New business workspace")}>
+        <p className="text-[0.84rem] leading-relaxed text-mute">{tx("A shared space for a company or team: shared knowledge, research and projects, automations that run the business on a schedule, approvals, and an API for your other tools. Your personal workspace stays private.")}</p>
+        <Input className="mt-4" placeholder={tx("Company or team name")} value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && name.trim() && create()} aria-label={tx("Workspace name")} />
+        <div className="mt-4 flex justify-end gap-2"><Button variant="ghost" onClick={() => setCreating(false)}>{tx("Cancel")}</Button><Button variant="primary" disabled={!name.trim()} onClick={create}>{tx("Create workspace")}</Button></div>
       </Dialog>
     </div>
   );

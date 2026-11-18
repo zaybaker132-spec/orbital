@@ -8,6 +8,7 @@ import { toast, toastError } from "@/state/ui";
 import { useAudioLevel, useMeeting, type Participant, type PeerState } from "@/lib/meeting";
 import { Button, Input, Pulse, cx } from "@/components/ui";
 import { meetingLink, parseMeetingCode } from "./Meetings";
+import { locale, tx } from "@/i18n";
 
 /** /m/:code — lobby (preview your camera and mic), then the room. */
 export function MeetingRoomPage() {
@@ -61,9 +62,9 @@ export function MeetingRoomPage() {
   useEffect(() => { local?.getAudioTracks().forEach((t) => (t.enabled = mic)); }, [local, mic]);
   useEffect(() => { local?.getVideoTracks().forEach((t) => (t.enabled = cam)); }, [local, cam]);
 
-  if (metaError) return <Message title="Can't open this meeting" body={metaError} onBack={() => navigate("/meetings")} />;
+  if (metaError) return <Message title={tx("Can't open this meeting")} body={metaError} onBack={() => navigate("/meetings")} />;
   if (!meta) return <Overlay><div className="flex h-full items-center justify-center"><Pulse /></div></Overlay>;
-  if (meta.ended) return <Message title="This meeting has ended" body="The host ended it. Start a new one from Meetings." onBack={() => navigate("/meetings")} />;
+  if (meta.ended) return <Message title={tx("This meeting has ended")} body="The host ended it. Start a new one from Meetings." onBack={() => navigate("/meetings")} />;
 
   if (!joined) {
     return (
@@ -73,27 +74,27 @@ export function MeetingRoomPage() {
             <div className="relative aspect-video overflow-hidden rounded-2xl border border-line bg-ink-2">
               {local?.getVideoTracks().length && cam ? <VideoEl stream={local} muted mirror /> : <Avatar name={name || "You"} />}
               <div className="absolute inset-x-0 bottom-0 flex justify-center gap-3 p-4">
-                <RoundButton label={mic ? "Mute microphone" : "Unmute microphone"} off={!mic} onClick={() => setMic(!mic)} disabled={!local?.getAudioTracks().length}>{mic ? <Mic size={18} /> : <MicOff size={18} />}</RoundButton>
-                <RoundButton label={cam ? "Turn camera off" : "Turn camera on"} off={!cam} onClick={() => setCam(!cam)} disabled={!local?.getVideoTracks().length}>{cam ? <Video size={18} /> : <VideoOff size={18} />}</RoundButton>
+                <RoundButton label={mic ? tx("Mute microphone") : tx("Unmute microphone")} off={!mic} onClick={() => setMic(!mic)} disabled={!local?.getAudioTracks().length}>{mic ? <Mic size={18} /> : <MicOff size={18} />}</RoundButton>
+                <RoundButton label={cam ? tx("Turn camera off") : tx("Turn camera on")} off={!cam} onClick={() => setCam(!cam)} disabled={!local?.getVideoTracks().length}>{cam ? <Video size={18} /> : <VideoOff size={18} />}</RoundButton>
               </div>
             </div>
             {mediaError && <p className="mt-3 text-[0.8rem] text-amber-200/80">{mediaError}</p>}
           </div>
           <div className="w-full max-w-[340px]">
-            <div className="label">Meeting</div>
-            <h1 className="mt-2 text-[1.5rem] font-light tracking-[-0.02em]">{meta.title || "Ready to join?"}</h1>
+            <div className="label">{tx("Meeting")}</div>
+            <h1 className="mt-2 text-[1.5rem] font-light tracking-[-0.02em]">{meta.title || tx("Ready to join?")}</h1>
             <p className="mt-1 text-[0.85rem] text-mute">
-              Hosted by {meta.isHost ? "you" : meta.hostName} · <span className="font-mono">{meta.code}</span>
+              {tx("Hosted by")} {meta.isHost ? "you" : meta.hostName} · <span className="font-mono">{meta.code}</span>
             </p>
-            <p className="mt-3 text-[0.82rem] text-mute-bright">{meta.inRoom.length ? `In the room: ${meta.inRoom.join(", ")}` : "No one else is here yet."}</p>
-            {meta.locked && !meta.isHost && <p className="mt-3 text-[0.82rem] text-amber-200/80">The host has locked this meeting.</p>}
-            <label className="label mt-6 block" htmlFor="meeting-name">Your name</label>
+            <p className="mt-3 text-[0.82rem] text-mute-bright">{meta.inRoom.length ? tx("In the room: {join}", { join: meta.inRoom.join(", ") }) : tx("No one else is here yet.")}</p>
+            {meta.locked && !meta.isHost && <p className="mt-3 text-[0.82rem] text-amber-200/80">{tx("The host has locked this meeting.")}</p>}
+            <label className="label mt-6 block" htmlFor="meeting-name">{tx("Your name")}</label>
             <Input id="meeting-name" className="mt-2" value={name} onChange={(e) => setName(e.target.value)} maxLength={60} />
             <div className="mt-5 flex gap-2">
-              <Button variant="primary" className="flex-1" disabled={!name.trim() || (meta.locked && !meta.isHost)} onClick={() => setJoined(true)}>Join now</Button>
-              <Button variant="ghost" onClick={() => navigate("/meetings")}>Cancel</Button>
+              <Button variant="primary" className="flex-1" disabled={!name.trim() || (meta.locked && !meta.isHost)} onClick={() => setJoined(true)}>{tx("Join now")}</Button>
+              <Button variant="ghost" onClick={() => navigate("/meetings")}>{tx("Cancel")}</Button>
             </div>
-            <button onClick={() => navigator.clipboard.writeText(meetingLink(meta.code)).then(() => toast("Meeting link copied"), () => {})} className="mt-4 flex items-center gap-2 text-[0.8rem] text-mute hover:text-white"><Copy size={13} /> Copy invite link</button>
+            <button onClick={() => navigator.clipboard.writeText(meetingLink(meta.code)).then(() => toast(tx("Meeting link copied")), () => {})} className="mt-4 flex items-center gap-2 text-[0.8rem] text-mute hover:text-white"><Copy size={13} /> {tx("Copy invite link")}</button>
           </div>
         </div>
       </Overlay>
@@ -120,8 +121,8 @@ function Room({ code, title, name, local, mic, cam, setMic, setCam }: { code: st
     if (m.status !== "live") return;
     const before = prev.current;
     // The first update is everyone already here: no notices for them.
-    if (seen.current > 0) for (const id of Object.keys(m.participants)) if (!before[id]) toast(`${m.participants[id].name} joined`);
-    for (const id of Object.keys(before)) if (!m.participants[id]) toast(`${before[id].name} left`);
+    if (seen.current > 0) for (const id of Object.keys(m.participants)) if (!before[id]) toast(tx("{name} joined", { name: m.participants[id].name }));
+    for (const id of Object.keys(before)) if (!m.participants[id]) toast(tx("{name} left", { name: before[id].name }));
     prev.current = m.participants;
     seen.current++;
   }, [m.participants, m.status]);
@@ -153,7 +154,7 @@ function Room({ code, title, name, local, mic, cam, setMic, setCam }: { code: st
     try { await api.post(`/meetings/${code}/end`); } catch (e) { toastError(e); }
   };
   const toggleLock = async () => {
-    try { await api.post(`/meetings/${code}/lock`, { locked: !m.locked }); m.setLocked(!m.locked); toast(m.locked ? "Meeting unlocked" : "Meeting locked: no one new can join"); } catch (e) { toastError(e); }
+    try { await api.post(`/meetings/${code}/lock`, { locked: !m.locked }); m.setLocked(!m.locked); toast(m.locked ? tx("Meeting unlocked") : tx("Meeting locked: no one new can join")); } catch (e) { toastError(e); }
   };
 
   // Keyboard: Ctrl/⌘+D mic, Ctrl/⌘+E camera.
@@ -169,9 +170,9 @@ function Room({ code, title, name, local, mic, cam, setMic, setCam }: { code: st
 
   useEffect(() => () => { screen?.getTracks().forEach((t) => t.stop()); }, [screen]);
 
-  if (m.status === "ended") return <Message title="The host ended the meeting" body="Thanks for joining." onBack={leave} />;
-  if (m.status === "removed") return <Message title="You were removed from the meeting" body="The host removed you from this room." onBack={leave} />;
-  if (m.status === "error") return <Message title="Couldn't join" body={m.error ?? "The meeting may be full, locked or ended."} onBack={leave} />;
+  if (m.status === "ended") return <Message title={tx("The host ended the meeting")} body="Thanks for joining." onBack={leave} />;
+  if (m.status === "removed") return <Message title={tx("You were removed from the meeting")} body="The host removed you from this room." onBack={leave} />;
+  if (m.status === "error") return <Message title={tx("Couldn't join")} body={m.error ?? tx("The meeting may be full, locked or ended.")} onBack={leave} />;
 
   const others = Object.values(m.participants);
   const self = { peerId: "self", name: `${name} (you)`, host: m.isHost, state, stream: screen ?? local, connection: "connected" as const };
@@ -183,11 +184,11 @@ function Room({ code, title, name, local, mic, cam, setMic, setCam }: { code: st
     <Overlay>
       <div className="flex h-full flex-col">
         <div className="flex h-12 shrink-0 items-center gap-3 px-5 text-[0.85rem]">
-          <span className="truncate text-white">{title || "Meeting"}</span>
+          <span className="truncate text-white">{title || tx("Meeting")}</span>
           <span className="font-mono text-mute">{code}</span>
-          {m.locked && <span className="flex items-center gap-1 text-[0.75rem] text-amber-200/80"><Lock size={12} /> Locked</span>}
-          {m.status === "connecting" && <span className="flex items-center gap-2 text-mute"><Pulse /> Connecting</span>}
-          <span className="ml-auto text-[0.78rem] text-mute">{others.length + 1} in the room</span>
+          {m.locked && <span className="flex items-center gap-1 text-[0.75rem] text-amber-200/80"><Lock size={12} /> {tx("Locked")}</span>}
+          {m.status === "connecting" && <span className="flex items-center gap-2 text-mute"><Pulse /> {tx("Connecting")}</span>}
+          <span className="ml-auto text-[0.78rem] text-mute">{others.length + 1} {tx("in the room")}</span>
         </div>
         <div className="flex min-h-0 flex-1 gap-3 px-4 pb-3">
           <div className="flex min-w-0 flex-1 flex-col gap-3">
@@ -206,21 +207,21 @@ function Room({ code, title, name, local, mic, cam, setMic, setCam }: { code: st
               <motion.aside initial={{ width: 0, opacity: 0 }} animate={{ width: 320, opacity: 1 }} exit={{ width: 0, opacity: 0 }} transition={{ duration: 0.18 }} className="shrink-0 overflow-hidden">
                 <div className="flex h-full w-[320px] flex-col rounded-2xl border border-line bg-ink-1">
                   <div className="flex items-center gap-4 border-b border-line px-4 py-3 text-[0.85rem]">
-                    <button onClick={() => setPanel("chat")} className={panel === "chat" ? "text-white" : "text-mute hover:text-white"}>Chat</button>
-                    <button onClick={() => setPanel("people")} className={panel === "people" ? "text-white" : "text-mute hover:text-white"}>People · {others.length + 1}</button>
-                    <button onClick={() => setPanel(null)} aria-label="Close panel" className="ml-auto text-mute hover:text-white"><X size={15} /></button>
+                    <button onClick={() => setPanel("chat")} className={panel === "chat" ? "text-white" : "text-mute hover:text-white"}>{tx("Chat")}</button>
+                    <button onClick={() => setPanel("people")} className={panel === "people" ? "text-white" : "text-mute hover:text-white"}>{tx("People ·")} {others.length + 1}</button>
+                    <button onClick={() => setPanel(null)} aria-label={tx("Close panel")} className="ml-auto text-mute hover:text-white"><X size={15} /></button>
                   </div>
                   {panel === "chat" ? <Chat messages={m.chat} selfId={m.selfId} onSend={m.sendChat} /> : (
                     <ul className="flex-1 space-y-1 overflow-y-auto p-3">
                       {[self, ...others].map((p) => (
                         <li key={p.peerId} className="flex items-center gap-3 rounded-lg px-2 py-2 text-[0.85rem]">
                           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-[0.75rem] uppercase">{p.name[0]}</span>
-                          <span className="min-w-0 flex-1 truncate">{p.name}{p.host && <span className="ml-1.5 text-[0.7rem] text-mute">host</span>}</span>
+                          <span className="min-w-0 flex-1 truncate">{p.name}{p.host && <span className="ml-1.5 text-[0.7rem] text-mute">{tx("host")}</span>}</span>
                           {p.state.hand && <Hand size={14} className="text-amber-300" />}
                           {p.state.audio ? <Mic size={14} className="text-mute" /> : <MicOff size={14} className="text-red-300/80" />}
                           {p.state.video ? <Video size={14} className="text-mute" /> : <VideoOff size={14} className="text-mute-soft" />}
                           {m.isHost && p !== self && (
-                            <button className="text-[0.72rem] text-mute hover:text-red-300" onClick={() => api.post(`/meetings/${code}/remove`, { peerId: p.peerId }).catch(toastError)}>Remove</button>
+                            <button className="text-[0.72rem] text-mute hover:text-red-300" onClick={() => api.post(`/meetings/${code}/remove`, { peerId: p.peerId }).catch(toastError)}>{tx("Remove")}</button>
                           )}
                         </li>
                       ))}
@@ -232,18 +233,18 @@ function Room({ code, title, name, local, mic, cam, setMic, setCam }: { code: st
           </AnimatePresence>
         </div>
         <div className="flex shrink-0 items-center gap-3 px-5 pb-5 pt-1">
-          <button onClick={() => navigator.clipboard.writeText(meetingLink(code)).then(() => toast("Meeting link copied"), () => toast(`Code: ${code}`))} className="hidden items-center gap-2 text-[0.8rem] text-mute hover:text-white md:flex"><Copy size={13} /> Invite</button>
+          <button onClick={() => navigator.clipboard.writeText(meetingLink(code)).then(() => toast(tx("Meeting link copied")), () => toast(tx("Code: {code}", { code: code })))} className="hidden items-center gap-2 text-[0.8rem] text-mute hover:text-white md:flex"><Copy size={13} /> {tx("Invite")}</button>
           <div className="mx-auto flex items-center gap-2.5">
-            <RoundButton label={`${mic ? "Mute" : "Unmute"} (Ctrl D)`} off={!mic} onClick={() => setMic(!mic)} disabled={!local?.getAudioTracks().length}>{mic ? <Mic size={18} /> : <MicOff size={18} />}</RoundButton>
-            <RoundButton label={`Camera ${cam ? "off" : "on"} (Ctrl E)`} off={!cam} onClick={() => setCam(!cam)} disabled={!local?.getVideoTracks().length}>{cam ? <Video size={18} /> : <VideoOff size={18} />}</RoundButton>
-            <RoundButton label={screen ? "Stop sharing" : "Share screen"} active={!!screen} onClick={share}>{screen ? <ScreenShareOff size={18} /> : <MonitorUp size={18} />}</RoundButton>
-            <RoundButton label={hand ? "Lower hand" : "Raise hand"} active={hand} onClick={() => setHand(!hand)}><Hand size={18} /></RoundButton>
-            <RoundButton label="Chat" active={panel === "chat"} onClick={() => { setPanel(panel === "chat" ? null : "chat"); setUnread(0); }} badge={panel === "chat" ? 0 : unread}><MessageSquare size={18} /></RoundButton>
-            <RoundButton label="People" active={panel === "people"} onClick={() => setPanel(panel === "people" ? null : "people")}><Users size={18} /></RoundButton>
-            {m.isHost && <RoundButton label={m.locked ? "Unlock meeting" : "Lock meeting"} active={m.locked} onClick={toggleLock}>{m.locked ? <Lock size={18} /> : <LockOpen size={18} />}</RoundButton>}
-            <button onClick={leave} aria-label="Leave meeting" title="Leave" className="ml-2 flex h-12 items-center gap-2 rounded-full bg-red-500/90 px-5 text-[0.85rem] text-white transition-colors hover:bg-red-500"><PhoneOff size={18} /> Leave</button>
+            <RoundButton label={tx("{v0} (Ctrl D)", { v0: mic ? "Mute" : "Unmute" })} off={!mic} onClick={() => setMic(!mic)} disabled={!local?.getAudioTracks().length}>{mic ? <Mic size={18} /> : <MicOff size={18} />}</RoundButton>
+            <RoundButton label={tx("Camera {v0} (Ctrl E)", { v0: cam ? "off" : "on" })} off={!cam} onClick={() => setCam(!cam)} disabled={!local?.getVideoTracks().length}>{cam ? <Video size={18} /> : <VideoOff size={18} />}</RoundButton>
+            <RoundButton label={screen ? tx("Stop sharing") : tx("Share screen")} active={!!screen} onClick={share}>{screen ? <ScreenShareOff size={18} /> : <MonitorUp size={18} />}</RoundButton>
+            <RoundButton label={hand ? tx("Lower hand") : tx("Raise hand")} active={hand} onClick={() => setHand(!hand)}><Hand size={18} /></RoundButton>
+            <RoundButton label={tx("Chat")} active={panel === "chat"} onClick={() => { setPanel(panel === "chat" ? null : "chat"); setUnread(0); }} badge={panel === "chat" ? 0 : unread}><MessageSquare size={18} /></RoundButton>
+            <RoundButton label={tx("People")} active={panel === "people"} onClick={() => setPanel(panel === "people" ? null : "people")}><Users size={18} /></RoundButton>
+            {m.isHost && <RoundButton label={m.locked ? tx("Unlock meeting") : tx("Lock meeting")} active={m.locked} onClick={toggleLock}>{m.locked ? <Lock size={18} /> : <LockOpen size={18} />}</RoundButton>}
+            <button onClick={leave} aria-label={tx("Leave meeting")} title={tx("Leave")} className="ml-2 flex h-12 items-center gap-2 rounded-full bg-red-500/90 px-5 text-[0.85rem] text-white transition-colors hover:bg-red-500"><PhoneOff size={18} /> {tx("Leave")}</button>
           </div>
-          {m.isHost ? <button onClick={endForAll} className="hidden text-[0.8rem] text-red-300/80 hover:text-red-300 md:block">End for everyone</button> : <span className="hidden w-[7rem] md:block" />}
+          {m.isHost ? <button onClick={endForAll} className="hidden text-[0.8rem] text-red-300/80 hover:text-red-300 md:block">{tx("End for everyone")}</button> : <span className="hidden w-[7rem] md:block" />}
         </div>
       </div>
     </Overlay>
@@ -261,13 +262,13 @@ function Tile({ p, self, big }: { p: { peerId: string; name: string; host: boole
       <div className="absolute bottom-2 left-2 flex items-center gap-1.5 rounded-md bg-black/60 px-2 py-1 text-[0.75rem] backdrop-blur">
         {!p.state.audio && <MicOff size={12} className="text-red-300" />}
         <span className="max-w-[14rem] truncate">{p.name}</span>
-        {p.state.screen && <span className="text-mute">· presenting</span>}
+        {p.state.screen && <span className="text-mute">{tx("· presenting")}</span>}
       </div>
-      {p.state.hand && <div className="absolute right-2 top-2 rounded-full bg-amber-300 p-1.5 text-black" title="Hand raised"><Hand size={14} /></div>}
+      {p.state.hand && <div className="absolute right-2 top-2 rounded-full bg-amber-300 p-1.5 text-black" title={tx("Hand raised")}><Hand size={14} /></div>}
       {!self && p.connection !== "connected" && p.connection !== "new" && (
-        <div className="absolute right-2 top-2 rounded-md bg-black/60 px-2 py-1 text-[0.7rem] text-mute">{p.connection === "failed" ? "Can't connect (network)" : "Connecting…"}</div>
+        <div className="absolute right-2 top-2 rounded-md bg-black/60 px-2 py-1 text-[0.7rem] text-mute">{p.connection === "failed" ? tx("Can't connect (network)") : tx("Connecting…")}</div>
       )}
-      {big && <div className="sr-only">Presentation</div>}
+      {big && <div className="sr-only">{tx("Presentation")}</div>}
     </div>
   );
 }
@@ -317,18 +318,18 @@ function Chat({ messages, selfId, onSend }: { messages: { id: string; peerId: st
   return (
     <>
       <div className="flex-1 space-y-3 overflow-y-auto p-4">
-        {messages.length === 0 && <p className="text-[0.8rem] text-mute">Messages are only visible to people in the meeting right now, and aren't saved.</p>}
+        {messages.length === 0 && <p className="text-[0.8rem] text-mute">{tx("Messages are only visible to people in the meeting right now, and aren't saved.")}</p>}
         {messages.map((m) => (
           <div key={m.id}>
-            <div className="text-[0.72rem] text-mute">{m.peerId === selfId ? "You" : m.name} · {new Date(m.at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</div>
+            <div className="text-[0.72rem] text-mute">{m.peerId === selfId ? tx("You") : m.name} · {new Date(m.at).toLocaleTimeString(locale(), { hour: "numeric", minute: "2-digit" })}</div>
             <div className="mt-0.5 whitespace-pre-wrap break-words text-[0.86rem] text-white/90">{m.text}</div>
           </div>
         ))}
         <div ref={end} />
       </div>
       <div className="flex gap-2 border-t border-line p-3">
-        <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send()} placeholder="Message everyone" aria-label="Chat message" className="input h-9 py-0" />
-        <button onClick={send} aria-label="Send" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-black disabled:opacity-30" disabled={!text.trim()}><Send size={14} /></button>
+        <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send()} placeholder={tx("Message everyone")} aria-label={tx("Chat message")} className="input h-9 py-0" />
+        <button onClick={send} aria-label={tx("Send")} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-black disabled:opacity-30" disabled={!text.trim()}><Send size={14} /></button>
       </div>
     </>
   );
@@ -345,7 +346,7 @@ function Message({ title, body, onBack }: { title: string; body: string; onBack:
       <div className="flex h-full flex-col items-center justify-center px-6 text-center">
         <h1 className="text-[1.4rem] font-light">{title}</h1>
         <p className="mt-2 max-w-md text-[0.9rem] text-mute">{body}</p>
-        <Button className="mt-6" onClick={onBack}>Back to Meetings</Button>
+        <Button className="mt-6" onClick={onBack}>{tx("Back to Meetings")}</Button>
       </div>
     </Overlay>
   );

@@ -1,5 +1,6 @@
 import type * as z from "zod/v4";
 import { config } from "../config.js";
+import { languageInstruction } from "../lib/language.js";
 
 export type ChatMsg = { role: "user" | "assistant"; content: string };
 export type Effort = "low" | "medium" | "high" | "xhigh";
@@ -47,10 +48,27 @@ let cached: LLMProvider | null | undefined;
 
 export async function getLLM(): Promise<LLMProvider | null> {
   if (cached !== undefined) return cached;
-  if (config.ai.provider === "anthropic") cached = new (await import("./anthropic.js")).AnthropicProvider();
-  else if (config.ai.provider === "openai") cached = new (await import("./openai.js")).OpenAICompatProvider();
-  else cached = null;
+  let base: LLMProvider | null = null;
+  if (config.ai.provider === "anthropic") base = new (await import("./anthropic.js")).AnthropicProvider();
+  else if (config.ai.provider === "openai") base = new (await import("./openai.js")).OpenAICompatProvider();
+  cached = base && inLanguage(base);
   return cached;
+}
+
+/**
+ * Every answer, report and summary is written in the language of the person it's for (see lib/language).
+ * The instruction goes at the end of the system prompt, so English prompts are unchanged.
+ * File reading is left alone: a document is transcribed in its own language.
+ */
+function inLanguage(p: LLMProvider): LLMProvider {
+  return {
+    id: p.id,
+    get model() { return p.model; },
+    stream: (o) => p.stream({ ...o, system: o.system + languageInstruction() }),
+    json: (o) => p.json({ ...o, system: o.system + languageInstruction() }),
+    webSearch: p.webSearch && ((o) => p.webSearch!({ ...o, instructions: o.instructions + languageInstruction() })),
+    readFile: p.readFile && ((o) => p.readFile!(o)),
+  };
 }
 
 export async function requireLLM(): Promise<LLMProvider> {

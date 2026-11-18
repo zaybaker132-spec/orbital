@@ -77,6 +77,25 @@ test("chat streams through the SDK, cites retrieved memories, extracts verified 
   assert.match(gaps[0].question, /salons pay/);
 });
 
+test("answers follow the person's language; English prompts are unchanged", async () => {
+  const c = await req("POST", "/api/conversations", {});
+  const before = mock.calls.length;
+  const res = await fetch(`${base}/api/conversations/${c.data.id}/messages`, {
+    method: "POST",
+    headers: { "content-type": "application/json", "x-orbital-request": "1", "x-orbital-language": "es", cookie },
+    body: JSON.stringify({ content: "¿En qué debería centrarme esta semana?" }),
+  });
+  await res.text();
+  const call = mock.calls.slice(before).find((x) => x.body.stream && !x.body.output_config?.format);
+  assert.ok(call, "a streaming request was made");
+  assert.match(JSON.stringify(call!.body.system), /Output language: write every human-readable sentence of your answer in Spanish/);
+  // Background work started from this request (the conversation title) keeps the language too.
+  await until(async () => mock.calls.slice(before).some((x) => /Spanish/.test(JSON.stringify(x.body.system)) && /title/i.test(JSON.stringify(x.body.system))));
+  // English requests carry no language instruction.
+  const english = mock.calls.slice(0, before).filter((x) => /Output language/.test(JSON.stringify(x.body.system)));
+  assert.equal(english.length, 0);
+});
+
 test("research: plan → web sources with citations → synthesis → verification drops fabrications", async () => {
   const r = await req("POST", "/api/research", { question: "How are small businesses adopting AI scheduling tools?" });
   const done = await until(async () => { const x = await req("GET", `/api/research/${r.data.id}`); return ["completed", "failed"].includes(x.data.status) && x.data; }, 15000);

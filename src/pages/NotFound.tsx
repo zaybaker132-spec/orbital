@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, Search } from "lucide-react";
 import { useApp } from "@/state/app";
 import { cx } from "@/components/ui";
+import { tx } from "@/i18n";
 
 /** Orbital's palette, the same colours the Neural Core's clusters use. */
 const PALETTE = ["#ff1f2e", "#ff5a1f", "#ff9a1a", "#ffd23a", "#a6ff2e", "#2cff7a", "#1fd0ff", "#2f7dff", "#7a2cff", "#b02bff", "#ff2bd6"];
@@ -116,34 +117,34 @@ export function NotFoundPage({ what, back, standalone }: { what?: string; back?:
       <LostOrbit className="pointer-events-none absolute inset-0 h-full w-full opacity-90" />
 
       {standalone && (
-        <Link to="/" className="absolute left-6 top-5 z-10 text-[0.82rem] tracking-[0.3em] text-white/90">ORBITAL</Link>
+        <Link to="/" className="absolute left-6 top-5 z-10 text-[0.82rem] tracking-[0.3em] text-white/90">{tx("ORBITAL")}</Link>
       )}
       <div className="relative z-10 mt-[30vh] max-w-[560px] pb-10">
-        <div className="font-mono text-[0.74rem] uppercase tracking-[0.3em] text-mute">{what ? `${what} not found` : "404 · Lost in orbit"}</div>
+        <div className="font-mono text-[0.74rem] uppercase tracking-[0.3em] text-mute">{what ? tx("{what} not found", { what: what }) : tx("404 · Lost in orbit")}</div>
         <h1 className="mt-4 text-[clamp(2rem,4.5vw,3rem)] font-light leading-[1.08] tracking-[-0.025em] text-white">
-          {what ? `This ${what} has left orbit.` : "This page drifted out of orbit."}
+          {what ? tx("This {what} has left orbit.", { what: what }) : tx("This page drifted out of orbit.")}
         </h1>
         <p className="mx-auto mt-4 max-w-[46ch] text-[0.95rem] leading-relaxed text-mute-bright">
           {what
-            ? `It may have been deleted, or it belongs to a workspace you're not in right now.`
-            : <>Nothing lives at <code className="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-[0.85em] text-white/85">{loc.pathname.length > 48 ? `${loc.pathname.slice(0, 45)}…` : loc.pathname}</code>. The link may be mistyped, or the page has moved.</>}
+            ? tx("It may have been deleted, or it belongs to a workspace you're not in right now.")
+            : <>{tx("Nothing lives at")} <code className="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-[0.85em] text-white/85">{loc.pathname.length > 48 ? `${loc.pathname.slice(0, 45)}…` : loc.pathname}</code>. {tx("The link may be mistyped, or the page has moved.")}</>}
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
           {user ? (
             <>
-              <Link to={back?.to ?? "/"} className={cx(btn, "bg-white text-black hover:bg-white/90")}>{back?.label ?? "Back to Orbital"}</Link>
+              <Link to={back?.to ?? "/"} className={cx(btn, "bg-white text-black hover:bg-white/90")}>{back?.label ?? tx("Back to Orbital")}</Link>
               <Link to={words ? `/search?q=${encodeURIComponent(words)}` : "/search"} className={cx(btn, "border border-white/20 text-white hover:border-white/50")}>
-                <Search size={14} />{words ? `Search for “${words}”` : "Search everything"}
+                <Search size={14} />{words ? tx("Search for “{words}”", { words: words }) : tx("Search everything")}
               </Link>
             </>
           ) : (
             <>
-              <Link to="/" className={cx(btn, "bg-white text-black hover:bg-white/90")}>Go to Orbital</Link>
-              <Link to="/login" className={cx(btn, "border border-white/20 text-white hover:border-white/50")}>Sign in</Link>
+              <Link to="/" className={cx(btn, "bg-white text-black hover:bg-white/90")}>{tx("Go to Orbital")}</Link>
+              <Link to="/login" className={cx(btn, "border border-white/20 text-white hover:border-white/50")}>{tx("Sign in")}</Link>
             </>
           )}
           {window.history.length > 1 && (
-            <button onClick={() => navigate(-1)} className={cx(btn, "text-mute hover:text-white")}><ArrowLeft size={14} />Go back</button>
+            <button onClick={() => navigate(-1)} className={cx(btn, "text-mute hover:text-white")}><ArrowLeft size={14} />{tx("Go back")}</button>
           )}
         </div>
       </div>

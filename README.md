@@ -102,6 +102,10 @@ Orbital is usable with no AI provider: notes, PDF/Word/Excel/PowerPoint/text imp
 
 **Voice** (talk to Orbital, dictate, save any conversation to memory) · **Universal search** across every conversation, note, file, web clip and research report · **File intelligence** for PDFs (including scanned), Word, Excel, PowerPoint and images · **Project tracking** with deadlines, due dates, progress and overdue work · **Smart reminders** you set, plus nudges about overdue tasks, slipping deadlines, stalled projects and unfinished ideas · **Web clipper** (dialog or bookmarklet) · **Learning mode** that teaches from what you already know · **Knowledge maintenance** that suggests fixes for duplicates, conflicts, outdated and disconnected knowledge (never changing anything silently, every fix undoable) · **Focus mode** for one objective with a timer, tasks and a scratchpad. What each needs and how it works: [Everyday tools](docs/EVERYDAY.md).
 
+## Languages
+
+The interface, Orbital's answers, research reports, voice and dates in English, Spanish, French, Portuguese or German: Settings → Language. See [docs/LANGUAGES.md](docs/LANGUAGES.md).
+
 ## Research intelligence
 
 **Source intelligence** scores every source on authority, methodology, recency, independence and corroboration, with the reasons shown · the **contradiction lab** gathers opposing views and explains exactly why sources disagree · **research lineage** traces every conclusion through findings, reasoning, the exact source passage and the search that found it · **hypothesis testing** weighs evidence for and against, gives a verdict and suggests next tests · **living reports** flag facts past their shelf life and refresh just those sections, keeping their history · **knowledge extraction** turns long documents into searchable concepts, evidence, timelines and relationships. Details: [Research intelligence](docs/RESEARCH.md).

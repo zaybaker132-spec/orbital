@@ -3,6 +3,7 @@ import { useCore } from "./core";
 import { invalidate } from "@/lib/resource";
 import { toast, useJobs, useQuiet } from "./ui";
 import { api } from "@/lib/api";
+import { t, tn } from "@/i18n";
 
 const runningResearch = new Set<string>();
 
@@ -43,22 +44,22 @@ function handle(e: any) {
       core.set("researching", runningResearch.size > 0);
       if (done || !e.step) invalidate("/research");
       else invalidate(`/research/${e.id}`);
-      if (e.status === "completed") { toast("Research report ready", { action: { label: "Open", to: `/research/${e.id}` } }); invalidate("/conversations", "/growth", "/graph"); }
-      if (e.status === "failed") toast("Research could not complete", { tone: "error", action: { label: "View", to: `/research/${e.id}` } });
+      if (e.status === "completed") { toast(t("Research report ready"), { action: { label: "Open", to: `/research/${e.id}` } }); invalidate("/conversations", "/growth", "/graph"); }
+      if (e.status === "failed") toast(t("Research could not complete"), { tone: "error", action: { label: "View", to: `/research/${e.id}` } });
       break;
     }
     case "knowledge":
       if (e.nodesAdded) { core.pulse("learning", 2600); core.bump("concept", e.nodesAdded); }
       if (e.edgesAdded) { core.pulse("connecting", 3200); core.bumpEdges(e.edgesAdded); }
       if (e.memoriesAdded) core.bump("memory", e.memoriesAdded);
-      if (e.pending) toast("Orbital proposed a memory for your review", { action: { label: "Review", to: "/knowledge?tab=review" } });
+      if (e.pending) toast(t("Orbital proposed a memory for your review"), { action: { label: "Review", to: "/knowledge?tab=review" } });
       invalidate("/memories", "/graph", "/growth", "/documents", "/nodes");
       break;
     case "opportunities":
       useJobs.getState().setDiscovering(e.status === "started");
       if (e.status === "done") {
         invalidate("/opportunities", "/graph", "/growth");
-        toast(e.count ? `${e.count} new opportunit${e.count === 1 ? "y" : "ies"} identified` : "No well-grounded opportunities found yet", { action: e.count ? { label: "View", to: "/opportunities" } : undefined });
+        toast(e.count ? tn(e.count, "{n} new opportunity identified", "{n} new opportunities identified") : t("No well-grounded opportunities found yet"), { action: e.count ? { label: t("View"), to: "/opportunities" } : undefined });
       }
       if (e.status === "error") toast(e.error, { tone: "error" });
       break;
@@ -70,11 +71,11 @@ function handle(e: any) {
       break;
     case "extraction":
       invalidate(`/documents/${e.documentId}/extraction`);
-      if (e.status === "completed") { invalidate("/graph", "/growth", "/search"); toast("Knowledge extracted", { action: { label: "Open", to: `/knowledge/${e.documentId}?view=extraction` } }); }
+      if (e.status === "completed") { invalidate("/graph", "/growth", "/search"); toast(t("Knowledge extracted"), { action: { label: "Open", to: `/knowledge/${e.documentId}?view=extraction` } }); }
       break;
     case "reminder": {
       invalidate("/reminders");
-      toast(`Reminder: ${e.title}`, { sticky: true, action: { label: e.link ? "Open" : "View", to: e.link ?? "/reminders" } });
+      toast(t("Reminder: {title}", { title: e.title }), { sticky: true, action: { label: e.link ? "Open" : "View", to: e.link ?? "/reminders" } });
       try {
         if (!useQuiet.getState().on && "Notification" in window && Notification.permission === "granted" && document.visibilityState !== "visible") {
           const n = new Notification("Orbital reminder", { body: e.note ? `${e.title}\n${e.note}` : e.title, tag: `reminder-${e.id}` });

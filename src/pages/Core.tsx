@@ -9,6 +9,7 @@ import { Badge, Button, Empty, Pulse, Stat, cx } from "@/components/ui";
 import { label, timeAgo } from "@/lib/format";
 import { Section } from "@/components/RightPanel";
 import { ContributionGraph } from "@/components/ContributionGraph";
+import { tx } from "@/i18n";
 
 const STATE_COPY: Record<string, string> = {
   idle: "Resting. Particle density reflects what you've accumulated.",
@@ -40,12 +41,12 @@ export function CorePage() {
       <div className="relative h-[72vh] min-h-[460px]">
         <NeuralCore framing="full" className="absolute inset-0" />
         <div className="pointer-events-none absolute left-8 top-6">
-          <div className="label">Neural Core</div>
-          <div className="mt-1.5 text-[1.05rem] font-light text-white">{state === "idle" ? "Idle" : state[0].toUpperCase() + state.slice(1)}</div>
-          <p className="mt-1 max-w-xs text-[0.8rem] leading-relaxed text-mute">{STATE_COPY[state]}{detail && state !== "idle" ? ` — ${detail.slice(0, 80)}` : ""}</p>
+          <div className="label">{tx("Neural Core")}</div>
+          <div className="mt-1.5 text-[1.05rem] font-light text-white">{state === "idle" ? tx("Idle") : state[0].toUpperCase() + state.slice(1)}</div>
+          <p className="mt-1 max-w-xs text-[0.8rem] leading-relaxed text-mute">{tx(STATE_COPY[state])}{detail && state !== "idle" ? ` — ${detail.slice(0, 80)}` : ""}</p>
         </div>
-        <p className="pointer-events-none absolute bottom-5 left-8 text-[0.72rem] text-mute-soft">Move the cursor through the particles. Click to send a ripple.</p>
-        <button onClick={() => useCore.getState().replayIntro()} className="absolute bottom-4 right-8 rounded-full border border-line px-3 py-1 text-[0.74rem] text-mute transition-colors hover:border-line-strong hover:text-white">Replay formation</button>
+        <p className="pointer-events-none absolute bottom-5 left-8 text-[0.72rem] text-mute-soft">{tx("Move the cursor through the particles. Click to send a ripple.")}</p>
+        <button onClick={() => useCore.getState().replayIntro()} className="absolute bottom-4 right-8 rounded-full border border-line px-3 py-1 text-[0.74rem] text-mute transition-colors hover:border-line-strong hover:text-white">{tx("Replay formation")}</button>
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#040404] to-transparent" />
       </div>
 
@@ -62,29 +63,29 @@ function Dashboard({ data }: { data: any }) {
   const isEmpty = volume.nodes === 0 && volume.memories === 0;
   if (isEmpty) {
     return (
-      <Empty title="Your knowledge universe is empty" action={<div className="flex gap-2"><Link to="/"><Button variant="primary">Start a conversation</Button></Link><Link to="/knowledge"><Button>Add a note</Button></Link></div>}>
-        Every conversation, note, document and research session you add becomes part of it. The Neural Core grows denser as it does.
+      <Empty title={tx("Your knowledge universe is empty")} action={<div className="flex gap-2"><Link to="/"><Button variant="primary">{tx("Start a conversation")}</Button></Link><Link to="/knowledge"><Button>{tx("Add a note")}</Button></Link></div>}>
+        {tx("Every conversation, note, document and research session you add becomes part of it. The Neural Core grows denser as it does.")}
       </Empty>
     );
   }
   return (
     <>
-      <h2 className="label mt-4">Neural activity</h2>
+      <h2 className="label mt-4">{tx("Neural activity")}</h2>
       <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-6 border-b border-line pb-8 sm:grid-cols-4">
-        <Stat label="Knowledge nodes" value={volume.nodes} />
-        <Stat label="Confirmed connections" value={volume.confirmedEdges} hint={`${volume.suggestedEdges} suggested, awaiting review`} />
-        <Stat label="Memories" value={volume.memories} hint={`${volume.pendingMemories} pending review`} />
-        <Stat label="Research sessions" value={volume.research} />
-        <Stat label="New concepts · 30 days" value={volume.newConcepts30d} />
-        <Stat label="Knowledge clusters" value={volume.clusters} />
-        <Stat label="Unresolved questions" value={quality.openGaps} />
-        <Stat label="Suggested connections" value={volume.suggestedEdges} />
+        <Stat label={tx("Knowledge nodes")} value={volume.nodes} />
+        <Stat label={tx("Confirmed connections")} value={volume.confirmedEdges} hint={tx("{suggestedEdges} suggested, awaiting review", { suggestedEdges: volume.suggestedEdges })} />
+        <Stat label={tx("Memories")} value={volume.memories} hint={tx("{pendingMemories} pending review", { pendingMemories: volume.pendingMemories })} />
+        <Stat label={tx("Research sessions")} value={volume.research} />
+        <Stat label={tx("New concepts · 30 days")} value={volume.newConcepts30d} />
+        <Stat label={tx("Knowledge clusters")} value={volume.clusters} />
+        <Stat label={tx("Unresolved questions")} value={quality.openGaps} />
+        <Stat label={tx("Suggested connections")} value={volume.suggestedEdges} />
       </div>
 
       <div className="mt-8 grid gap-10 lg:grid-cols-[1.1fr_1fr]">
         <div>
-          <h2 className="label">Meaningful growth</h2>
-          <p className="mt-1.5 text-[0.8rem] leading-relaxed text-mute">More stored information isn't more intelligence. These track knowledge that's verified, confirmed or acted on.</p>
+          <h2 className="label">{tx("Meaningful growth")}</h2>
+          <p className="mt-1.5 text-[0.8rem] leading-relaxed text-mute">{tx("More stored information isn't more intelligence. These track knowledge that's verified, confirmed or acted on.")}</p>
           <dl className="mt-4 divide-y divide-line">
             {[
               ["Verified research findings", quality.verifiedFindings, "Findings directly supported by retrieved sources"],
@@ -103,8 +104,8 @@ function Dashboard({ data }: { data: any }) {
           </dl>
         </div>
         <div>
-          <h2 className="label">Growing subjects · 30 days</h2>
-          {data.subjects.length === 0 ? <p className="mt-3 text-[0.84rem] text-mute">Nothing new this month.</p> : (
+          <h2 className="label">{tx("Growing subjects · 30 days")}</h2>
+          {data.subjects.length === 0 ? <p className="mt-3 text-[0.84rem] text-mute">{tx("Nothing new this month.")}</p> : (
             <ul className="mt-4 space-y-2.5">
               {data.subjects.map((s: any) => {
                 const max = Math.max(...data.subjects.map((x: any) => x.recent));
@@ -118,8 +119,8 @@ function Dashboard({ data }: { data: any }) {
               })}
             </ul>
           )}
-          <h2 className="label mt-8">Largest clusters</h2>
-          {clusters.length === 0 ? <p className="mt-3 text-[0.84rem] text-mute">Clusters form as ideas become connected.</p> : (
+          <h2 className="label mt-8">{tx("Largest clusters")}</h2>
+          {clusters.length === 0 ? <p className="mt-3 text-[0.84rem] text-mute">{tx("Clusters form as ideas become connected.")}</p> : (
             <ul className="mt-3 flex flex-wrap gap-2">
               {clusters.map((c: any) => <li key={c.label}><Badge>{c.label.slice(0, 40)} <span className="text-mute">{c.size}</span></Badge></li>)}
             </ul>
@@ -127,7 +128,7 @@ function Dashboard({ data }: { data: any }) {
         </div>
       </div>
 
-      <div className="mt-10"><ContributionGraph title="Your activity" /></div>
+      <div className="mt-10"><ContributionGraph title={tx("Your activity")} /></div>
       <Timeline weekly={data.timeline.weekly} />
     </>
   );
@@ -159,10 +160,10 @@ function Timeline({ weekly }: { weekly: { week: string; type: string; n: number 
   const max = Math.max(1, ...totals);
   return (
     <section className="mt-10">
-      <h2 className="label">How your knowledge evolved · 12 weeks</h2>
-      <div className="mt-4 flex h-36 items-end gap-2" role="img" aria-label={`Weekly activity over 12 weeks; peak week had ${max} events`}>
+      <h2 className="label">{tx("How your knowledge evolved · 12 weeks")}</h2>
+      <div className="mt-4 flex h-36 items-end gap-2" role="img" aria-label={tx("Weekly activity over 12 weeks; peak week had {max} events", { max: max })}>
         {weeks.map((w, i) => (
-          <div key={w} className="flex h-full flex-1 flex-col justify-end" title={`Week of ${w}: ${totals[i]} events`}>
+          <div key={w} className="flex h-full flex-1 flex-col justify-end" title={tx("Week of {w}: {v1} events", { w: w, v1: totals[i] })}>
             {SERIES.map((s) => {
               const n = by(w, s.key);
               return n ? <div key={s.key} style={{ height: `${(n / max) * 100}%`, background: s.color }} className="w-full opacity-80 first:rounded-t-sm" /> : null;
@@ -170,9 +171,9 @@ function Timeline({ weekly }: { weekly: { week: string; type: string; n: number 
           </div>
         ))}
       </div>
-      <div className="mt-2 flex justify-between text-[0.68rem] text-mute-soft"><span>{weeks[0]}</span><span>this week</span></div>
+      <div className="mt-2 flex justify-between text-[0.68rem] text-mute-soft"><span>{weeks[0]}</span><span>{tx("this week")}</span></div>
       <div className="mt-3 flex flex-wrap gap-4">
-        {SERIES.map((s) => <span key={s.key} className="flex items-center gap-1.5 text-[0.74rem] text-mute"><span className="h-1.5 w-1.5 rounded-full" style={{ background: s.color }} />{s.label}</span>)}
+        {SERIES.map((s) => <span key={s.key} className="flex items-center gap-1.5 text-[0.74rem] text-mute"><span className="h-1.5 w-1.5 rounded-full" style={{ background: s.color }} />{tx(s.label)}</span>)}
       </div>
     </section>
   );
@@ -186,7 +187,7 @@ function Maintenance() {
     try { await api.patch(`/gaps/${id}`, { status }); invalidate("/growth"); } catch (e) { toastError(e); }
   };
   const research = async (id: string) => {
-    try { const r = await api.post(`/gaps/${id}/research`); toast("Research started", { action: { label: "Open", to: `/research/${r.id}` } }); invalidate("/research"); } catch (e) { toastError(e); }
+    try { const r = await api.post(`/gaps/${id}/research`); toast(tx("Research started"), { action: { label: "Open", to: `/research/${r.id}` } }); invalidate("/research"); } catch (e) { toastError(e); }
   };
   const edge = async (id: string, status: "confirmed" | "rejected") => {
     try { await api.patch(`/edges/${id}`, { status }); invalidate("/growth", "/graph"); } catch (e) { toastError(e); }
@@ -194,16 +195,16 @@ function Maintenance() {
   return (
     <>
       <section id="questions" className="mt-12 scroll-mt-6">
-        <h2 className="label">Unresolved questions</h2>
-        {data.gaps.length === 0 ? <p className="mt-3 text-[0.84rem] text-mute">No open questions. Deep Thinking, Learning and research sessions surface the questions worth answering.</p> : (
+        <h2 className="label">{tx("Unresolved questions")}</h2>
+        {data.gaps.length === 0 ? <p className="mt-3 text-[0.84rem] text-mute">{tx("No open questions. Deep Thinking, Learning and research sessions surface the questions worth answering.")}</p> : (
           <ul className="mt-3 divide-y divide-line">
             {data.gaps.map((g: any) => (
               <li key={g.id} className="flex items-center gap-4 py-2.5">
                 <span className="min-w-0 flex-1 text-[0.88rem] text-white/90">{g.question}</span>
                 <span className="shrink-0 text-[0.72rem] text-mute">{g.origin} · {timeAgo(g.created_at)}</span>
-                <Button size="sm" variant="ghost" onClick={() => research(g.id)}>Research</Button>
-                <Button size="sm" variant="ghost" onClick={() => resolve(g.id, "resolved")}>Resolved</Button>
-                <Button size="sm" variant="ghost" onClick={() => resolve(g.id, "dismissed")}>Dismiss</Button>
+                <Button size="sm" variant="ghost" onClick={() => research(g.id)}>{tx("Research")}</Button>
+                <Button size="sm" variant="ghost" onClick={() => resolve(g.id, "resolved")}>{tx("Resolved")}</Button>
+                <Button size="sm" variant="ghost" onClick={() => resolve(g.id, "dismissed")}>{tx("Dismiss")}</Button>
               </li>
             ))}
           </ul>
@@ -212,13 +213,13 @@ function Maintenance() {
       <MaintenanceSummary />
       {data.contradictions.length > 0 && (
         <section className="mt-8">
-          <Group title="Possible contradictions in your knowledge graph">
+          <Group title={tx("Possible contradictions in your knowledge graph")}>
             {data.contradictions.map((c: any) => (
               <Row key={c.id} actions={<>
-                <Button size="sm" variant="ghost" onClick={async () => { try { const r = await api.post(`/edges/${c.id}/investigate`); invalidate("/research"); navigate(`/research/${r.id}`); } catch (e) { toastError(e); } }}>Investigate in the lab</Button>
-                {c.status === "suggested" ? <><Button size="sm" variant="ghost" onClick={() => edge(c.id, "confirmed")}>Confirm conflict</Button><Button size="sm" variant="ghost" onClick={() => edge(c.id, "rejected")}>Not a conflict</Button></> : <Badge tone="warn">confirmed</Badge>}
+                <Button size="sm" variant="ghost" onClick={async () => { try { const r = await api.post(`/edges/${c.id}/investigate`); invalidate("/research"); navigate(`/research/${r.id}`); } catch (e) { toastError(e); } }}>{tx("Investigate in the lab")}</Button>
+                {c.status === "suggested" ? <><Button size="sm" variant="ghost" onClick={() => edge(c.id, "confirmed")}>{tx("Confirm conflict")}</Button><Button size="sm" variant="ghost" onClick={() => edge(c.id, "rejected")}>{tx("Not a conflict")}</Button></> : <Badge tone="warn">{tx("confirmed")}</Badge>}
               </>}>
-                <Link to={`/connections?node=${c.a_id}`} className="hover:underline">{c.a_title}</Link> <span className="text-mute">contradicts</span> <Link to={`/connections?node=${c.b_id}`} className="hover:underline">{c.b_title}</Link>
+                <Link to={`/connections?node=${c.a_id}`} className="hover:underline">{c.a_title}</Link> <span className="text-mute">{tx("contradicts")}</span> <Link to={`/connections?node=${c.b_id}`} className="hover:underline">{c.b_title}</Link>
                 {c.rationale && <span className="mt-0.5 block text-[0.76rem] text-mute">{c.rationale}</span>}
               </Row>
             ))}
@@ -238,16 +239,16 @@ function MaintenanceSummary() {
   return (
     <section id="maintenance" className="mt-12 scroll-mt-6">
       <div className="flex items-baseline gap-3">
-        <h2 className="label">Knowledge maintenance</h2>
-        <Link to="/maintenance" className="ml-auto text-[0.78rem] text-mute hover:text-white">Knowledge health {h.score} →</Link>
+        <h2 className="label">{tx("Knowledge maintenance")}</h2>
+        <Link to="/maintenance" className="ml-auto text-[0.78rem] text-mute hover:text-white">{tx("Knowledge health")} {h.score} →</Link>
       </div>
-      <p className="mt-1.5 text-[0.8rem] text-mute">Orbital checks daily for duplicate notes, conflicting memories, outdated information and disconnected ideas. Nothing changes without your approval, and every change can be undone.</p>
-      {top.length === 0 ? <p className="mt-4 text-[0.84rem] text-mute">{h.lastScan ? "Everything looks consistent." : "The first check runs shortly."}</p> : (
+      <p className="mt-1.5 text-[0.8rem] text-mute">{tx("Orbital checks daily for duplicate notes, conflicting memories, outdated information and disconnected ideas. Nothing changes without your approval, and every change can be undone.")}</p>
+      {top.length === 0 ? <p className="mt-4 text-[0.84rem] text-mute">{h.lastScan ? tx("Everything looks consistent.") : tx("The first check runs shortly.")}</p> : (
         <ul className="mt-3 divide-y divide-line">{top.map((s: any) => (
           <li key={s.id}><Link to="/maintenance" className="flex items-baseline gap-3 py-2.5 hover:text-white"><span className="min-w-0 flex-1 truncate text-[0.86rem] text-white/90">{s.title}</span><span className="shrink-0 text-[0.74rem] text-mute">{s.reason.slice(0, 60)}</span></Link></li>
         ))}</ul>
       )}
-      {h.open > top.length && <Link to="/maintenance" className="mt-2 inline-block text-[0.78rem] text-mute hover:text-white">{h.open - top.length} more →</Link>}
+      {h.open > top.length && <Link to="/maintenance" className="mt-2 inline-block text-[0.78rem] text-mute hover:text-white">{h.open - top.length} {tx("more →")}</Link>}
     </section>
   );
 }
@@ -264,8 +265,8 @@ function RecentActivity() {
   const items = data?.timeline.recent ?? [];
   const to = (e: any) => e.ref_type === "research" ? `/research/${e.ref_id}` : e.ref_type === "document" ? `/knowledge/${e.ref_id}` : e.ref_type === "project" ? `/projects/${e.ref_id}` : e.ref_type === "memory" ? "/knowledge?tab=memory" : e.ref_type === "opportunity" ? "/opportunities" : e.ref_type === "node" ? `/connections?node=${e.ref_id}` : null;
   return (
-    <Section title="Recent changes">
-      {items.length === 0 ? <p className="text-[0.82rem] text-mute">No activity yet.</p> : (
+    <Section title={tx("Recent changes")}>
+      {items.length === 0 ? <p className="text-[0.82rem] text-mute">{tx("No activity yet.")}</p> : (
         <ol className="relative space-y-3 border-l border-line pl-4">
           {items.map((e: any) => {
             const href = to(e);

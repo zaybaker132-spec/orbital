@@ -5,6 +5,7 @@ import { useCore } from "@/state/core";
 import { useApp } from "@/state/app";
 import { canSpeak, speak, speakable, useSpeechInput } from "@/lib/voice";
 import { Button, cx } from "./ui";
+import { tx } from "@/i18n";
 
 type Phase = "listening" | "thinking" | "speaking" | "paused";
 interface Msg { id: string; role: "user" | "assistant"; content: string; streaming?: boolean; error?: string; metadata?: any }
@@ -78,12 +79,12 @@ export function VoiceMode({ messages, streaming, onSend, onClose, onRemember, ca
     phase === "thinking" ? "Thinking…" : phase === "speaking" ? "Speaking · Space to interrupt" : "Paused · Space or tap the mic to talk");
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-black" role="dialog" aria-label="Voice conversation">
+    <div className="fixed inset-0 z-40 flex flex-col bg-black" role="dialog" aria-label={tx("Voice conversation")}>
       <div className="flex items-center gap-2 px-6 py-4">
-        <span className="text-[0.74rem] uppercase tracking-[0.18em] text-mute">Voice</span>
+        <span className="text-[0.74rem] uppercase tracking-[0.18em] text-mute">{tx("Voice")}</span>
         <div className="ml-auto flex items-center gap-2">
-          {canRemember && <Button size="sm" variant="ghost" icon={<BookmarkPlus size={13} />} loading={saving} onClick={async () => { setSaving(true); try { await onRemember(); } finally { setSaving(false); } }}>Save to memory</Button>}
-          <Button size="sm" icon={<X size={13} />} onClick={onClose}>End</Button>
+          {canRemember && <Button size="sm" variant="ghost" icon={<BookmarkPlus size={13} />} loading={saving} onClick={async () => { setSaving(true); try { await onRemember(); } finally { setSaving(false); } }}>{tx("Save to memory")}</Button>}
+          <Button size="sm" icon={<X size={13} />} onClick={onClose}>{tx("End")}</Button>
         </div>
       </div>
       <div className="relative min-h-0 flex-1">
@@ -98,14 +99,14 @@ export function VoiceMode({ messages, streaming, onSend, onClose, onRemember, ca
         <p className={cx("mt-4 text-[0.78rem]", speech.error ? "text-red-300" : "text-mute")} aria-live="polite">{status}</p>
         <div className="mt-5 flex items-center justify-center gap-3">
           {phase === "speaking" ? (
-            <button onClick={() => { stopSpeaking.current(); listen(); }} aria-label="Stop speaking" className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-black"><Square size={16} fill="currentColor" /></button>
+            <button onClick={() => { stopSpeaking.current(); listen(); }} aria-label={tx("Stop speaking")} className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-black"><Square size={16} fill="currentColor" /></button>
           ) : phase === "listening" && speech.listening ? (
-            <button onClick={() => speech.stop()} aria-label="Stop listening" className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-black"><Mic size={20} /></button>
+            <button onClick={() => speech.stop()} aria-label={tx("Stop listening")} className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-black"><Mic size={20} /></button>
           ) : (
-            <button onClick={listen} disabled={phase === "thinking" || engine === "none"} aria-label="Talk" className="flex h-14 w-14 items-center justify-center rounded-full border border-white/30 text-white hover:border-white disabled:opacity-30">{phase === "thinking" ? <span className="h-2 w-2 animate-pulse rounded-full bg-white" /> : <MicOff size={20} />}</button>
+            <button onClick={listen} disabled={phase === "thinking" || engine === "none"} aria-label={tx("Talk")} className="flex h-14 w-14 items-center justify-center rounded-full border border-white/30 text-white hover:border-white disabled:opacity-30">{phase === "thinking" ? <span className="h-2 w-2 animate-pulse rounded-full bg-white" /> : <MicOff size={20} />}</button>
           )}
         </div>
-        {!canSpeak() && <p className="mt-3 text-[0.74rem] text-mute-soft">This browser can't speak, so answers appear as text.</p>}
+        {!canSpeak() && <p className="mt-3 text-[0.74rem] text-mute-soft">{tx("This browser can't speak, so answers appear as text.")}</p>}
       </div>
     </div>
   );

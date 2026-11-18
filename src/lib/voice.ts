@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "./api";
+import { language, locale } from "@/i18n";
 
 /**
  * Voice in and out.
@@ -34,7 +35,7 @@ export function useSpeechInput(opts: { onFinal: (text: string) => void; onInteri
     setError(null);
     if (engine === "browser") {
       const rec = new SR();
-      rec.lang = navigator.language || "en-US";
+      rec.lang = locale();
       rec.interimResults = true;
       rec.continuous = !!cb.current.continuous;
       let finalText = "";
@@ -99,7 +100,7 @@ export function useSpeechInput(opts: { onFinal: (text: string) => void; onInteri
         try {
           const fd = new FormData();
           fd.append("audio", new Blob(chunks, { type: recorder.mimeType || "audio/webm" }), "speech");
-          const lang = (navigator.language || "").slice(0, 2).toLowerCase();
+          const lang = language();
           if (/^[a-z]{2}$/.test(lang)) fd.append("language", lang);
           const r = await api.upload("/voice/transcribe", fd);
           if (r.text) cb.current.onFinal(r.text);
@@ -158,6 +159,7 @@ export function speak(text: string, opts: { onEnd?: () => void; rate?: number; v
   chunks.forEach((c, i) => {
     const u = new SpeechSynthesisUtterance(c);
     if (voice) u.voice = voice;
+    u.lang = voice?.lang ?? locale();
     u.rate = opts.rate ?? 1.03;
     if (i === chunks.length - 1) u.onend = () => { if (!cancelled) opts.onEnd?.(); };
     u.onerror = () => { if (i === chunks.length - 1 && !cancelled) opts.onEnd?.(); };
@@ -170,7 +172,7 @@ export function speak(text: string, opts: { onEnd?: () => void; rate?: number; v
 /** The system voices for the person's language, best-sounding first (for Settings). */
 export function availableVoices(): SpeechSynthesisVoice[] {
   if (!canSpeak()) return [];
-  const lang = (navigator.language || "en-US").slice(0, 2).toLowerCase();
+  const lang = language();
   const all = window.speechSynthesis.getVoices();
   const same = all.filter((v) => v.lang.toLowerCase().startsWith(lang));
   return (same.length ? same : all).sort((a, b) => Number(/natural|neural|premium|enhanced|google/i.test(b.name)) - Number(/natural|neural|premium|enhanced|google/i.test(a.name)));
@@ -178,8 +180,9 @@ export function availableVoices(): SpeechSynthesisVoice[] {
 
 function pickVoice(preferred?: string): SpeechSynthesisVoice | null {
   const voices = window.speechSynthesis.getVoices();
-  if (preferred) { const v = voices.find((x) => x.name === preferred); if (v) return v; }
-  const lang = (navigator.language || "en-US").toLowerCase();
+  const lang = locale().toLowerCase();
+  // A saved voice is used only while it speaks the interface language (switching language picks a new one).
+  if (preferred) { const v = voices.find((x) => x.name === preferred); if (v && v.lang.toLowerCase().startsWith(lang.slice(0, 2))) return v; }
   const same = voices.filter((v) => v.lang.toLowerCase().startsWith(lang.slice(0, 2)));
   // Prefer natural-sounding voices where the system has them.
   return same.find((v) => /natural|neural|premium|enhanced|google/i.test(v.name)) ?? same.find((v) => v.lang.toLowerCase() === lang) ?? same[0] ?? null;

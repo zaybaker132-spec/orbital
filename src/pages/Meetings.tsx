@@ -6,6 +6,7 @@ import { useResource, invalidate } from "@/lib/resource";
 import { toast, toastError } from "@/state/ui";
 import { Badge, Button, Empty, Input, PageHeader, Pulse } from "@/components/ui";
 import { timeAgo } from "@/lib/format";
+import { tx } from "@/i18n";
 
 /** Accepts a code (abc-defg-hij, abcdefghij) or a full meeting link. */
 export function parseMeetingCode(raw: string) {
@@ -30,49 +31,49 @@ export function MeetingsPage() {
       navigate(`/m/${r.code}`);
     } catch (e) { toastError(e); } finally { setBusy(false); }
   };
-  const copy = (c: string) => navigator.clipboard.writeText(meetingLink(c)).then(() => toast("Meeting link copied"), () => toast(`Code: ${c}`));
+  const copy = (c: string) => navigator.clipboard.writeText(meetingLink(c)).then(() => toast(tx("Meeting link copied")), () => toast(tx("Code: {c}", { c: c })));
 
   return (
     <div className="h-full overflow-y-auto">
-      <PageHeader title="Meetings" subtitle="Video rooms you join with a code. Audio and video go straight between participants." />
+      <PageHeader title={tx("Meetings")} subtitle={tx("Video rooms you join with a code. Audio and video go straight between participants.")} />
       <div className="grid gap-4 px-8 md:grid-cols-2">
         <section className="rounded-xl border border-line p-5">
-          <div className="flex items-center gap-2 text-[0.95rem] text-white"><Video size={16} strokeWidth={1.6} /> New meeting</div>
-          <p className="mt-1 text-[0.82rem] text-mute">Start a room now and share its code or link.</p>
+          <div className="flex items-center gap-2 text-[0.95rem] text-white"><Video size={16} strokeWidth={1.6} /> {tx("New meeting")}</div>
+          <p className="mt-1 text-[0.82rem] text-mute">{tx("Start a room now and share its code or link.")}</p>
           <div className="mt-4 flex gap-2">
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} onKeyDown={(e) => e.key === "Enter" && start()} placeholder="Title (optional)" aria-label="Meeting title" />
-            <Button variant="primary" loading={busy} onClick={start}>Start</Button>
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} onKeyDown={(e) => e.key === "Enter" && start()} placeholder={tx("Title (optional)")} aria-label={tx("Meeting title")} />
+            <Button variant="primary" loading={busy} onClick={start}>{tx("Start")}</Button>
           </div>
         </section>
         <section className="rounded-xl border border-line p-5">
-          <div className="flex items-center gap-2 text-[0.95rem] text-white"><LogIn size={16} strokeWidth={1.6} /> Join with a code</div>
-          <p className="mt-1 text-[0.82rem] text-mute">Paste a code like <span className="font-mono text-white/80">abc-defg-hij</span> or a meeting link.</p>
+          <div className="flex items-center gap-2 text-[0.95rem] text-white"><LogIn size={16} strokeWidth={1.6} /> {tx("Join with a code")}</div>
+          <p className="mt-1 text-[0.82rem] text-mute">{tx("Paste a code like")} <span className="font-mono text-white/80">{tx("abc-defg-hij")}</span> {tx("or a meeting link.")}</p>
           <div className="mt-4 flex gap-2">
-            <Input value={code} onChange={(e) => setCode(e.target.value)} onKeyDown={(e) => e.key === "Enter" && parsed && navigate(`/m/${parsed}`)} placeholder="abc-defg-hij" aria-label="Meeting code" className="font-mono" />
-            <Button disabled={!parsed} onClick={() => parsed && navigate(`/m/${parsed}`)}>Join</Button>
+            <Input value={code} onChange={(e) => setCode(e.target.value)} onKeyDown={(e) => e.key === "Enter" && parsed && navigate(`/m/${parsed}`)} placeholder={tx("abc-defg-hij")} aria-label={tx("Meeting code")} className="font-mono" />
+            <Button disabled={!parsed} onClick={() => parsed && navigate(`/m/${parsed}`)}>{tx("Join")}</Button>
           </div>
-          {code && !parsed && <p className="mt-2 text-[0.75rem] text-mute">Codes have 10 letters, like abc-defg-hij.</p>}
+          {code && !parsed && <p className="mt-2 text-[0.75rem] text-mute">{tx("Codes have 10 letters, like abc-defg-hij.")}</p>}
         </section>
       </div>
       <div className="px-8 pb-16 pt-10">
-        <h2 className="label mb-2">Recent</h2>
+        <h2 className="label mb-2">{tx("Recent")}</h2>
         {loading && <Pulse />}
-        {data?.length === 0 && <Empty title="No meetings yet">Start one above, or join with a code someone shared with you.</Empty>}
+        {data?.length === 0 && <Empty title={tx("No meetings yet")}>{tx("Start one above, or join with a code someone shared with you.")}</Empty>}
         <ul className="divide-y divide-line">
           {data?.map((m) => (
             <li key={m.code} className="flex items-center gap-4 py-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="truncate text-[0.92rem] text-white">{m.title || "Untitled meeting"}</span>
-                  {m.live > 0 && !m.ended_at && <Badge tone="ok">{m.live} in the room</Badge>}
-                  {m.ended_at && <Badge>ended</Badge>}
+                  <span className="truncate text-[0.92rem] text-white">{m.title || tx("Untitled meeting")}</span>
+                  {m.live > 0 && !m.ended_at && <Badge tone="ok">{m.live} {tx("in the room")}</Badge>}
+                  {m.ended_at && <Badge>{tx("ended")}</Badge>}
                 </div>
-                <div className="mt-0.5 text-[0.75rem] text-mute"><span className="font-mono">{m.code}</span> · {m.is_host ? "you're the host" : `hosted by ${m.host_name}`} · {timeAgo(m.last_active)}</div>
+                <div className="mt-0.5 text-[0.75rem] text-mute"><span className="font-mono">{m.code}</span> · {m.is_host ? tx("you're the host") : tx("hosted by {host_name}", { host_name: m.host_name })} · {timeAgo(m.last_active)}</div>
               </div>
               {!m.ended_at && (
                 <>
-                  <Button size="sm" variant="ghost" icon={<Copy size={13} />} onClick={() => copy(m.code)}>Link</Button>
-                  <Button size="sm" onClick={() => navigate(`/m/${m.code}`)}>{m.live > 0 ? "Join" : "Open"}</Button>
+                  <Button size="sm" variant="ghost" icon={<Copy size={13} />} onClick={() => copy(m.code)}>{tx("Link")}</Button>
+                  <Button size="sm" onClick={() => navigate(`/m/${m.code}`)}>{m.live > 0 ? tx("Join") : tx("Open")}</Button>
                 </>
               )}
             </li>
