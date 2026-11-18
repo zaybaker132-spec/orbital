@@ -194,22 +194,23 @@ workspace.post("/documents/from-message", ah(async (req, res) => {
 // ── Research ───────────────────────────────────────────────────────────────
 workspace.get("/research", ah(async (req, res) => {
   res.json((await db().query(
-    `SELECT r.id, r.question, r.status, r.created_at, r.completed_at, r.project_id, r.error,
+    `SELECT r.id, r.question, r.status, r.kind, r.created_at, r.completed_at, r.project_id, r.error, r.hypothesis_id,
+            r.freshness->>'status' AS freshness,
             (SELECT count(*)::int FROM research_sources s WHERE s.research_id=r.id) AS sources,
             jsonb_array_length(COALESCE(r.report->'findings','[]'::jsonb)) AS findings
      FROM research_sessions r WHERE r.workspace_id=$1 ORDER BY r.created_at DESC LIMIT 200`, [ws(req)])).rows);
 }));
 
 workspace.post("/research", rateLimit({ windowMs: 60 * 60_000, max: 30, key: "user", name: "research" }), ah(async (req, res) => {
-  const b = parse(z.object({ question: z.string().trim().min(8).max(2000), projectId: z.uuid().nullish() }), req.body);
+  const b = parse(z.object({ question: z.string().trim().min(8).max(2000), projectId: z.uuid().nullish(), kind: z.enum(["standard", "contradiction"]).default("standard") }), req.body);
   if (b.projectId) await ownProject(ws(req), b.projectId);
-  res.status(201).json({ id: await startResearch(ws(req), b.question, { projectId: b.projectId }) });
+  res.status(201).json({ id: await startResearch(ws(req), b.question, { projectId: b.projectId, kind: b.kind }) });
 }));
 
 workspace.get("/research/:id", ah(async (req, res) => {
   const r = (await db().query("SELECT * FROM research_sessions WHERE id=$1 AND workspace_id=$2", [idParam(req), ws(req)])).rows[0];
   if (!r) throw notFound("Research");
-  const sources = await db().query("SELECT ref_number, provider, url, title, authors, published, source_type, excerpt, subquestion FROM research_sources WHERE research_id=$1 AND workspace_id=$2 ORDER BY ref_number", [r.id, ws(req)]);
+  const sources = await db().query("SELECT ref_number, provider, url, title, authors, published, source_type, excerpt, subquestion, position, assessment FROM research_sources WHERE research_id=$1 AND workspace_id=$2 ORDER BY ref_number", [r.id, ws(req)]);
   res.json({ ...r, sources: sources.rows });
 }));
 

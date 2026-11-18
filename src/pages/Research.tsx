@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { Compass, ExternalLink, RotateCcw, Trash2, BookmarkPlus, ThumbsUp, ThumbsDown, ShieldCheck } from "lucide-react";
+import { Compass, ExternalLink, RotateCcw, Trash2, BookmarkPlus, ThumbsUp, ThumbsDown, ShieldCheck, GitBranch, Scale, FlaskConical, AlertTriangle } from "lucide-react";
 import { api } from "@/lib/api";
 import { invalidate, useResource } from "@/lib/resource";
 import { useApp } from "@/state/app";
@@ -10,8 +10,11 @@ import { Markdown } from "@/components/Markdown";
 import { timeAgo } from "@/lib/format";
 import { NotFoundPage } from "./NotFound";
 import { Section } from "@/components/RightPanel";
+import { SourceIntelligence, GRADE_STYLE } from "./research/SourceIntel";
+import { Lineage } from "./research/Lineage";
+import { ContradictionLab, FreshnessBanner, FindingFreshness } from "./research/ReportParts";
 
-const RUNNING = ["queued", "planning", "searching", "synthesizing"];
+const RUNNING = ["queued", "planning", "searching", "synthesizing", "refreshing"];
 
 export function ResearchPage() {
   const { id } = useParams();
@@ -24,6 +27,10 @@ export function ResearchPage() {
         <div className="px-5 pb-3 pt-6">
           <h1 className="text-[1.05rem] font-normal">Research</h1>
           <p className="mt-0.5 text-[0.78rem] text-mute">Multi-step, cited, verified.</p>
+          <div className="mt-3 flex gap-1 text-[0.78rem]">
+            <span className="rounded-full bg-white px-3 py-1 text-black">Reports</span>
+            <Link to="/hypotheses" className="rounded-full px-3 py-1 text-mute hover:bg-white/[0.06] hover:text-white">Hypotheses</Link>
+          </div>
         </div>
         <div className="px-3"><Link to="/research"><Button variant="secondary" className="w-full" icon={<Compass size={14} />}>New research</Button></Link></div>
         <ul className="mt-3 min-h-0 flex-1 space-y-px overflow-y-auto px-3 pb-4">
@@ -33,7 +40,10 @@ export function ResearchPage() {
               <Link to={`/research/${r.id}`} className={cx("block rounded-lg px-3 py-2 transition-colors", r.id === id ? "bg-white/[0.07]" : "hover:bg-white/[0.04]")}>
                 <div className="line-clamp-2 text-[0.84rem] leading-snug text-white/90">{r.question}</div>
                 <div className="mt-1 flex items-center gap-2 text-[0.7rem] text-mute">
-                  {RUNNING.includes(r.status) ? <span className="flex items-center gap-1.5"><Pulse />{r.status}</span> : r.status === "failed" ? <span className="text-red-300/80">failed</span> : <span>{r.sources} sources · {r.findings} findings</span>}
+                  {r.kind === "contradiction" && <span className="text-sky-200/80">lab</span>}
+                  {r.kind === "hypothesis" && <span className="text-fuchsia-200/80">hypothesis</span>}
+                  {r.freshness === "stale" && <span className="text-amber-200/80" title="Some facts may be out of date">outdated</span>}
+                  {RUNNING.includes(r.status) ? <span className="flex items-center gap-1.5"><Pulse />{r.status}</span> : r.status === "failed" ? <span className="text-red-300/80">failed</span> : <span>{r.sources} source{r.sources === 1 ? "" : "s"} · {r.findings} finding{r.findings === 1 ? "" : "s"}</span>}
                   <span className="ml-auto">{timeAgo(r.created_at)}</span>
                 </div>
               </Link>
@@ -50,6 +60,7 @@ function NewResearch() {
   const [params] = useSearchParams();
   const [q, setQ] = useState(params.get("q") ?? "");
   const [projectId, setProjectId] = useState("");
+  const [kind, setKind] = useState<"standard" | "contradiction" | "hypothesis">((params.get("kind") as any) ?? "standard");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -58,27 +69,48 @@ function NewResearch() {
   const start = async () => {
     setBusy(true); setErr(null);
     try {
-      const r = await api.post("/research", { question: q, projectId: projectId || null });
+      if (kind === "hypothesis") {
+        const h = await api.post("/hypotheses", { statement: q, projectId: projectId || null });
+        await api.post(`/hypotheses/${h.id}/test`);
+        invalidate("/hypotheses", "/research");
+        navigate(`/hypotheses/${h.id}`);
+        return;
+      }
+      const r = await api.post("/research", { question: q, projectId: projectId || null, kind });
       invalidate("/research");
       navigate(`/research/${r.id}`);
     } catch (e: any) { setErr(e.message); } finally { setBusy(false); }
   };
   return (
     <div className="mx-auto max-w-[680px] px-8 pt-16">
-      <h2 className="text-[1.35rem] font-light tracking-[-0.015em]">What should Orbital investigate?</h2>
+      <div className="mb-6 grid gap-2 sm:grid-cols-3" role="radiogroup" aria-label="Kind of research">
+        {([
+          ["standard", Compass, "Research", "Answer a question with cited, verified sources"],
+          ["contradiction", Scale, "Contradiction lab", "Gather opposing views and find out exactly why they disagree"],
+          ["hypothesis", FlaskConical, "Test a hypothesis", "Evidence for and against, a verdict, and what to test next"],
+        ] as const).map(([k, Icon, title, hint]) => (
+          <button key={k} role="radio" aria-checked={kind === k} onClick={() => setKind(k)}
+            className={cx("rounded-xl border px-4 py-3 text-left transition-colors", kind === k ? "border-white/60 bg-white/[0.05]" : "border-line hover:border-line-strong")}>
+            <Icon size={15} className={kind === k ? "text-white" : "text-mute"} />
+            <div className="mt-2 text-[0.88rem] text-white">{title}</div>
+            <div className="mt-0.5 text-[0.74rem] leading-snug text-mute">{hint}</div>
+          </button>
+        ))}
+      </div>
+      <h2 className="text-[1.35rem] font-light tracking-[-0.015em]">{kind === "contradiction" ? "What's contested?" : kind === "hypothesis" ? "What do you believe might be true?" : "What should Orbital investigate?"}</h2>
       <p className="mt-2 text-[0.88rem] leading-relaxed text-mute">
         Orbital breaks the question into sub-questions, searches {ai?.webSearch ? "the web, " : ""}Wikipedia and scholarly literature (OpenAlex), extracts findings, compares perspectives and
         verifies every citation and statistic against the retrieved source text before showing it.
       </p>
       <Textarea autoFocus rows={4} value={q} onChange={(e) => setQ(e.target.value)} className="mt-6 text-[0.95rem]"
-        placeholder="e.g. Research the growth of artificial intelligence and identify its biggest business opportunities."
+        placeholder={kind === "contradiction" ? "e.g. Does remote work raise or lower productivity?" : kind === "hypothesis" ? "e.g. Independent salons will pay for AI scheduling if it cuts no-shows by a fifth." : "e.g. Research the growth of artificial intelligence and identify its biggest business opportunities."}
         onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && q.trim().length > 7) start(); }} />
       <div className="mt-3 flex items-center gap-3">
         <select aria-label="Project" value={projectId} onChange={(e) => setProjectId(e.target.value)} className="input h-9 w-56 py-0">
           <option value="">No project</option>
           {projects?.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
-        <Button variant="primary" className="ml-auto" loading={busy} disabled={q.trim().length < 8} onClick={start}>Start research</Button>
+        <Button variant="primary" className="ml-auto" loading={busy} disabled={q.trim().length < 8} onClick={start}>{kind === "contradiction" ? "Open the lab" : kind === "hypothesis" ? "Test it" : "Start research"}</Button>
       </div>
       <div className="mt-3"><ErrorNote error={err} /></div>
       {ai?.provider === "none" && <p className="mt-6 text-[0.8rem] text-amber-200/80">No AI provider is configured: Orbital will gather and store sources, but won't synthesize findings until one is set up.</p>}
@@ -92,6 +124,10 @@ const LEVEL_TONE: Record<string, "ok" | "info" | "warn"> = { verified: "ok", inf
 function ResearchDetail({ id }: { id: string }) {
   const { data: r, error } = useResource<any>(`/research/${id}`);
   const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
+  const tab = (params.get("tab") as "report" | "sources" | "lineage") ?? "report";
+  const focusFinding = params.get("finding") != null ? Number(params.get("finding")) : null;
+  const ai = useApp((s) => s.ai);
   const setContent = usePanel((s) => s.setContent);
   const [rating, setRating] = useState<number | null>(null);
 
@@ -133,14 +169,26 @@ function ResearchDetail({ id }: { id: string }) {
       <div className="mt-2 flex flex-wrap items-center gap-2 text-[0.75rem] text-mute">
         <Badge tone={r.status === "completed" ? "ok" : r.status === "failed" ? "warn" : "info"}>{r.status}</Badge>
         <span>Started {timeAgo(r.created_at)}</span>
-        {sources.length > 0 && <span>· {sources.length} sources</span>}
+        {sources.length > 0 && <span>· {sources.length} source{sources.length === 1 ? "" : "s"}</span>}
         {rep?.mode === "synthesized" && <Badge tone="ai">AI-synthesized from cited sources</Badge>}
       </div>
+
+      {rep && (
+        <div className="mt-6 flex gap-1 border-b border-line" role="tablist">
+          {([["report", "Report"], ["sources", `Sources${sources.length ? ` · ${sources.length}` : ""}`], ["lineage", "Lineage"]] as const).map(([k, label]) => (
+            <button key={k} role="tab" aria-selected={tab === k} onClick={() => setParams(k === "report" ? {} : { tab: k })}
+              className={cx("-mb-px border-b px-3 pb-2 text-[0.84rem] transition-colors", tab === k ? "border-white text-white" : "border-transparent text-mute hover:text-white")}>{label}</button>
+          ))}
+        </div>
+      )}
+      {rep && tab === "report" && <FreshnessBanner r={r} ai={ai?.provider !== "none"} />}
+      {rep && tab === "sources" && <div className="mt-8"><SourceIntelligence researchId={id} sources={sources} canAssess={r.status === "completed"} /></div>}
+      {rep && tab === "lineage" && <div className="mt-8"><Lineage researchId={id} focusFinding={focusFinding} /></div>}
 
       {(running || r.status === "failed") && <Steps steps={r.steps} running={running} />}
       {r.status === "failed" && <div className="mt-4"><ErrorNote error={r.error} /></div>}
 
-      {rep && (
+      {rep && tab === "report" && (
         <div className="mt-8 space-y-10">
           {rep.mode === "sources_only" && <p className="rounded-lg border border-amber-300/20 bg-amber-300/[0.04] px-4 py-3 text-[0.84rem] text-amber-100/80">{rep.limitations}</p>}
           {rep.executive_summary && (
@@ -149,7 +197,27 @@ function ResearchDetail({ id }: { id: string }) {
               <Markdown text={rep.executive_summary} sources={sources} />
             </section>
           )}
-          {rep.research_questions?.length > 0 && (
+          {rep.hypothesis && (
+            <section className="rounded-xl border border-white/20 bg-white/[0.03] px-5 py-4">
+              <div className="label mb-2">Hypothesis verdict</div>
+              <div className="flex items-baseline gap-3"><span className="text-[1.1rem] capitalize text-white">{rep.hypothesis.verdict}</span><span className="text-[0.8rem] text-mute">confidence {Math.round(rep.hypothesis.confidence * 100)}%</span></div>
+              <p className="mt-1 text-[0.86rem] text-mute-bright">{rep.hypothesis.reasoning}</p>
+              {r.hypothesis_id && <Link to={`/hypotheses/${r.hypothesis_id}`} className="mt-2 inline-block text-[0.8rem] text-white/85 underline decoration-white/20">Open the hypothesis →</Link>}
+            </section>
+          )}
+          {rep.conclusions?.length > 0 && (
+            <section>
+              <h2 className="label mb-3">Conclusions</h2>
+              <ol className="space-y-2">{rep.conclusions.map((c: any, i: number) => (
+                <li key={i} className="flex items-start gap-3 text-[0.92rem] leading-relaxed text-white/90">
+                  <span className="font-mono text-[0.74rem] text-mute">{i + 1}</span><span className="flex-1">{c.statement}</span>
+                  <button onClick={() => setParams({ tab: "lineage" })} className="flex shrink-0 items-center gap-1 text-[0.72rem] text-mute hover:text-white"><GitBranch size={12} />Trace</button>
+                </li>
+              ))}</ol>
+            </section>
+          )}
+          {rep.lab && <ContradictionLab lab={rep.lab} cite={cite} />}
+          {rep.research_questions?.length > 0 && !rep.lab && (
             <section>
               <h2 className="label mb-3">Research questions</h2>
               <ol className="list-decimal space-y-1 pl-5 text-[0.9rem] text-white/85 marker:text-mute">{rep.research_questions.map((q: string) => <li key={q}>{q}</li>)}</ol>
@@ -161,9 +229,11 @@ function ResearchDetail({ id }: { id: string }) {
               <p className="mb-3 text-[0.75rem] text-mute">Each finding is labelled: <b className="font-normal text-emerald-200/90">verified</b> — stated by the cited sources · <b className="font-normal text-sky-200/90">inference</b> — reasoned from them · <b className="font-normal text-amber-200/90">speculation</b> — plausible, unsupported.</p>
               <ul className="divide-y divide-line">
                 {rep.findings.map((f: any, i: number) => (
-                  <li key={i} className="flex gap-3 py-3">
+                  <li key={i} className="group flex gap-3 py-3">
                     <Badge tone={LEVEL_TONE[f.level]} className="mt-0.5 h-fit shrink-0">{f.level}</Badge>
-                    <p className="text-[0.92rem] leading-relaxed text-white/90">{f.statement}{cite(f.source_refs)}{f.node_id && <Link to={`/connections?node=${f.node_id}`} className="ml-2 text-[0.72rem] text-mute hover:text-white">in graph →</Link>}</p>
+                    <p className="flex-1 text-[0.92rem] leading-relaxed text-white/90">{f.statement}{cite(f.source_refs)}{f.node_id && <Link to={`/connections?node=${f.node_id}`} className="ml-2 text-[0.72rem] text-mute hover:text-white">in graph →</Link>}
+                      <FindingFreshness f={f} item={r.freshness?.items?.find((x: any) => x.section === "finding" && x.index === i)} /></p>
+                    <button onClick={() => setParams({ tab: "lineage", finding: String(i) })} title="Trace this finding to its sources" className="flex h-fit shrink-0 items-center gap-1 text-[0.72rem] text-mute opacity-0 transition-opacity hover:text-white group-hover:opacity-100 focus:opacity-100"><GitBranch size={12} />Trace</button>
                   </li>
                 ))}
               </ul>
@@ -176,7 +246,9 @@ function ResearchDetail({ id }: { id: string }) {
                 {rep.statistics.map((s: any, i: number) => (
                   <li key={i} className="rounded-xl border border-line p-4">
                     <div className="text-[1.3rem] font-light tracking-tight">{s.value}</div>
-                    <div className="mt-1 text-[0.84rem] text-white/80">{s.context}<SourceRef n={s.source_ref} sources={sources} /></div>
+                    <div className="mt-1 text-[0.84rem] text-white/80">{s.context}<SourceRef n={s.source_ref} sources={sources} />
+                      {r.freshness?.items?.some((x: any) => x.section === "statistic" && x.index === i && x.state === "stale") && <span className="ml-2 inline-flex items-center gap-1 rounded bg-amber-300/15 px-1.5 text-[0.66rem] text-amber-200"><AlertTriangle size={10} />may be outdated</span>}
+                      {s.refreshed_at && <span className="ml-2 rounded bg-sky-300/10 px-1.5 text-[0.66rem] text-sky-200/90">refreshed {new Date(s.refreshed_at).toLocaleDateString()}</span>}</div>
                     <blockquote className="mt-2 border-l border-white/15 pl-3 text-[0.78rem] italic leading-relaxed text-mute">“{s.quote}”</blockquote>
                     <div className="mt-2 flex items-center gap-1.5 text-[0.7rem] text-mute">{s.verified ? <><ShieldCheck size={12} className="text-emerald-300/80" /> Quote matched in source text</> : "Figure found in source; quote paraphrased"}</div>
                   </li>
@@ -190,7 +262,7 @@ function ResearchDetail({ id }: { id: string }) {
               <ul className="space-y-2 text-[0.9rem] text-white/85">{rep.supporting_evidence.map((e: any, i: number) => <li key={i}>• {e.point}{cite(e.source_refs)}</li>)}</ul>
             </section>
           )}
-          {rep.conflicting_evidence?.length > 0 && (
+          {rep.conflicting_evidence?.length > 0 && !rep.lab && (
             <section>
               <h2 className="label mb-3">Conflicting evidence</h2>
               <ul className="space-y-3">{rep.conflicting_evidence.map((e: any, i: number) => (
@@ -217,7 +289,7 @@ function ResearchDetail({ id }: { id: string }) {
             </section>
           )}
           <section>
-            <h2 className="label mb-3">Sources</h2>
+            <div className="mb-3 flex items-baseline gap-3"><h2 className="label">Sources</h2><button onClick={() => setParams({ tab: "sources" })} className="text-[0.74rem] text-mute hover:text-white">Credibility details →</button></div>
             <ol className="space-y-4">{sources.map((s: any) => <SourceItem key={s.ref_number} s={s} />)}</ol>
           </section>
           <details className="text-[0.8rem] text-mute"><summary className="cursor-pointer hover:text-white">Workflow log</summary><Steps steps={r.steps} running={false} /></details>
@@ -258,6 +330,7 @@ function SourceItem({ s }: { s: any }) {
       <div className="min-w-0">
         <a href={s.url} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-1.5 text-[0.88rem] text-white hover:underline decoration-white/30 underline-offset-2">{s.title}<ExternalLink size={11} className="text-mute" /></a>
         <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[0.72rem] text-mute">
+          {s.assessment && <span style={{ color: GRADE_STYLE[s.assessment.grade].color }} title="Credibility score">{s.assessment.score} · {s.assessment.grade}</span>}
           <Badge>{s.source_type}</Badge><span>{s.provider}</span>{s.authors && <span>· {s.authors}</span>}{s.published && <span>· {s.published}</span>}
           <span className="truncate">· {new URL(s.url).hostname}</span>
         </div>

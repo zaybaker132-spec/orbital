@@ -7,7 +7,7 @@ import { db } from "../db/client.js";
  * highlighted snippets.
  */
 
-export const SEARCH_TYPES = ["conversation", "note", "file", "clip", "research", "memory", "project", "task", "opportunity"] as const;
+export const SEARCH_TYPES = ["conversation", "note", "file", "clip", "research", "extracted", "hypothesis", "memory", "project", "task", "opportunity"] as const;
 export type SearchType = (typeof SEARCH_TYPES)[number];
 
 export interface SearchHit {
@@ -135,6 +135,28 @@ export async function searchAll(workspaceId: string, userId: string, q: string, 
        ORDER BY rank DESC LIMIT $4`,
       [workspaceId, q, like, per, OPTS]).then((rows) => rows.map((o) => ({
         type: "opportunity" as const, id: o.id, title: o.title, snippet: o.snippet, link: "/opportunities", at: o.at, rank: Number(o.rank), meta: `Opportunity · ${o.status}`,
+      }))));
+  }
+  if (want("extracted")) {
+    const LABEL: Record<string, string> = { concept: "Concept", evidence: "Evidence", event: "Timeline", relation: "Relationship" };
+    jobs.push(run(
+      `SELECT x.id, x.kind, x.title, x.detail, x.quote, x.date_text, x.document_id, d.title AS doc, ts_rank(x.tsv, q) + CASE WHEN x.title ILIKE $3 THEN 0.4 ELSE 0 END AS rank,
+              ts_headline('english', x.title || ' — ' || x.detail || ' ' || x.quote, q, $5) AS snippet
+       FROM extracted_items x JOIN documents d ON d.id=x.document_id, websearch_to_tsquery('english', $2) q
+       WHERE x.workspace_id=$1 AND (x.tsv @@ q OR x.title ILIKE $3)
+       ORDER BY rank DESC, x.mentions DESC LIMIT $4`,
+      [workspaceId, q, like, per, OPTS]).then((rows) => rows.map((x) => ({
+        type: "extracted" as const, id: x.id, title: x.title, snippet: x.snippet, link: `/knowledge/${x.document_id}?view=extraction&item=${x.id}`, at: new Date().toISOString(), rank: Number(x.rank) - 0.05,
+        meta: `${LABEL[x.kind] ?? x.kind}${x.date_text ? ` · ${x.date_text}` : ""} · from ${x.doc}`,
+      }))));
+  }
+  if (want("hypothesis")) {
+    jobs.push(run(
+      `SELECT h.id, h.statement, h.status, h.updated_at AS at, ts_rank(to_tsvector('english', h.statement || ' ' || h.rationale), q) + CASE WHEN h.statement ILIKE $3 THEN 0.6 ELSE 0 END AS rank
+       FROM hypotheses h, websearch_to_tsquery('english', $2) q
+       WHERE h.workspace_id=$1 AND (to_tsvector('english', h.statement || ' ' || h.rationale) @@ q OR h.statement ILIKE $3) ORDER BY rank DESC LIMIT $4`,
+      [workspaceId, q, like, per]).then((rows) => rows.map((h) => ({
+        type: "hypothesis" as const, id: h.id, title: h.statement, snippet: "", link: `/hypotheses/${h.id}`, at: h.at, rank: Number(h.rank), meta: `Hypothesis · ${h.status}`,
       }))));
   }
   const hits = (await Promise.all(jobs)).flat();

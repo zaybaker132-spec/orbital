@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Brain, CheckSquare, Compass, FileText, FolderKanban, Globe, Lightbulb, MessageSquare, Paperclip, Search as SearchIcon } from "lucide-react";
+import { Brain, CheckSquare, Compass, FileText, FolderKanban, Globe, Lightbulb, MessageSquare, Paperclip, Search as SearchIcon, Layers, FlaskConical } from "lucide-react";
 import { api } from "@/lib/api";
 import { PageHeader, Pulse, cx } from "@/components/ui";
 import { timeAgo } from "@/lib/format";
@@ -11,6 +11,8 @@ const TYPES = [
   { value: "file", label: "Files", icon: Paperclip },
   { value: "clip", label: "Web clips", icon: Globe },
   { value: "research", label: "Research", icon: Compass },
+  { value: "extracted", label: "Extracted", icon: Layers },
+  { value: "hypothesis", label: "Hypotheses", icon: FlaskConical },
   { value: "memory", label: "Memories", icon: Brain },
   { value: "project", label: "Projects", icon: FolderKanban },
   { value: "task", label: "Tasks", icon: CheckSquare },

@@ -274,3 +274,26 @@ test("routes: real pages are recognised; anything else is a 404", async () => {
   for (const p of ["/", "/login", "/c/123", "/projects", "/projects/abc", "/knowledge/x/", "/m/abc-defg-hij", "/invite/token", "/search", "/focus"]) assert.ok(isAppRoute(p), p);
   for (const p of ["/pricing", "/projects/a/b", "/c", "/wp-admin", "/knowledgebase", "/api/x"]) assert.ok(!isAppRoute(p), p);
 });
+
+test("knowledge extraction without AI: dated events, figures and key terms", async () => {
+  const body = [
+    "The Harbor Market opened on March 3, 2018 with twelve stalls.",
+    "Revenue grew 24% in 2021 as the Harbor Market added evening hours.",
+    "The Harbor Market council approved a second site in 2023.",
+    "Vendors at the Harbor Market reported that weekend footfall doubled, reaching 8,000 visitors.",
+    "Most vendors at the Harbor Market sell fresh produce and baked goods from local farms.",
+  ].join("\n\n");
+  const doc = await alice.req("POST", "/api/documents", { title: "Harbor Market history", body });
+  assert.equal((await alice.req("POST", `/api/documents/${doc.data.id}/extract`)).status, 202);
+  let ex: any = null;
+  for (let i = 0; i < 60 && ex?.status !== "completed"; i++) { await new Promise((r) => setTimeout(r, 150)); ex = (await alice.req("GET", `/api/documents/${doc.data.id}/extraction`)).data; }
+  assert.equal(ex.status, "completed");
+  assert.equal(ex.mode, "basic");
+  const events = ex.items.filter((i: any) => i.kind === "event").map((i: any) => i.sort_date);
+  assert.deepEqual(events, ["2018-03-03", "2021", "2023"], "dated events, oldest first");
+  assert.ok(ex.items.some((i: any) => i.kind === "evidence" && /24%/.test(i.quote)));
+  assert.ok(ex.items.some((i: any) => i.kind === "concept" && i.title === "Harbor Market"), "a repeated term becomes a concept");
+  assert.equal(ex.items.filter((i: any) => i.kind === "relation").length, 0);
+  assert.equal((await bob.req("GET", `/api/documents/${doc.data.id}/extraction`)).data, null, "another person can't see it");
+  assert.equal((await bob.req("POST", `/api/documents/${doc.data.id}/extract`)).status, 404);
+});

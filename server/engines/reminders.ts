@@ -9,7 +9,7 @@ import { emit } from "../lib/events.js";
  *    projects, ideas left unfinished). Nothing is invented; each nudge links to its source item.
  */
 
-export const ITEM_TYPES = ["task", "document", "project", "opportunity", "gap", "conversation"] as const;
+export const ITEM_TYPES = ["task", "document", "project", "opportunity", "gap", "conversation", "research"] as const;
 export type ItemType = (typeof ITEM_TYPES)[number];
 
 const ITEM_TABLE: Record<ItemType, { table: string; title: string }> = {
@@ -19,6 +19,7 @@ const ITEM_TABLE: Record<ItemType, { table: string; title: string }> = {
   opportunity: { table: "opportunities", title: "title" },
   gap: { table: "knowledge_gaps", title: "question" },
   conversation: { table: "conversations", title: "title" },
+  research: { table: "research_sessions", title: "question" },
 };
 
 /** The item a reminder points at must exist in this workspace (and, for conversations, be the person's own). */
@@ -38,6 +39,7 @@ export function itemLink(type: string | null, id: string | null, extra?: { proje
     case "opportunity": return "/opportunities";
     case "gap": return "/core";
     case "conversation": return `/c/${id}`;
+    case "research": return `/research/${id}`;
     default: return null;
   }
 }
@@ -74,7 +76,7 @@ export function stopReminders() { if (timer) clearInterval(timer); timer = null;
 // ── Nudges ─────────────────────────────────────────────────────────────────
 export interface Nudge {
   key: string;
-  kind: "overdue" | "due_soon" | "milestone" | "deadline" | "stalled_project" | "unfinished_idea" | "stale_opportunity" | "open_question";
+  kind: "overdue" | "due_soon" | "milestone" | "deadline" | "stalled_project" | "unfinished_idea" | "stale_opportunity" | "open_question" | "stale_research";
   title: string;
   detail: string;
   link: string | null;
@@ -91,7 +93,7 @@ export const IDEA_TAGS = ["idea", "ideas", "draft", "todo", "wip", "someday", "b
 
 export async function computeNudges(workspaceId: string, userId: string, today: string): Promise<Nudge[]> {
   const q = <T = any>(sql: string, params: unknown[]) => db().query<T>(sql, params).then((r) => r.rows);
-  const [tasks, milestones, projects, stalled, ideas, opps, gaps, dismissed] = await Promise.all([
+  const [tasks, milestones, projects, stalled, ideas, opps, gaps, dismissed, staleResearch] = await Promise.all([
     q(`SELECT t.id, t.title, t.due_date, p.id AS project_id, p.name AS project FROM tasks t JOIN projects p ON p.id=t.project_id
        WHERE t.workspace_id=$1 AND NOT t.done AND t.due_date IS NOT NULL AND t.due_date <= $2::date + 2 AND p.status='active' ORDER BY t.due_date LIMIT 30`, [workspaceId, today]),
     q(`SELECT m.id, m.title, m.target_date, p.id AS project_id, p.name AS project FROM milestones m JOIN projects p ON p.id=m.project_id
@@ -108,6 +110,8 @@ export async function computeNudges(workspaceId: string, userId: string, today: 
     q(`SELECT g.id, g.question, (now()::date - g.created_at::date) AS age FROM knowledge_gaps g
        WHERE g.workspace_id=$1 AND g.status='open' AND g.created_at < now() - interval '7 days' ORDER BY g.created_at LIMIT 6`, [workspaceId]),
     q<{ nudge_key: string }>(`SELECT nudge_key FROM nudge_dismissals WHERE workspace_id=$1 AND user_id=$2 AND (until IS NULL OR until > now())`, [workspaceId, userId]),
+    q(`SELECT id, question, (freshness->>'stale')::int AS stale, (freshness->>'checked_at') AS checked FROM research_sessions
+       WHERE workspace_id=$1 AND status='completed' AND freshness->>'status'='stale' ORDER BY completed_at DESC LIMIT 6`, [workspaceId]),
   ]);
   const out: Nudge[] = [];
   for (const t of tasks) {
@@ -130,6 +134,7 @@ export async function computeNudges(workspaceId: string, userId: string, today: 
   for (const d of ideas) out.push({ key: `idea:${d.id}`, kind: "unfinished_idea", title: d.title, detail: `An idea you haven't touched in ${plural(d.idle, "day")}`, link: `/knowledge/${d.id}`, itemType: "document", itemId: d.id, priority: 35 + Math.min(15, d.idle / 4) });
   for (const o of opps) out.push({ key: `opp:${o.id}:${o.status}`, kind: "stale_opportunity", title: o.title, detail: `Opportunity ${o.status} for ${plural(o.idle, "day")}${o.next_action ? ` · next: ${o.next_action}` : ""}`, link: "/opportunities", itemType: "opportunity", itemId: o.id, priority: 30 + Math.min(15, o.idle / 4) });
   for (const g of gaps) out.push({ key: `gap:${g.id}`, kind: "open_question", title: g.question, detail: `Open question for ${plural(g.age, "day")}`, link: "/core", itemType: "gap", itemId: g.id, priority: 20 + Math.min(10, g.age / 5) });
+  for (const r of staleResearch) out.push({ key: `research:${r.id}:stale`, kind: "stale_research", title: r.question, detail: `${plural(r.stale, "fact")} in this report may be out of date · refresh the affected sections`, link: `/research/${r.id}`, itemType: "research", itemId: r.id, priority: 45 + Math.min(10, r.stale * 2) });
   const hidden = new Set(dismissed.map((d) => d.nudge_key));
   return out.filter((n) => !hidden.has(n.key)).sort((a, b) => b.priority - a.priority);
 }

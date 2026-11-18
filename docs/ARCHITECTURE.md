@@ -26,6 +26,11 @@ orbital/
 │  │  ├─ clipper.ts            web clipper: SSRF-guarded fetch (every redirect), article extraction → Markdown
 │  │  ├─ reminders.ts          personal reminders (scheduler tick → per-user SSE) and computed nudges
 │  │  ├─ search.ts             universal full-text search with highlighted snippets
+│  │  ├─ sourceIntel.ts        source credibility: authority, methodology, recency, independence, corroboration
+│  │  ├─ lineage.ts            conclusion → finding → passage → source → search, for any report
+│  │  ├─ freshness.ts          living reports: shelf life per fact, daily checks, section refresh with history
+│  │  ├─ hypotheses.ts         hypothesis verdicts from hypothesis-mode research (research.ts plans and synthesizes)
+│  │  ├─ extraction.ts         long-document extraction: concepts, evidence, timeline, relationships
 │  │  └─ growth.ts             metrics, timeline, maintenance
 │  ├─ research/sources.ts      Wikipedia, OpenAlex, web-search citation connectors
 │  ├─ lib/                     jobs (durable queue), events (SSE bus), activity + audit logs, crypto, rate limit, http helpers
@@ -33,7 +38,8 @@ orbital/
 │                              projects, opportunities, growth), business.ts (workspaces, team, connectors, automations,
 │                              approvals, tokens, audit), v1.ts (token-authenticated public API), productivity.ts
 │                              (reminders, nudges, focus sessions, voice transcription, save conversation to memory),
-│                              meetings.ts, waitlist.ts
+│                              meetings.ts, waitlist.ts, researchIntel.ts (lineage, assessment, refresh,
+│                              contradiction lab from the graph, hypotheses, knowledge extraction)
 ├─ desktop/                    Electron main process + preload bridge
 ├─ scripts/build-server.mjs    esbuild bundle of the server for the desktop app
 ├─ electron-builder.yml        installer configuration (dmg, nsis, AppImage, deb)

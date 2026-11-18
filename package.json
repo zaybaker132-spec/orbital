@@ -10,7 +10,7 @@
     "start": "NODE_ENV=production tsx server/main.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p server/tsconfig.json",
     "migrate": "tsx server/db/migrate-cli.ts",
-    "test": "tsx --test server/engines/research.test.ts server/api.test.ts server/ai.test.ts server/business.test.ts server/productivity.test.ts",
+    "test": "tsx --test server/engines/research.test.ts server/api.test.ts server/ai.test.ts server/business.test.ts server/productivity.test.ts server/intel.test.ts",
     "build:server": "node scripts/build-server.mjs",
     "desktop": "npm run build && npm run build:server && electron .",
     "desktop:pack": "npm run build && npm run build:server && electron-builder --dir",

@@ -25,6 +25,7 @@ const MeetingsPage = lazy(() => import("./pages/Meetings").then((m) => ({ defaul
 const MeetingRoomPage = lazy(() => import("./pages/MeetingRoom").then((m) => ({ default: m.MeetingRoomPage })));
 const RemindersPage = lazy(() => import("./pages/Reminders").then((m) => ({ default: m.RemindersPage })));
 const FocusPage = lazy(() => import("./pages/Focus").then((m) => ({ default: m.FocusPage })));
+const HypothesesPage = lazy(() => import("./pages/Hypotheses").then((m) => ({ default: m.HypothesesPage })));
 const SearchPage = lazy(() => import("./pages/Search").then((m) => ({ default: m.SearchPage })));
 const ClipPage = lazy(() => import("./pages/Clip").then((m) => ({ default: m.ClipPage })));
 const SettingsPage = lazy(() => import("./pages/Settings").then((m) => ({ default: m.SettingsPage })));
@@ -102,6 +103,8 @@ export function App() {
               <Route path="/reminders" element={<RemindersPage />} />
               <Route path="/focus" element={<FocusPage />} />
               <Route path="/search" element={<SearchPage />} />
+              <Route path="/hypotheses" element={<HypothesesPage />} />
+              <Route path="/hypotheses/:id" element={<HypothesesPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

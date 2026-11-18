@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { NeuralCore } from "@/neural/NeuralCore";
 import { useResource, invalidate } from "@/lib/resource";
 import { api } from "@/lib/api";
@@ -180,6 +180,7 @@ function Timeline({ weekly }: { weekly: { week: string; type: string; n: number 
 
 function Maintenance() {
   const { data } = useResource<any>("/growth/maintenance");
+  const navigate = useNavigate();
   if (!data) return null;
   const resolve = async (id: string, status: "resolved" | "dismissed") => {
     try { await api.patch(`/gaps/${id}`, { status }); invalidate("/growth"); } catch (e) { toastError(e); }
@@ -222,7 +223,10 @@ function Maintenance() {
         {data.contradictions.length > 0 && (
           <Group title="Possible contradictions">
             {data.contradictions.map((c: any) => (
-              <Row key={c.id} actions={c.status === "suggested" ? <><Button size="sm" variant="ghost" onClick={() => edge(c.id, "confirmed")}>Confirm conflict</Button><Button size="sm" variant="ghost" onClick={() => edge(c.id, "rejected")}>Not a conflict</Button></> : <Badge tone="warn">confirmed</Badge>}>
+              <Row key={c.id} actions={<>
+                <Button size="sm" variant="ghost" onClick={async () => { try { const r = await api.post(`/edges/${c.id}/investigate`); invalidate("/research"); navigate(`/research/${r.id}`); } catch (e) { toastError(e); } }}>Investigate in the lab</Button>
+                {c.status === "suggested" ? <><Button size="sm" variant="ghost" onClick={() => edge(c.id, "confirmed")}>Confirm conflict</Button><Button size="sm" variant="ghost" onClick={() => edge(c.id, "rejected")}>Not a conflict</Button></> : <Badge tone="warn">confirmed</Badge>}
+              </>}>
                 <Link to={`/connections?node=${c.a_id}`} className="hover:underline">{c.a_title}</Link> <span className="text-mute">contradicts</span> <Link to={`/connections?node=${c.b_id}`} className="hover:underline">{c.b_title}</Link>
                 {c.rationale && <span className="mt-0.5 block text-[0.76rem] text-mute">{c.rationale}</span>}
               </Row>

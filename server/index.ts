@@ -18,6 +18,9 @@ import { meetings } from "./routes/meetings.js";
 import { startAutomations } from "./engines/automation.js";
 import { startReminders } from "./engines/reminders.js";
 import { productivity } from "./routes/productivity.js";
+import { researchIntel } from "./routes/researchIntel.js";
+import { startFreshnessChecks } from "./engines/freshness.js";
+import "./engines/extraction.js";
 import { isAppRoute } from "../shared/routes.js";
 
 export async function createApp(opts: { jobs?: boolean } = {}) {
@@ -47,6 +50,7 @@ export async function createApp(opts: { jobs?: boolean } = {}) {
   app.use("/api", waitlistAdmin);
   app.use("/api", meetings);
   app.use("/api", productivity);
+  app.use("/api", researchIntel);
   app.use("/api", (_req, _res, next) => next(new HttpError(404, "Not found", "not_found")));
 
   const dist = config.staticDir;
@@ -74,6 +78,7 @@ export async function createApp(opts: { jobs?: boolean } = {}) {
     await startJobs();
     startAutomations();
     startReminders();
+    startFreshnessChecks();
   }
   return app;
 }

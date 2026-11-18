@@ -9,6 +9,7 @@ import { Badge, Button, Dialog, Empty, IconButton, Input, PageHeader, Pulse, Sel
 import { Markdown } from "@/components/Markdown";
 import { ClipPage, ClipBookmarklet } from "./Clip";
 import { RemindMenu } from "@/components/RemindMenu";
+import { ExtractionView } from "./knowledge/Extraction";
 import { NotFoundPage } from "./NotFound";
 import { Section } from "@/components/RightPanel";
 import { label, pct, timeAgo } from "@/lib/format";
@@ -173,6 +174,9 @@ function Notes() {
 
 function DocumentEditor({ id }: { id: string }) {
   const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
+  const view = params.get("view") === "extraction" ? "extraction" : "document";
+  const can = useCan();
   const [doc, setDoc] = useState<any>(null);
   const [mode, setMode] = useState<"write" | "preview">("write");
   const [saving, setSaving] = useState<"idle" | "saving" | "saved">("idle");
@@ -245,6 +249,14 @@ function DocumentEditor({ id }: { id: string }) {
             </figure>
           )}
           {doc.kind === "image" && !doc.body && mode !== "write" && <p className="mt-4 text-[0.84rem] text-mute">Connect an AI provider and Orbital will read this image's text and contents. Until then you can describe it yourself with Edit.</p>}
+          <div className="mt-6 flex gap-1 border-b border-line" role="tablist">
+            {([["document", "Document"], ["extraction", "Extracted knowledge"]] as const).map(([k, label]) => (
+              <button key={k} role="tab" aria-selected={view === k} onClick={() => setParams(k === "document" ? {} : { view: k })}
+                className={cx("-mb-px flex items-center gap-1.5 border-b px-3 pb-2 text-[0.84rem] transition-colors", view === k ? "border-white text-white" : "border-transparent text-mute hover:text-white")}>
+                {k === "extraction" && <Layers size={13} />}{label}</button>
+            ))}
+          </div>
+          {view === "extraction" ? <div className="mt-6"><ExtractionView docId={id} focusItem={params.get("item")} canWrite={can.write} /></div> : (
           <div className="mt-6">
             {mode === "write" ? (
               <Textarea value={doc.body} onChange={(e) => save({ body: e.target.value })} aria-label="Note body (Markdown)"
@@ -252,6 +264,7 @@ function DocumentEditor({ id }: { id: string }) {
                 className="min-h-[60vh] border-none bg-transparent px-0 font-mono text-[0.88rem] leading-[1.75] focus:bg-transparent" />
             ) : doc.body ? <Markdown text={doc.body} /> : doc.kind === "image" ? null : <p className="text-mute">Empty.</p>}
           </div>
+          )}
         </div>
       </div>
     </div>

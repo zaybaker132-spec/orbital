@@ -52,7 +52,7 @@ The server serves the built app with a strict Content-Security-Policy, secure co
 npm test
 ```
 
-38 tests: auth and CSRF, notes/graph/search, memory, chat without AI, projects, growth metrics, **cross-user and cross-workspace isolation**, research verification, source parsing, the full AI pipeline (streaming chat, memory extraction, research synthesis + verification, opportunity discovery → validation → execution plan), files (Word, Excel, PowerPoint, images through the AI provider), the web clipper (article extraction, SSRF refusal, selections, dedupe), reminders delivered only to their owner over the live stream, nudges, project deadlines and progress, focus sessions, universal search with highlights and privacy, voice transcription and "save to memory", and the business layer (roles, email-bound invites, private conversations, viewer restrictions, API token scopes and revocation, operations agent with auto-run internal actions and approval-gated signed webhooks, scheduled briefings, time-zone schedules, SSRF guard). AI paths run through the real Anthropic SDK against a deterministic local mock of the Messages API.
+50 tests: auth and CSRF, notes/graph/search, memory, chat without AI, projects, growth metrics, **cross-user and cross-workspace isolation**, research verification, source parsing, the full AI pipeline (streaming chat, memory extraction, research synthesis + verification, opportunity discovery → validation → execution plan), files (Word, Excel, PowerPoint, images through the AI provider), the web clipper (article extraction, SSRF refusal, selections, dedupe), reminders delivered only to their owner over the live stream, nudges, project deadlines and progress, focus sessions, universal search with highlights and privacy, voice transcription and "save to memory", research intelligence (source scoring, lineage verification, freshness and refresh with history, the contradiction lab, hypothesis verdicts that can't outrun their evidence, knowledge extraction that drops unquoted claims, with and without AI), and the business layer (roles, email-bound invites, private conversations, viewer restrictions, API token scopes and revocation, operations agent with auto-run internal actions and approval-gated signed webhooks, scheduled briefings, time-zone schedules, SSRF guard). AI paths run through the real Anthropic SDK against a deterministic local mock of the Messages API.
 
 ---
 
@@ -83,6 +83,10 @@ Orbital is usable with no AI provider: notes, PDF/Word/Excel/PowerPoint/text imp
 ## Everyday tools
 
 **Voice** (talk to Orbital, dictate, save any conversation to memory) · **Universal search** across every conversation, note, file, web clip and research report · **File intelligence** for PDFs (including scanned), Word, Excel, PowerPoint and images · **Project tracking** with deadlines, due dates, progress and overdue work · **Smart reminders** you set, plus nudges about overdue tasks, slipping deadlines, stalled projects and unfinished ideas · **Web clipper** (dialog or bookmarklet) · **Learning mode** that teaches from what you already know · **Focus mode** for one objective with a timer, tasks and a scratchpad. What each needs and how it works: [Everyday tools](docs/EVERYDAY.md).
+
+## Research intelligence
+
+**Source intelligence** scores every source on authority, methodology, recency, independence and corroboration, with the reasons shown · the **contradiction lab** gathers opposing views and explains exactly why sources disagree · **research lineage** traces every conclusion through findings, reasoning, the exact source passage and the search that found it · **hypothesis testing** weighs evidence for and against, gives a verdict and suggests next tests · **living reports** flag facts past their shelf life and refresh just those sections, keeping their history · **knowledge extraction** turns long documents into searchable concepts, evidence, timelines and relationships. Details: [Research intelligence](docs/RESEARCH.md).
 
 ## Front door, waitlist and meetings
 
@@ -170,5 +174,6 @@ The full guide — how it runs a business, who decides what, integration recipes
 - [Architecture](docs/ARCHITECTURE.md): read before changing the server, engines, data model or AI provider layer.
 - [Orbital for business](docs/BUSINESS.md): read when deploying Orbital for a company or integrating it with other tools.
 - [Desktop app](docs/DESKTOP.md): read when building, signing or distributing the macOS, Windows and Linux apps.
+- [Research intelligence](docs/RESEARCH.md): read to understand source scores, the contradiction lab, lineage, hypothesis tests, living reports and knowledge extraction.
 - [Everyday tools](docs/EVERYDAY.md): read to learn what voice, search, file import, reminders, the web clipper, learning and focus mode do and what each needs.
 - [Meetings](docs/MEETINGS.md): read before running video meetings for others, especially on strict networks (TURN relay).

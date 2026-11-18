@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Video, Brain, Compass, FileText, FolderKanban, Lightbulb, MessageSquare, MessageSquarePlus, Network, PanelLeft, PanelRight, Search, Settings, StickyNote, Sparkles, BookOpen, Upload, Scissors, Target, Bell, Mic, GraduationCap } from "lucide-react";
+import { Video, Brain, Compass, FileText, FolderKanban, Lightbulb, MessageSquare, MessageSquarePlus, Network, PanelLeft, PanelRight, Search, Settings, StickyNote, Sparkles, BookOpen, Upload, Scissors, Target, Bell, Mic, GraduationCap, Scale, FlaskConical } from "lucide-react";
 import { useApp } from "@/state/app";
 import { api } from "@/lib/api";
 import { invalidate } from "@/lib/resource";
@@ -65,6 +65,10 @@ export function CommandPalette() {
     { id: "reminder", label: "Set a reminder", group: "Actions", icon: Bell, keywords: "remind reminder alarm later", run: go("/reminders") },
     { id: "learn", label: q.trim() ? `Learn about "${q.trim()}"` : "Learn something (Learning mode)", group: "Actions", icon: GraduationCap, keywords: "learn teach explain study understand",
       run: () => { navigate(q.trim() ? `/?mode=learning&q=${encodeURIComponent(q.trim())}` : "/?mode=learning"); close(); } },
+    { id: "lab", label: q.trim() ? `Contradiction lab: "${q.trim()}"` : "Open the contradiction lab", group: "Actions", icon: Scale, keywords: "contradiction disagree debate opposing views lab",
+      run: () => { navigate(`/research?kind=contradiction${q.trim() ? `&q=${encodeURIComponent(q.trim())}` : ""}`); close(); } },
+    { id: "hypothesis", label: q.trim() ? `Test hypothesis: "${q.trim()}"` : "Test a hypothesis", group: "Actions", icon: FlaskConical, keywords: "hypothesis test evidence for against verdict",
+      run: () => { navigate(`/hypotheses${q.trim() ? `?q=${encodeURIComponent(q.trim())}` : ""}`); close(); } },
     { id: "voice", label: "Talk to Orbital", group: "Actions", icon: Mic, keywords: "voice speak talk microphone", run: go("/?voice=1") },
     { id: "project", label: "New project", group: "Actions", icon: FolderKanban, keywords: "create project", run: go("/projects?new=1") },
     { id: "meeting-new", label: "Start a meeting", group: "Actions", icon: Video, keywords: "call video zoom meet",
@@ -93,7 +97,7 @@ export function CommandPalette() {
       const meta = TYPE_META[r.type];
       return { id: `${r.type}-${r.id}`, label: r.title, hint: r.snippet && r.type !== "document" ? String(r.snippet).slice(0, 40) : undefined, group: meta.group, icon: meta.icon, run: go(meta.to(r.id)) };
     });
-    const acts = actions.filter((a) => !needle || a.id === "search-all" || a.id === "research" || a.id === "note" || a.id === "learn" || `${a.label} ${a.keywords ?? ""}`.toLowerCase().includes(needle));
+    const acts = actions.filter((a) => !needle || a.id === "search-all" || a.id === "research" || a.id === "note" || a.id === "learn" || a.id === "lab" || a.id === "hypothesis" || `${a.label} ${a.keywords ?? ""}`.toLowerCase().includes(needle));
     return needle ? [...found, ...acts.filter((a) => a.id === "search-all"), ...acts.filter((a) => a.id !== "search-all")] : acts;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [results, actions, q]);

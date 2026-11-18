@@ -65,6 +65,10 @@ function handle(e: any) {
     case "actions":
       invalidate("/actions", "/automations", "/documents", "/projects", "/research", "/growth");
       break;
+    case "extraction":
+      invalidate(`/documents/${e.documentId}/extraction`);
+      if (e.status === "completed") { invalidate("/graph", "/growth", "/search"); toast("Knowledge extracted", { action: { label: "Open", to: `/knowledge/${e.documentId}?view=extraction` } }); }
+      break;
     case "reminder": {
       invalidate("/reminders");
       toast(`Reminder: ${e.title}`, { sticky: true, action: { label: e.link ? "Open" : "View", to: e.link ?? "/reminders" } });

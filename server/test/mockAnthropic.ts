@@ -29,23 +29,67 @@ function structured(body: any): unknown {
   }
   if (props.includes("title")) return { title: "Mock conversation title" };
   if (props.includes("links")) return { links: [{ index: 0, relation: "supports", direction: "forward", confidence: 0.8, rationale: "Mock classification." }] };
+  if (props.includes("positions") && props.includes("unknowns") && !props.includes("executive_summary")) {
+    return { interpretation: "Whether remote work raises productivity is disputed.", unknowns: ["Long-run effects"], positions: [
+      { label: "Remote work raises productivity", summary: "Fewer interruptions and no commute.", search_queries: ["remote work productivity gains", "work from home output study"] },
+      { label: "Remote work lowers productivity", summary: "Weaker collaboration and mentoring.", search_queries: ["remote work productivity decline", "work from home collaboration costs"] },
+    ] };
+  }
+  if (props.includes("for_queries")) return { interpretation: "Small businesses are adopting AI scheduling quickly.", for_queries: ["small business AI scheduling adoption"], against_queries: ["small business AI adoption barriers"], unknowns: ["Regional differences"] };
+  if (props.includes("assessments")) {
+    const ns = [...text.matchAll(/<source n="(\d+)"/g)].map((m) => Number(m[1]));
+    return { assessments: ns.map((n) => ({ n, methodology: "survey", methodology_note: "Survey of small businesses, 2025.", conflict_level: "none_evident", conflict_note: "" })) };
+  }
+  if (props.includes("updates")) {
+    const ns = [...text.matchAll(/<source n="(\d+)"/g)].map((m) => Number(m[1]));
+    return { updates: [{ item: 0, status: "updated", statement: "48% of small businesses used AI for scheduling in 2026.", value: "", quote: "", source_refs: [Math.max(...ns)], note: "A newer survey reports higher adoption." }] };
+  }
+  if (props.includes("concepts") && props.includes("events")) {
+    const part = text.match(/<text>\n([\s\S]*?)\n<\/text>/)?.[1] ?? "";
+    const sentences = part.split(/(?<=\.)\s+/).filter((x) => x.length > 20);
+    const dated = sentences.find((x) => /\b(19|20)\d{2}\b/.test(x));
+    const figure = sentences.find((x) => /\d+%/.test(x));
+    return {
+      concepts: [{ name: "Booking software", definition: "Software salons use to take appointments." }, { name: "No-shows", definition: "Clients who miss appointments." }],
+      evidence: [
+        ...(figure ? [{ statement: figure, kind: "statistic", quote: figure }] : []),
+        { statement: "An invented claim", kind: "fact", quote: "This sentence is not in the text at all." },
+      ],
+      events: dated ? [{ date_text: dated.match(/\b(19|20)\d{2}\b/)![0], iso_date: dated.match(/\b(19|20)\d{2}\b/)![0], event: dated.slice(0, 80), quote: dated }] : [],
+      relations: [{ subject: "Booking software", relation: "reduces", object: "No-shows", quote: sentences.find((x) => /reduce/i.test(x)) ?? "missing quote that is not present" }],
+    };
+  }
   if (props.includes("subquestions")) return { interpretation: "Mock interpretation", subquestions: [{ question: "How widely is AI used by small businesses?", search_query: "small business AI adoption" }], unknowns: ["Regional differences"] };
   if (props.includes("executive_summary")) {
-    return {
+    const base = {
       executive_summary: "Small businesses are adopting AI for scheduling [1].",
+      conclusions: [{ statement: "AI scheduling is mainstream among small businesses.", finding_refs: [0, 2, 9] }],
       findings: [
-        { statement: "42% of small businesses used AI for scheduling in 2025.", source_refs: [1], level: "verified" },
-        { statement: "Fabricated claim citing a source that was never retrieved.", source_refs: [7], level: "verified" },
+        { statement: "42% of small businesses used AI for scheduling in 2025.", source_refs: [1], level: "verified", reasoning: "The survey in source 1 states the figure directly.", builds_on: [], knowledge_refs: ["K1", "K99"], time_sensitivity: "fast" },
+        { statement: "Fabricated claim citing a source that was never retrieved.", source_refs: [7], level: "verified", reasoning: "None.", builds_on: [], knowledge_refs: [], time_sensitivity: "moderate" },
+        { statement: "Scheduling is the most common entry point for AI in small firms.", source_refs: [], level: "inference", reasoning: "Follows from the adoption figure in finding 0.", builds_on: [0, 2], knowledge_refs: [], time_sensitivity: "slow" },
       ],
       statistics: [
-        { value: "42%", context: "AI scheduling adoption", source_ref: 1, quote: "42% of small businesses used AI tools for scheduling" },
-        { value: "90%", context: "Invented figure", source_ref: 1, quote: "90% of businesses love AI" },
+        { value: "42%", context: "AI scheduling adoption", source_ref: 1, quote: "42% of small businesses used AI tools for scheduling", time_sensitivity: "fast" },
+        { value: "90%", context: "Invented figure", source_ref: 1, quote: "90% of businesses love AI", time_sensitivity: "fast" },
       ],
       supporting_evidence: [{ point: "Adoption is growing.", source_refs: [1] }],
       conflicting_evidence: [],
       further_research: ["What do salons currently pay for booking software?"],
       limitations: "Single source.",
     };
+    if (props.includes("disagreements")) return { ...base,
+      positions: [{ label: "Remote work raises productivity", summary: "Output per hour rises.", source_refs: [1] }, { label: "Remote work lowers productivity", summary: "Collaboration suffers.", source_refs: [5] }],
+      disagreements: [{ topic: "Does output rise?", claims: [{ position: "Remote work raises productivity", claim: "Output rose.", source_refs: [1] }, { position: "Remote work lowers productivity", claim: "Innovation fell.", source_refs: [5] }], causes: ["methodology", "timeframe"], explanation: "They measure different outputs over different periods.", resolution: "A multi-year study measuring both." }],
+      common_ground: [{ point: "Commute time falls.", source_refs: [1] }],
+      weight_of_evidence: { leaning: "Modest gains for individual tasks", confidence: "medium", reasoning: "Most cited evidence measures individual output." } };
+    if (props.includes("verdict")) return { ...base,
+      evidence_for: [{ point: "42% adoption in 2025.", source_refs: [1], strength: "strong" }, { point: "Uncited claim.", source_refs: [8], strength: "strong" }],
+      evidence_against: [],
+      knowledge_evidence: [{ point: "Your notes say salons struggle with no-shows.", knowledge_refs: ["K1"], stance: "for" }],
+      verdict: "supported", confidence: 0.72, reasoning: "Strong survey evidence, nothing contrary found.",
+      next_tests: [{ question: "Is AI scheduling adoption growing among salons specifically?", why: "Salons may differ.", would_support_if: "Salon adoption above 40%.", would_refute_if: "Salon adoption below 15%." }] };
+    return base;
   }
   if (props.includes("opportunities")) {
     return { opportunities: [{ title: "AI booking assistant for salons", area: "software_product", explanation: "Automate bookings.", why_identified: "Your goal [M1] and skills.", memory_refs: ["M1"], source_refs: ["S1"], problem: "Missed bookings.", business_model: "Subscription.", difficulty: "moderate", resources: "Time.", risks: "Competition.", next_action: "Interview 5 salon owners.", uncertainty: "Willingness to pay." }] };
