@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowUp, Check, Copy, FileText, Paperclip, Square, ThumbsDown, ThumbsUp, Compass, X, FolderKanban, BookmarkPlus } from "lucide-react";
+import { ArrowUp, Check, Copy, FileText, Paperclip, Square, ThumbsDown, ThumbsUp, Compass, X, FolderKanban, BookmarkPlus, Mic, AudioLines } from "lucide-react";
 import { api, streamPost } from "@/lib/api";
 import { invalidate, useResource } from "@/lib/resource";
 import { useApp } from "@/state/app";
@@ -9,7 +9,10 @@ import { useCore } from "@/state/core";
 import { usePanel, toast, toastError, type AnswerContext } from "@/state/ui";
 import { NeuralCore } from "@/neural/NeuralCore";
 import { Markdown } from "@/components/Markdown";
-import { Badge, IconButton, Pulse, Select, cx } from "@/components/ui";
+import { Badge, Button, IconButton, Pulse, Select, cx } from "@/components/ui";
+import { VoiceMode } from "@/components/VoiceMode";
+import { useSpeechInput } from "@/lib/voice";
+import { useCan } from "@/state/app";
 
 export const MODES = [
   { id: "standard", label: "Standard", hint: "Everyday questions with your context" },
@@ -38,6 +41,17 @@ export function ChatPage() {
   const stick = useRef(true);
   const setAnswer = usePanel((s) => s.setAnswer);
   const setPanelContent = usePanel((s) => s.setContent);
+  const [search, setSearch] = useSearchParams();
+  const [voice, setVoice] = useState(search.get("voice") === "1");
+  const [draft, setDraft] = useState("");
+  useEffect(() => {
+    const m = search.get("mode");
+    if (m && MODES.some((x) => x.id === m)) setMode(m as ModeId);
+    if (search.get("voice") === "1") setVoice(true);
+    const q = search.get("q");
+    if (q) setDraft(m === "learning" ? `Teach me about ${q}` : q);
+    if (m || q || search.get("voice")) setSearch({}, { replace: true });
+  }, [search, setSearch]);
 
   useEffect(() => { setPanelContent("", null); }, [setPanelContent]);
 
@@ -102,10 +116,21 @@ export function ChatPage() {
   }, [convId, mode, projectId, navigate, setAnswer]);
 
   const empty = !convId && !messages.length;
+  const can = useCan();
+  const remember = async () => {
+    if (!convId) return;
+    try {
+      const r = await api.post(`/conversations/${convId}/remember`);
+      invalidate("/documents", "/memories", "/graph", "/growth");
+      const parts = [r.memories ? `${r.memories} new memor${r.memories === 1 ? "y" : "ies"}` : "", r.pending ? `${r.pending} for review` : ""].filter(Boolean).join(", ");
+      toast(r.aiError ? `Saved the conversation as a note. Memories weren't extracted: ${r.aiError}` : r.ai ? `Saved to memory${parts ? `: ${parts}` : " (no new facts to remember)"}` : "Saved the conversation as a searchable note", { action: { label: "Open note", to: `/knowledge/${r.documentId}` } });
+    } catch (e) { toastError(e); }
+  };
 
   return (
     <div className="flex h-full flex-col">
-      {!empty && <ChatHeader convId={convId} title={title} projectId={projectId} onProject={setProjectId} />}
+      {voice && <VoiceMode messages={messages} streaming={streaming} onSend={(t) => send(t, [])} onClose={() => setVoice(false)} onRemember={remember} canRemember={!!convId && can.write} />}
+      {!empty && <ChatHeader convId={convId} title={title} projectId={projectId} onProject={setProjectId} onRemember={can.write ? remember : undefined} />}
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto" onScroll={(e) => { const el = e.currentTarget; stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80; }}>
         {empty ? (
           <EmptyState onPick={(t, m) => { if (m) setMode(m); return t; }} />
@@ -116,12 +141,13 @@ export function ChatPage() {
           </div>
         )}
       </div>
-      <Composer onSend={send} mode={mode} setMode={setMode} streaming={streaming} onStop={() => abortRef.current?.abort()} projectId={projectId} setProjectId={empty ? setProjectId : undefined} hero={empty} />
+      <Composer draft={draft} onVoice={() => setVoice(true)} onSend={send} mode={mode} setMode={setMode} streaming={streaming} onStop={() => abortRef.current?.abort()} projectId={projectId} setProjectId={empty ? setProjectId : undefined} hero={empty} />
     </div>
   );
 }
 
-function ChatHeader({ convId, title, projectId, onProject }: { convId: string | null; title: string; projectId: string | null; onProject: (id: string | null) => void }) {
+function ChatHeader({ convId, title, projectId, onProject, onRemember }: { convId: string | null; title: string; projectId: string | null; onProject: (id: string | null) => void; onRemember?: () => Promise<void> }) {
+  const [saving, setSaving] = useState(false);
   const { data: projects } = useResource<any[]>("/projects");
   const [editing, setEditing] = useState(false);
   const [val, setVal] = useState(title);
@@ -140,6 +166,7 @@ function ChatHeader({ convId, title, projectId, onProject }: { convId: string | 
         <button onClick={() => setEditing(true)} className="truncate text-[0.9rem] text-white/80 hover:text-white" title="Rename">{title || "Conversation"}</button>
       )}
       <div className="ml-auto flex items-center gap-2">
+        {onRemember && convId && <Button size="sm" variant="ghost" icon={<BookmarkPlus size={13} />} loading={saving} title="Keep this conversation as a searchable note and remember what you said" onClick={async () => { setSaving(true); try { await onRemember(); } finally { setSaving(false); } }}>Save to memory</Button>}
         <FolderKanban size={13} className="text-mute" />
         <Select label="Project" value={projectId ?? ""} className="h-7 w-44 text-[0.8rem]"
           onChange={async (v) => { onProject(v || null); if (convId) { await api.patch(`/conversations/${convId}`, { projectId: v || null }).catch(toastError); invalidate("/conversations"); } }}
@@ -275,7 +302,8 @@ function ResearchMessage({ m }: { m: Msg }) {
   );
 }
 
-function Composer({ onSend, mode, setMode, streaming, onStop, hero, projectId, setProjectId }: {
+function Composer({ draft, onSend, onVoice, mode, setMode, streaming, onStop, hero, projectId, setProjectId }: {
+  draft: string; onVoice: () => void;
   onSend: (t: string, a: { id: string; title: string }[]) => void; mode: ModeId; setMode: (m: ModeId) => void; streaming: boolean; onStop: () => void; hero: boolean;
   projectId: string | null; setProjectId?: (id: string | null) => void;
 }) {
@@ -286,6 +314,14 @@ function Composer({ onSend, mode, setMode, streaming, onStop, hero, projectId, s
   const file = useRef<HTMLInputElement>(null);
   const ai = useApp((s) => s.ai);
   const { data: projects } = useResource<any[]>(setProjectId ? "/projects" : null);
+  useEffect(() => { if (draft) { setText(draft); ta.current?.focus(); } }, [draft]);
+  // Dictation: speech goes into the message box so you can check it before sending.
+  const base = useRef("");
+  const dictation = useSpeechInput({
+    onInterim: (t) => setText((base.current ? base.current + " " : "") + t),
+    onFinal: (t) => { setText((base.current ? base.current + " " : "") + t); ta.current?.focus(); },
+  });
+  useEffect(() => { if (dictation.error) toastError(new Error(dictation.error)); }, [dictation.error]);
 
   useEffect(() => {
     const el = ta.current;
@@ -355,8 +391,15 @@ function Composer({ onSend, mode, setMode, streaming, onStop, hero, projectId, s
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); submit(); } }}
             className="block max-h-[260px] w-full resize-none bg-transparent px-4 pb-1 pt-3.5 text-[0.95rem] leading-relaxed outline-none placeholder:text-mute-soft" />
           <div className="flex items-center gap-1 px-2.5 pb-2.5">
-            <input ref={file} type="file" hidden accept=".pdf,.txt,.md,.markdown,.csv,.json,.html" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
-            <IconButton label="Attach a PDF or text file" onClick={() => file.current?.click()} disabled={uploading}>{uploading ? <Pulse label="Uploading" /> : <Paperclip size={15} />}</IconButton>
+            <input ref={file} type="file" hidden accept=".pdf,.docx,.xlsx,.pptx,.png,.jpg,.jpeg,.gif,.webp,.txt,.md,.markdown,.csv,.tsv,.json,.html" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
+            <IconButton label="Attach a file (PDF, Word, Excel, PowerPoint, image, text)" onClick={() => file.current?.click()} disabled={uploading}>{uploading ? <Pulse label="Uploading" /> : <Paperclip size={15} />}</IconButton>
+            {dictation.available && (
+              <IconButton label={dictation.listening ? "Stop dictation" : dictation.transcribing ? "Transcribing…" : "Dictate"} active={dictation.listening}
+                onClick={() => { if (dictation.listening) dictation.stop(); else { base.current = text.trim(); dictation.start(); } }}>
+                {dictation.transcribing ? <Pulse label="Transcribing" /> : <Mic size={15} className={cx(dictation.listening && "text-red-300")} />}
+              </IconButton>
+            )}
+            <IconButton label="Talk to Orbital (voice conversation)" onClick={onVoice}><AudioLines size={15} /></IconButton>
             <span className="ml-1 truncate text-[0.74rem] text-mute-soft">{current.hint}</span>
             {ai?.provider === "none" && mode !== "deep_research" && <Badge tone="warn" className="ml-2">No AI provider — answers use your knowledge only</Badge>}
             {streaming ? (

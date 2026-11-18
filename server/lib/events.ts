@@ -11,16 +11,20 @@ export type OrbitalEvent =
   | { type: "knowledge"; nodesAdded?: number; edgesAdded?: number; memoriesAdded?: number; pending?: number }
   | { type: "opportunities"; status: "started" | "done" | "error"; count?: number; error?: string }
   | { type: "notice"; level: "info" | "warn"; message: string }
-  | { type: "actions" };
+  | { type: "actions" }
+  /** Personal: delivered only to the windows of `userId`. */
+  | { type: "reminder"; userId: string; id: string; title: string; note: string; link: string | null };
 
-const clients = new Map<string, Set<Response>>();
+interface Client { res: Response; userId: string }
+const clients = new Map<string, Set<Client>>();
 
-export function subscribe(workspaceId: string, res: Response) {
+export function subscribe(workspaceId: string, res: Response, userId: string) {
   let set = clients.get(workspaceId);
   if (!set) clients.set(workspaceId, (set = new Set()));
-  set.add(res);
+  const c = { res, userId };
+  set.add(c);
   return () => {
-    set!.delete(res);
+    set!.delete(c);
     if (!set!.size) clients.delete(workspaceId);
   };
 }
@@ -28,8 +32,9 @@ export function subscribe(workspaceId: string, res: Response) {
 export function emit(workspaceId: string, event: OrbitalEvent) {
   const set = clients.get(workspaceId);
   if (!set) return;
+  const only = "userId" in event ? event.userId : null;
   const payload = `data: ${JSON.stringify(event)}\n\n`;
-  for (const res of set) res.write(payload);
+  for (const c of set) if (!only || c.userId === only) c.res.write(payload);
 }
 
 /** Bracket a unit of work with core state transitions. */

@@ -9,7 +9,7 @@ orbital/
 │  ├─ main.ts                  process entry (also bundled for the desktop app)
 │  ├─ auth/                    scrypt passwords, hashed session tokens, CSRF check, workspace membership + roles
 │  ├─ ai/
-│  │  ├─ provider.ts           provider-independent interface: stream / json / webSearch
+│  │  ├─ provider.ts           provider-independent interface: stream / json / webSearch / readFile (images, scanned PDFs)
 │  │  ├─ anthropic.ts          Claude via @anthropic-ai/sdk (adaptive thinking, effort, fallbacks, web search)
 │  │  ├─ openai.ts             OpenAI-compatible endpoint (no web search)
 │  │  └─ embeddings.ts         local hashed features | remote embeddings (256-d)
@@ -22,12 +22,18 @@ orbital/
 │  │  ├─ opportunity.ts        ENGINE 05 — discovery, validation, execution plans
 │  │  ├─ knowledge.ts          documents → chunks → embeddings → nodes
 │  │  ├─ automation.ts         OPERATIONS — schedules, briefings, monitors, operations agent, actions, connectors
+│  │  ├─ files.ts              file intelligence: PDF, .docx, .xlsx, .pptx (local XML parsing), images via the AI provider
+│  │  ├─ clipper.ts            web clipper: SSRF-guarded fetch (every redirect), article extraction → Markdown
+│  │  ├─ reminders.ts          personal reminders (scheduler tick → per-user SSE) and computed nudges
+│  │  ├─ search.ts             universal full-text search with highlighted snippets
 │  │  └─ growth.ts             metrics, timeline, maintenance
 │  ├─ research/sources.ts      Wikipedia, OpenAlex, web-search citation connectors
 │  ├─ lib/                     jobs (durable queue), events (SSE bus), activity + audit logs, crypto, rate limit, http helpers
 │  └─ routes/                  core.ts (auth, events, chat, memory, graph, feedback), workspace.ts (knowledge, research,
 │                              projects, opportunities, growth), business.ts (workspaces, team, connectors, automations,
-│                              approvals, tokens, audit), v1.ts (token-authenticated public API)
+│                              approvals, tokens, audit), v1.ts (token-authenticated public API), productivity.ts
+│                              (reminders, nudges, focus sessions, voice transcription, save conversation to memory),
+│                              meetings.ts, waitlist.ts
 ├─ desktop/                    Electron main process + preload bridge
 ├─ scripts/build-server.mjs    esbuild bundle of the server for the desktop app
 ├─ electron-builder.yml        installer configuration (dmg, nsis, AppImage, deb)
@@ -35,9 +41,10 @@ orbital/
 ├─ src/                        React + TypeScript + Tailwind (Vite)
 │  ├─ neural/                  Neural Core: geometry, GLSL, R3F component, 2D fallback
 │  ├─ components/              Shell (sidebar/topbar), RightPanel, CommandPalette, Markdown, ui kit
-│  ├─ pages/                   Chat, Core, Research, Knowledge, Connections, Projects, Opportunities, Settings, Auth
+│  ├─ pages/                   Chat, Core, Research, Knowledge, Connections, Projects, Opportunities, Reminders, Focus,
+│  │                           Search, Clip, Meetings, Settings, Auth, Waitlist
 │  ├─ state/                   app (auth/prefs), core (Neural Core states), events (SSE), ui (toasts, panel)
-│  └─ lib/                     api client, cached resources with invalidation, formatting
+│  └─ lib/                     api client, cached resources with invalidation, formatting, voice (speech in/out), when
 └─ docs/
 ```
 

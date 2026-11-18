@@ -21,6 +21,10 @@ const TeamPage = lazy(() => import("./pages/Team").then((m) => ({ default: m.Tea
 const WaitlistPage = lazy(() => import("./pages/Waitlist").then((m) => ({ default: m.WaitlistPage })));
 const MeetingsPage = lazy(() => import("./pages/Meetings").then((m) => ({ default: m.MeetingsPage })));
 const MeetingRoomPage = lazy(() => import("./pages/MeetingRoom").then((m) => ({ default: m.MeetingRoomPage })));
+const RemindersPage = lazy(() => import("./pages/Reminders").then((m) => ({ default: m.RemindersPage })));
+const FocusPage = lazy(() => import("./pages/Focus").then((m) => ({ default: m.FocusPage })));
+const SearchPage = lazy(() => import("./pages/Search").then((m) => ({ default: m.SearchPage })));
+const ClipPage = lazy(() => import("./pages/Clip").then((m) => ({ default: m.ClipPage })));
 const SettingsPage = lazy(() => import("./pages/Settings").then((m) => ({ default: m.SettingsPage })));
 
 /** Invite links (/invite/<token>) survive sign-in: the token is held for this tab until accepted. */
@@ -65,6 +69,8 @@ export function App() {
     return <AuthPage />;
   }
   if (loc.pathname === "/login") return <Navigate to="/" replace />;
+  // The web clipper opens in a small window of its own: no app shell.
+  if (loc.pathname === "/clip") return <Suspense fallback={<div className="h-full bg-black" />}><ClipPage /></Suspense>;
 
   // Top-level section key: transitions between sections, not between items inside one.
   const section = loc.pathname === "/" || loc.pathname.startsWith("/c/") ? "chat" : loc.pathname.split("/")[1];
@@ -89,6 +95,9 @@ export function App() {
               <Route path="/team" element={<TeamPage />} />
               <Route path="/meetings" element={<MeetingsPage />} />
               <Route path="/m/:code" element={<MeetingRoomPage />} />
+              <Route path="/reminders" element={<RemindersPage />} />
+              <Route path="/focus" element={<FocusPage />} />
+              <Route path="/search" element={<SearchPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

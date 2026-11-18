@@ -49,6 +49,22 @@ export class OpenAICompatProvider implements LLMProvider {
     return { text, stopReason };
   }
 
+  /** Images only (as data URLs); needs a vision-capable model. */
+  async readFile(o: { data: Buffer; mediaType: string; instructions: string }): Promise<string> {
+    if (!o.mediaType.startsWith("image/")) throw Object.assign(new Error("This AI provider can only read images."), { noRetry: true });
+    const res = await fetch(`${config.ai.openaiBaseUrl}/chat/completions`, {
+      method: "POST",
+      headers: this.headers(),
+      body: JSON.stringify({ model: this.model, max_tokens: 8000, messages: [{ role: "user", content: [
+        { type: "image_url", image_url: { url: `data:${o.mediaType};base64,${o.data.toString("base64")}` } },
+        { type: "text", text: o.instructions },
+      ] }] }),
+    });
+    if (!res.ok) throw new Error(`AI provider error ${res.status}: ${(await res.text()).slice(0, 300)}`);
+    const j: any = await res.json();
+    return j.choices?.[0]?.message?.content ?? "";
+  }
+
   async json<T>(o: JsonOptions<T>): Promise<T> {
     const schema = JSON.stringify(z.toJSONSchema(o.schema as any));
     for (let attempt = 0; attempt < 2; attempt++) {

@@ -52,6 +52,15 @@ export const config = {
     openaiBaseUrl: (process.env.OPENAI_BASE_URL || "https://api.openai.com/v1").replace(/\/$/, ""),
     openaiModel: process.env.OPENAI_MODEL || "gpt-4o",
   },
+  /**
+   * Server-side speech-to-text for voice conversations, used when the browser has no built-in
+   * speech recognition (e.g. the desktop app, Firefox). Any OpenAI-compatible
+   * /audio/transcriptions endpoint: OpenAI Whisper, Groq, or a local whisper.cpp / faster-whisper server.
+   */
+  transcription: {
+    baseUrl: (process.env.TRANSCRIPTION_BASE_URL || (process.env.OPENAI_API_KEY ? process.env.OPENAI_BASE_URL || "https://api.openai.com/v1" : "")).replace(/\/$/, ""),
+    model: process.env.TRANSCRIPTION_MODEL || "whisper-1",
+  },
   embeddings: {
     // "local" = deterministic hashed-feature vectors computed on this server (no network, lexical-semantic).
     // "openai" = any OpenAI-compatible /embeddings endpoint that supports `dimensions`.

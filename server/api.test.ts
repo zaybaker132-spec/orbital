@@ -242,3 +242,29 @@ test("meetings: codes, host controls, locked rooms, no spoofed signalling", asyn
   assert.equal((await bob.req("GET", `/api/meetings/${code}`)).data.ended, true);
   assert.equal((await joinStream(alice, code)).status, 410, "ended meetings can't be rejoined");
 });
+
+test("without an AI provider: images are kept, conversations save as notes, voice explains what's needed", async () => {
+  const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=", "base64");
+  const fd = new FormData();
+  fd.append("file", new Blob([new Uint8Array(png)], { type: "image/png" }), "receipt.png");
+  const up = await fetch(base + "/api/documents/upload", { method: "POST", headers: { "x-orbital-request": "1", cookie: alice.cookie }, body: fd });
+  const doc: any = await up.json();
+  assert.equal(up.status, 201);
+  assert.match(doc.notice, /Connect an AI provider/);
+  assert.equal((await alice.req("GET", `/api/documents/${doc.id}`)).data.kind, "image");
+
+  const c = await alice.req("POST", "/api/conversations", {});
+  await alice.req("POST", `/api/conversations/${c.data.id}/messages`, { content: "Notes on the Lisbon trip budget" });
+  const saved = await alice.req("POST", `/api/conversations/${c.data.id}/remember`);
+  assert.equal(saved.status, 200);
+  assert.equal(saved.data.ai, false);
+  assert.match((await alice.req("GET", `/api/documents/${saved.data.documentId}`)).data.body, /Lisbon trip budget/);
+
+  const audio = new FormData();
+  audio.append("audio", new Blob([new Uint8Array(4000)], { type: "audio/webm" }), "speech.webm");
+  const t = await fetch(base + "/api/voice/transcribe", { method: "POST", headers: { "x-orbital-request": "1", cookie: alice.cookie }, body: audio });
+  assert.equal(t.status, 503);
+  assert.match(((await t.json()) as any).error, /Chrome, Edge or Safari/);
+  assert.equal((await alice.req("GET", "/api/voice/config")).data.serverTranscription, false);
+  await settle();
+});

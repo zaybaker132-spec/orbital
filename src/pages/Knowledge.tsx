@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { FileText, FolderPlus, Plus, Search, Trash2, Upload, Eye, PenLine, Check, X, Folder, Hash, Layers, Archive, Link2 } from "lucide-react";
-import { api } from "@/lib/api";
+import { FileText, FolderPlus, Plus, Search, Trash2, Upload, Eye, PenLine, Check, X, Folder, Hash, Layers, Archive, Link2, Scissors } from "lucide-react";
+import { api, getWorkspaceId } from "@/lib/api";
 import { invalidate, useResource } from "@/lib/resource";
 import { usePanel, toast, toastError } from "@/state/ui";
 import { useCan } from "@/state/app";
 import { Badge, Button, Dialog, Empty, IconButton, Input, PageHeader, Pulse, Select, Tabs, Textarea, cx } from "@/components/ui";
 import { Markdown } from "@/components/Markdown";
+import { ClipPage, ClipBookmarklet } from "./Clip";
+import { RemindMenu } from "@/components/RemindMenu";
 import { Section } from "@/components/RightPanel";
 import { label, pct, timeAgo } from "@/lib/format";
 
@@ -56,7 +58,9 @@ function Notes() {
   const [newFolder, setNewFolder] = useState<string | null>(null);
   const [newCollection, setNewCollection] = useState<string | null>(null);
   const can = useCan();
+  const [clipOpen, setClipOpen] = useState(false);
 
+  useEffect(() => { if (params.get("clip")) setClipOpen(true); }, [params]);
   useEffect(() => { if (params.get("import")) setTimeout(() => fileRef.current?.click(), 200); }, [params]);
 
   const setFilter = (k: string, v: string) => {
@@ -75,7 +79,7 @@ function Notes() {
       const fd = new FormData();
       fd.append("file", f);
       if (folder) fd.append("folderId", folder);
-      try { await api.upload("/documents/upload", fd); toast(`Imported ${f.name}`); } catch (e) { toastError(e); }
+      try { const d = await api.upload("/documents/upload", fd); toast(d.notice ? `Imported ${f.name}. ${d.notice}` : `Imported ${f.name}`); } catch (e) { toastError(e); }
     }
     setUploading(false);
     invalidate("/documents", "/tags");
@@ -88,6 +92,13 @@ function Notes() {
 
   return (
     <div className="flex h-full">
+      <Dialog open={clipOpen} onClose={() => setClipOpen(false)} title="Clip a web page">
+        <ClipPage embedded onDone={() => setClipOpen(false)} />
+        <div className="mt-5 border-t border-line pt-4">
+          <p className="mb-2 text-[0.8rem] text-mute">Clip from any site: drag this button to your bookmarks bar, then click it on a page you want to keep. Select text first to save a highlight.</p>
+          <ClipBookmarklet />
+        </div>
+      </Dialog>
       <aside className="w-[220px] shrink-0 overflow-y-auto border-r border-line px-3 py-4" aria-label="Filters">
         <ul className="space-y-px">{filterBtn(!folder && !tag && !collection, () => setFilter("", ""), <><Layers size={13} />All knowledge</>, "all")}</ul>
         <div className="label mb-1.5 mt-5 flex items-center px-2">Folders<button className="ml-auto text-mute hover:text-white" aria-label="New folder" onClick={() => setNewFolder("")}><FolderPlus size={13} /></button></div>
@@ -122,16 +133,17 @@ function Notes() {
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-mute" />
             <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search notes and documents" className="h-9 pl-9" aria-label="Search notes" />
           </div>
-          <input ref={fileRef} type="file" multiple hidden accept=".pdf,.txt,.md,.markdown,.csv,.json,.html" onChange={(e) => e.target.files && upload(e.target.files)} />
-          {can.write && <Button className="ml-auto" icon={<Upload size={14} />} loading={uploading} onClick={() => fileRef.current?.click()}>Import</Button>}
+          <input ref={fileRef} type="file" multiple hidden accept=".pdf,.docx,.xlsx,.pptx,.png,.jpg,.jpeg,.gif,.webp,.txt,.md,.markdown,.csv,.tsv,.json,.html" onChange={(e) => e.target.files && upload(e.target.files)} />
+          {can.write && <Button className="ml-auto" icon={<Scissors size={14} />} onClick={() => setClipOpen(true)}>Clip a page</Button>}
+          {can.write && <Button icon={<Upload size={14} />} loading={uploading} onClick={() => fileRef.current?.click()}>Import</Button>}
           {can.write && <Button variant="primary" icon={<Plus size={14} />} onClick={create}>New note</Button>}
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-8">
           {loading && <div className="py-10 text-center"><Pulse /></div>}
           {docs?.length === 0 && (q || folder || tag || collection
             ? <Empty title="Nothing matches" />
-            : <Empty title="No notes yet" action={<div className="flex gap-2"><Button variant="primary" onClick={create}>Write a note</Button><Button onClick={() => fileRef.current?.click()}>Import a PDF</Button></div>}>
-                Notes and documents become searchable, feed Orbital's answers, and join your knowledge graph. Link notes with [[Note title]].
+            : <Empty title="No notes yet" action={<div className="flex gap-2"><Button variant="primary" onClick={create}>Write a note</Button><Button onClick={() => fileRef.current?.click()}>Import a file</Button></div>}>
+                Write notes or import PDFs, Word, Excel and PowerPoint files, and images. Everything becomes searchable, feeds Orbital's answers, and join your knowledge graph. Link notes with [[Note title]].
               </Empty>)}
           <ul className="divide-y divide-line">
             {docs?.map((d) => (
@@ -201,6 +213,7 @@ function DocumentEditor({ id }: { id: string }) {
         <span className="text-[0.74rem] text-mute-soft" aria-live="polite">{saving === "saving" ? "Saving…" : saving === "saved" ? "Saved" : ""}</span>
         <div className="ml-auto flex items-center gap-1">
           {doc.ai_generated && <Badge tone="ai">AI-generated</Badge>}
+          <RemindMenu itemType="document" itemId={id} />
           <IconButton label={mode === "write" ? "Preview" : "Edit"} onClick={() => setMode(mode === "write" ? "preview" : "write")}>{mode === "write" ? <Eye size={15} /> : <PenLine size={15} />}</IconButton>
           <IconButton label="Delete" onClick={async () => { if (!confirm("Delete this document?")) return; await api.del(`/documents/${id}`).catch(toastError); invalidate("/documents", "/graph", "/growth"); navigate("/knowledge"); }}><Trash2 size={15} /></IconButton>
         </div>
@@ -222,12 +235,18 @@ function DocumentEditor({ id }: { id: string }) {
             {doc.source_url && <a href={doc.source_url} target="_blank" rel="noreferrer noopener" className="text-mute hover:text-white">Source ↗</a>}
             {doc.file_name && <span className="text-mute-soft">Imported from {doc.file_name}</span>}
           </div>
+          {doc.kind === "image" && (
+            <figure className="mt-6 overflow-hidden rounded-xl border border-line bg-panel">
+              <img src={`/api/documents/${id}/file${getWorkspaceId() ? `?workspace=${getWorkspaceId()}` : ""}`} alt={doc.title} className="mx-auto max-h-[60vh] w-auto" />
+            </figure>
+          )}
+          {doc.kind === "image" && !doc.body && mode !== "write" && <p className="mt-4 text-[0.84rem] text-mute">Connect an AI provider and Orbital will read this image's text and contents. Until then you can describe it yourself with Edit.</p>}
           <div className="mt-6">
             {mode === "write" ? (
               <Textarea value={doc.body} onChange={(e) => save({ body: e.target.value })} aria-label="Note body (Markdown)"
                 placeholder={"Write in Markdown. Link other notes with [[Note title]]."}
                 className="min-h-[60vh] border-none bg-transparent px-0 font-mono text-[0.88rem] leading-[1.75] focus:bg-transparent" />
-            ) : doc.body ? <Markdown text={doc.body} /> : <p className="text-mute">Empty.</p>}
+            ) : doc.body ? <Markdown text={doc.body} /> : doc.kind === "image" ? null : <p className="text-mute">Empty.</p>}
           </div>
         </div>
       </div>

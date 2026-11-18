@@ -66,7 +66,7 @@ api.use(requireUser, resolveWorkspace);
 api.get("/events", (req, res) => {
   res.writeHead(200, { "content-type": "text/event-stream", "cache-control": "no-cache, no-transform", connection: "keep-alive", "x-accel-buffering": "no" });
   res.write(`data: ${JSON.stringify({ type: "hello" })}\n\n`);
-  const off = subscribe(ws(req), res);
+  const off = subscribe(ws(req), res, actor(req));
   const ping = setInterval(() => res.write(": ping\n\n"), 25_000);
   req.on("close", () => { clearInterval(ping); off(); });
 });

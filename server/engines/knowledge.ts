@@ -58,7 +58,7 @@ export async function createDocument(workspaceId: string, input: { title: string
   );
   const doc = r.rows[0];
   if (input.projectId) await db().query("INSERT INTO project_links(project_id, workspace_id, item_type, item_id) VALUES ($1,$2,'document',$3) ON CONFLICT DO NOTHING", [input.projectId, workspaceId, doc.id]);
-  await logActivity(workspaceId, input.fileName ? "document.imported" : "document.created", doc.title, { type: "document", id: doc.id });
+  await logActivity(workspaceId, input.kind === "web_clip" ? "document.clipped" : input.fileName ? "document.imported" : "document.created", doc.title, { type: "document", id: doc.id });
   await enqueue(workspaceId, "document.index", { documentId: doc.id });
   return doc;
 }

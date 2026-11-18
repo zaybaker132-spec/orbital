@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useCore } from "./core";
 import { invalidate } from "@/lib/resource";
-import { toast, useJobs } from "./ui";
+import { toast, useJobs, useQuiet } from "./ui";
 import { api } from "@/lib/api";
 
 const runningResearch = new Set<string>();
@@ -65,6 +65,17 @@ function handle(e: any) {
     case "actions":
       invalidate("/actions", "/automations", "/documents", "/projects", "/research", "/growth");
       break;
+    case "reminder": {
+      invalidate("/reminders");
+      toast(`Reminder: ${e.title}`, { sticky: true, action: { label: e.link ? "Open" : "View", to: e.link ?? "/reminders" } });
+      try {
+        if (!useQuiet.getState().on && "Notification" in window && Notification.permission === "granted" && document.visibilityState !== "visible") {
+          const n = new Notification("Orbital reminder", { body: e.note ? `${e.title}\n${e.note}` : e.title, tag: `reminder-${e.id}` });
+          n.onclick = () => { window.focus(); location.assign(e.link ?? "/reminders"); };
+        }
+      } catch { /* notifications unavailable */ }
+      break;
+    }
     case "notice":
       toast(e.message, { tone: e.level === "warn" ? "error" : "info" });
       break;

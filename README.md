@@ -52,7 +52,7 @@ The server serves the built app with a strict Content-Security-Policy, secure co
 npm test
 ```
 
-24 tests: auth and CSRF, notes/graph/search, memory, chat without AI, projects, growth metrics, **cross-user and cross-workspace isolation**, research verification, source parsing, the full AI pipeline (streaming chat, memory extraction, research synthesis + verification, opportunity discovery → validation → execution plan), and the business layer (roles, email-bound invites, private conversations, viewer restrictions, API token scopes and revocation, operations agent with auto-run internal actions and approval-gated signed webhooks, scheduled briefings, time-zone schedules, SSRF guard). AI paths run through the real Anthropic SDK against a deterministic local mock of the Messages API.
+38 tests: auth and CSRF, notes/graph/search, memory, chat without AI, projects, growth metrics, **cross-user and cross-workspace isolation**, research verification, source parsing, the full AI pipeline (streaming chat, memory extraction, research synthesis + verification, opportunity discovery → validation → execution plan), files (Word, Excel, PowerPoint, images through the AI provider), the web clipper (article extraction, SSRF refusal, selections, dedupe), reminders delivered only to their owner over the live stream, nudges, project deadlines and progress, focus sessions, universal search with highlights and privacy, voice transcription and "save to memory", and the business layer (roles, email-bound invites, private conversations, viewer restrictions, API token scopes and revocation, operations agent with auto-run internal actions and approval-gated signed webhooks, scheduled briefings, time-zone schedules, SSRF guard). AI paths run through the real Anthropic SDK against a deterministic local mock of the Messages API.
 
 ---
 
@@ -70,14 +70,19 @@ All secrets are server-side environment variables. Nothing is ever sent to the b
 | `DATABASE_URL` | External PostgreSQL. Needs the `vector` extension. |
 | `RESEARCH_WIKIPEDIA`, `RESEARCH_OPENALEX`, `RESEARCH_WEB_SEARCH` | Toggle research source connectors. |
 | `ORBITAL_ALLOW_SIGNUP` | Set `false` after creating your account on a shared server. |
+| `TRANSCRIPTION_BASE_URL`, `TRANSCRIPTION_API_KEY`, `TRANSCRIPTION_MODEL` | Speech-to-text for voice where the browser has none (desktop app, Firefox). Any OpenAI-compatible `/audio/transcriptions` endpoint. |
 
 See `.env.example` for the full list.
 
 ### What works without an AI key
 
-Orbital is usable with no AI provider: notes, PDF/text import, folders, tags, collections, `[[wiki links]]`, full-text and vector search, the knowledge graph with similarity-based suggestions, manual memories (including "remember that…" in chat), projects, tasks, milestones, opportunity tracking, the growth dashboard and maintenance. Chat answers honestly list what your knowledge base holds instead of generating text. Research gathers and stores real sources (Wikipedia, OpenAlex) but doesn't synthesize findings. Everything that needs a model says so in the UI — nothing is simulated.
+Orbital is usable with no AI provider: notes, PDF/Word/Excel/PowerPoint/text import, web clipping, universal search, reminders and nudges, focus mode, project deadlines and progress, dictation (in browsers with speech recognition), folders, tags, collections, `[[wiki links]]`, full-text and vector search, the knowledge graph with similarity-based suggestions, manual memories (including "remember that…" in chat), projects, tasks, milestones, opportunity tracking, the growth dashboard and maintenance. Chat answers honestly list what your knowledge base holds instead of generating text. Research gathers and stores real sources (Wikipedia, OpenAlex) but doesn't synthesize findings. Everything that needs a model says so in the UI — nothing is simulated.
 
 ---
+
+## Everyday tools
+
+**Voice** (talk to Orbital, dictate, save any conversation to memory) · **Universal search** across every conversation, note, file, web clip and research report · **File intelligence** for PDFs (including scanned), Word, Excel, PowerPoint and images · **Project tracking** with deadlines, due dates, progress and overdue work · **Smart reminders** you set, plus nudges about overdue tasks, slipping deadlines, stalled projects and unfinished ideas · **Web clipper** (dialog or bookmarklet) · **Learning mode** that teaches from what you already know · **Focus mode** for one objective with a timer, tasks and a scratchpad. What each needs and how it works: [Everyday tools](docs/EVERYDAY.md).
 
 ## Front door, waitlist and meetings
 
@@ -147,7 +152,7 @@ The full guide — how it runs a business, who decides what, integration recipes
 
 ## Keyboard
 
-`⌘K / Ctrl K` command palette (search everything, navigate, start research, create notes/projects) · `⌥N` new conversation · `⌘\` sidebar · `⌘.` context panel · `/` focus composer · `g` then `n r k g p o c s` to jump between sections.
+`⌘K / Ctrl K` command palette (search everything, navigate, start research, create notes/projects) · `⌥N` new conversation · `⌘\` sidebar · `⌘.` context panel · `/` focus composer · `g` then `n r k g p t f o m w c s` to jump between sections (`t` reminders, `f` focus) · Space pauses focus mode and interrupts a spoken answer.
 
 ---
 
@@ -157,11 +162,13 @@ The full guide — how it runs a business, who decides what, integration recipes
 - **Live web research requires the Anthropic provider.** Other providers use Wikipedia and OpenAlex only.
 - **Single-node background jobs and rate limits** (durable job table, in-process worker). Scale-out needs a shared queue/limiter.
 - **The anatomical model is procedural**, sculpted from proportional landmarks rather than sampled from a licensed 3D scan. `geometry.ts` isolates this: swap in samples from an anatomical mesh (e.g. via surface/volume sampling of a GLB) without touching the renderer.
-- Scanned (image-only) PDFs aren't OCR'd.
+- Scanned (image-only) PDFs and images are read only with an AI provider (Claude reads both; OpenAI-compatible providers read images).
+- Voice input needs a browser with speech recognition or a configured transcription service; spoken answers use the operating system's voices.
 
 ## Documentation
 
 - [Architecture](docs/ARCHITECTURE.md): read before changing the server, engines, data model or AI provider layer.
 - [Orbital for business](docs/BUSINESS.md): read when deploying Orbital for a company or integrating it with other tools.
 - [Desktop app](docs/DESKTOP.md): read when building, signing or distributing the macOS, Windows and Linux apps.
+- [Everyday tools](docs/EVERYDAY.md): read to learn what voice, search, file import, reminders, the web clipper, learning and focus mode do and what each needs.
 - [Meetings](docs/MEETINGS.md): read before running video meetings for others, especially on strict networks (TURN relay).

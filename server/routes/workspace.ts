@@ -8,7 +8,10 @@ import { rateLimit } from "../lib/rateLimit.js";
 import { logActivity } from "../lib/activity.js";
 import { getLLM } from "../ai/provider.js";
 import { enqueue } from "../lib/jobs.js";
-import { createDocument, deleteDocument, extractPdfText, relatedForDocument, updateDocument } from "../engines/knowledge.js";
+import { createDocument, deleteDocument, relatedForDocument, updateDocument } from "../engines/knowledge.js";
+import { extractFile, FileError, imageMagic } from "../engines/files.js";
+import { clipPage, ClipError } from "../engines/clipper.js";
+import { searchAll, SEARCH_TYPES, type SearchType } from "../engines/search.js";
 import { startResearch } from "../engines/research.js";
 import { absorbValidation, createExecutionPlan, discoverOpportunities, OPPORTUNITY_STATUSES, validateOpportunity } from "../engines/opportunity.js";
 import { growingSubjects, growthStats, maintenance, timeline } from "../engines/growth.js";
@@ -124,38 +127,58 @@ workspace.get("/documents/:id/related", ah(async (req, res) => {
 }));
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: config.maxUploadMb * 1024 * 1024, files: 1 } });
-const TEXT_EXT = /\.(txt|md|markdown|csv|json|html?|xml|ya?ml|rst|org|tex)$/i;
 
 workspace.post("/documents/upload", rateLimit({ windowMs: 60_000, max: 20, key: "user", name: "upload" }), upload.single("file"), ah(async (req, res) => {
   const f = req.file;
   if (!f) throw new HttpError(400, "No file received");
   const name = f.originalname.replace(/[^\w.\- ()]+/g, "_").slice(0, 200);
-  let body: string;
-  const isPdf = f.mimetype === "application/pdf" || /\.pdf$/i.test(name);
-  if (isPdf) {
-    if (f.buffer.subarray(0, 5).toString() !== "%PDF-") throw new HttpError(400, "That file isn't a valid PDF");
-    try {
-      const { text, pages } = await extractPdfText(f.buffer);
-      if (!text.trim()) throw new HttpError(422, "No extractable text found — the PDF may be scanned images.");
-      body = text;
-      void pages;
-    } catch (e: any) {
-      if (e instanceof HttpError) throw e;
-      throw new HttpError(422, "Couldn't read that PDF.");
-    }
-  } else if (TEXT_EXT.test(name) || f.mimetype.startsWith("text/")) {
-    body = f.buffer.toString("utf8");
-    if (body.includes("\u0000")) throw new HttpError(400, "That file appears to be binary, not text.");
-  } else {
-    throw new HttpError(415, "Supported files: PDF, Markdown, plain text, CSV, JSON, HTML.");
+  let extracted;
+  try {
+    extracted = await extractFile(name, f.mimetype, f.buffer);
+  } catch (e: any) {
+    if (e instanceof FileError) throw new HttpError(e.status, e.message);
+    throw new HttpError(502, `Couldn't read that file: ${friendlyAiError(e)}`);
   }
   const projectId = typeof req.body?.projectId === "string" && req.body.projectId ? req.body.projectId : null;
   if (projectId) await ownProject(ws(req), projectId);
   const doc = await createDocument(ws(req), {
-    title: name.replace(/\.[^.]+$/, ""), body, kind: isPdf ? "pdf" : "text", fileName: name, mimeType: f.mimetype, projectId,
+    title: name.replace(/\.[^.]+$/, ""), body: extracted.body, kind: extracted.kind === "text" ? "text" : extracted.kind, fileName: name,
+    mimeType: extracted.kind === "image" ? imageMagic(f.buffer)! : f.mimetype, projectId, aiGenerated: extracted.aiRead,
     folderId: typeof req.body?.folderId === "string" && req.body.folderId ? req.body.folderId : null,
   });
-  res.status(201).json(doc);
+  if (extracted.kind === "image") {
+    await db().query("INSERT INTO document_files(document_id, workspace_id, mime_type, size, data) VALUES ($1,$2,$3,$4,$5)", [doc.id, ws(req), imageMagic(f.buffer), f.buffer.length, f.buffer]);
+  }
+  res.status(201).json({ ...doc, notice: extracted.notice ?? null });
+}));
+
+/** The original bytes of an uploaded image. */
+workspace.get("/documents/:id/file", ah(async (req, res) => {
+  const r = (await db().query<any>("SELECT mime_type, data FROM document_files WHERE document_id=$1 AND workspace_id=$2", [idParam(req), ws(req)])).rows[0];
+  if (!r) throw notFound("File");
+  res.set({ "content-type": r.mime_type, "cache-control": "private, max-age=3600", "x-content-type-options": "nosniff", "content-security-policy": "default-src 'none'" });
+  res.send(Buffer.from(r.data));
+}));
+
+/** Web clipper: save a page (and optionally the part someone selected) as a document. */
+workspace.post("/clip", rateLimit({ windowMs: 60_000, max: 30, key: "user", name: "clip" }), ah(async (req, res) => {
+  const b = parse(z.object({
+    url: z.url({ protocol: /^https?$/ }).max(4000),
+    title: z.string().max(300).optional(),
+    selection: z.string().max(20000).optional(),
+    note: z.string().max(5000).optional(),
+    projectId: z.uuid().nullish(),
+    folderId: z.uuid().nullish(),
+  }), req.body);
+  if (b.projectId) await ownProject(ws(req), b.projectId);
+  const existing = (await db().query<any>("SELECT id, title FROM documents WHERE workspace_id=$1 AND kind='web_clip' AND source_url=$2 LIMIT 1", [ws(req), b.url])).rows[0];
+  if (existing && !b.selection?.trim()) return res.json({ ...existing, existing: true });
+  try {
+    res.status(201).json(await clipPage(ws(req), b));
+  } catch (e) {
+    if (e instanceof ClipError) throw new HttpError(e.status, e.message);
+    throw e;
+  }
 }));
 
 /** Turn a chat response into a note (user-initiated; labelled AI-generated). */
@@ -226,15 +249,21 @@ workspace.post("/research/:id/save-note", ah(async (req, res) => {
 workspace.get("/projects", ah(async (req, res) => {
   res.json((await db().query(
     `SELECT p.*, (SELECT count(*)::int FROM tasks t WHERE t.project_id=p.id) AS task_count,
-            (SELECT count(*)::int FROM tasks t WHERE t.project_id=p.id AND t.done) AS tasks_done
-     FROM projects p WHERE p.workspace_id=$1 ORDER BY p.updated_at DESC`, [ws(req)])).rows);
+            (SELECT count(*)::int FROM tasks t WHERE t.project_id=p.id AND t.done) AS tasks_done,
+            (SELECT count(*)::int FROM tasks t WHERE t.project_id=p.id AND NOT t.done AND t.due_date < $2::date) AS tasks_overdue,
+            (SELECT count(*)::int FROM milestones m WHERE m.project_id=p.id) AS milestone_count,
+            (SELECT count(*)::int FROM milestones m WHERE m.project_id=p.id AND m.done) AS milestones_done,
+            (SELECT min(t.due_date) FROM tasks t WHERE t.project_id=p.id AND NOT t.done AND t.due_date IS NOT NULL) AS next_due
+     FROM projects p WHERE p.workspace_id=$1 ORDER BY (p.status='active') DESC, p.updated_at DESC`, [ws(req), clientToday(req)])).rows);
 }));
 
-const ProjectInput = z.object({ name: z.string().trim().min(1).max(200), description: z.string().max(5000).default(""), goals: z.string().max(5000).default(""), status: z.enum(["active", "paused", "completed", "archived"]).default("active") });
+const ProjectInput = z.object({ name: z.string().trim().min(1).max(200), description: z.string().max(5000).default(""), goals: z.string().max(5000).default(""), status: z.enum(["active", "paused", "completed", "archived"]).default("active"), deadline: z.iso.date().nullish() });
+/** The person's own date (the browser sends it), so "overdue" matches their day, not the server's. */
+const clientToday = (req: { query: Record<string, unknown> }) => typeof req.query.today === "string" && /^\d{4}-\d{2}-\d{2}$/.test(req.query.today) ? req.query.today : new Date().toISOString().slice(0, 10);
 
 workspace.post("/projects", ah(async (req, res) => {
   const b = parse(ProjectInput, req.body);
-  const p = (await db().query<any>("INSERT INTO projects(workspace_id, name, description, goals, status) VALUES ($1,$2,$3,$4,$5) RETURNING *", [ws(req), b.name, b.description, b.goals, b.status])).rows[0];
+  const p = (await db().query<any>("INSERT INTO projects(workspace_id, name, description, goals, status, deadline) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *", [ws(req), b.name, b.description, b.goals, b.status, b.deadline ?? null])).rows[0];
   await upsertNode(ws(req), { kind: "project", title: p.name, summary: `${p.description}\n${p.goals}`, refType: "project", refId: p.id });
   await logActivity(ws(req), "project.created", p.name, { type: "project", id: p.id });
   res.status(201).json(p);
@@ -262,8 +291,9 @@ workspace.get("/projects/:id", ah(async (req, res) => {
 workspace.patch("/projects/:id", ah(async (req, res) => {
   const b = parse(ProjectInput.partial(), req.body);
   const r = await db().query<any>(
-    "UPDATE projects SET name=COALESCE($3,name), description=COALESCE($4,description), goals=COALESCE($5,goals), status=COALESCE($6,status), updated_at=now() WHERE id=$1 AND workspace_id=$2 RETURNING *",
-    [idParam(req), ws(req), b.name ?? null, b.description ?? null, b.goals ?? null, b.status ?? null]);
+    `UPDATE projects SET name=COALESCE($3,name), description=COALESCE($4,description), goals=COALESCE($5,goals), status=COALESCE($6,status),
+       deadline = CASE WHEN $7 THEN $8::date ELSE deadline END, updated_at=now() WHERE id=$1 AND workspace_id=$2 RETURNING *`,
+    [idParam(req), ws(req), b.name ?? null, b.description ?? null, b.goals ?? null, b.status ?? null, b.deadline !== undefined, b.deadline ?? null]);
   if (!r.rows[0]) throw notFound("Project");
   const p = r.rows[0];
   await upsertNode(ws(req), { kind: "project", title: p.name, summary: `${p.description}\n${p.goals}`, refType: "project", refId: p.id }, { suggest: false });
@@ -431,7 +461,15 @@ workspace.post("/gaps/:id/research", ah(async (req, res) => {
   res.status(201).json({ id: await startResearch(ws(req), g.question) });
 }));
 
-// ── Universal search (command palette) ─────────────────────────────────────
+// ── Universal search ───────────────────────────────────────────────────────
+workspace.get("/search/all", ah(async (req, res) => {
+  const q = typeof req.query.q === "string" ? req.query.q.trim().slice(0, 300) : "";
+  if (!q) return res.json([]);
+  const types = typeof req.query.types === "string" ? req.query.types.split(",").filter((t): t is SearchType => (SEARCH_TYPES as readonly string[]).includes(t)) : [];
+  res.json(await searchAll(ws(req), actor(req), q, types, Math.min(100, Number(req.query.limit) || 60)));
+}));
+
+// Quick search (command palette)
 workspace.get("/search", ah(async (req, res) => {
   const q = typeof req.query.q === "string" ? req.query.q.trim().slice(0, 200) : "";
   if (!q) return res.json([]);

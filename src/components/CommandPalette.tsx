@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Video, Brain, Compass, FileText, FolderKanban, Lightbulb, MessageSquare, MessageSquarePlus, Network, PanelLeft, PanelRight, Search, Settings, StickyNote, Sparkles, BookOpen, Upload } from "lucide-react";
+import { Video, Brain, Compass, FileText, FolderKanban, Lightbulb, MessageSquare, MessageSquarePlus, Network, PanelLeft, PanelRight, Search, Settings, StickyNote, Sparkles, BookOpen, Upload, Scissors, Target, Bell, Mic, GraduationCap } from "lucide-react";
 import { useApp } from "@/state/app";
 import { api } from "@/lib/api";
 import { invalidate } from "@/lib/resource";
@@ -58,7 +58,14 @@ export function CommandPalette() {
         try { const d = await api.post("/documents", { title: q.trim() || "Untitled", body: "" }); invalidate("/documents"); navigate(`/knowledge/${d.id}`); } catch (e) { toastError(e); }
         close();
       } },
-    { id: "import", label: "Import PDF or text file", group: "Actions", icon: Upload, keywords: "upload pdf import", run: go("/knowledge?import=1") },
+    { id: "search-all", label: q.trim() ? `Search everything for "${q.trim()}"` : "Search everything", group: "Actions", icon: Search, keywords: "find search all full", run: go(q.trim() ? `/search?q=${encodeURIComponent(q.trim())}` : "/search") },
+    { id: "import", label: "Import a file (PDF, Word, Excel, PowerPoint, image)", group: "Actions", icon: Upload, keywords: "upload pdf import docx xlsx pptx image word excel", run: go("/knowledge?import=1") },
+    { id: "clip", label: "Clip a web page", group: "Actions", icon: Scissors, keywords: "clipper web save article url bookmark", run: go("/knowledge?clip=1") },
+    { id: "focus", label: "Start focus mode", group: "Actions", icon: Target, keywords: "focus timer pomodoro distraction deep work", run: go("/focus") },
+    { id: "reminder", label: "Set a reminder", group: "Actions", icon: Bell, keywords: "remind reminder alarm later", run: go("/reminders") },
+    { id: "learn", label: q.trim() ? `Learn about "${q.trim()}"` : "Learn something (Learning mode)", group: "Actions", icon: GraduationCap, keywords: "learn teach explain study understand",
+      run: () => { navigate(q.trim() ? `/?mode=learning&q=${encodeURIComponent(q.trim())}` : "/?mode=learning"); close(); } },
+    { id: "voice", label: "Talk to Orbital", group: "Actions", icon: Mic, keywords: "voice speak talk microphone", run: go("/?voice=1") },
     { id: "project", label: "New project", group: "Actions", icon: FolderKanban, keywords: "create project", run: go("/projects?new=1") },
     { id: "meeting-new", label: "Start a meeting", group: "Actions", icon: Video, keywords: "call video zoom meet",
       run: async () => { try { const r = await api.post("/meetings", {}); navigate(`/m/${r.code}`); } catch (e) { toastError(e); } close(); } },
@@ -72,6 +79,8 @@ export function CommandPalette() {
     { id: "nav-graph", label: "Connections", hint: "g g", group: "Go to", icon: Network, keywords: "graph", run: go("/connections") },
     { id: "nav-projects", label: "Projects", hint: "g p", group: "Go to", icon: FolderKanban, run: go("/projects") },
     { id: "nav-opps", label: "Opportunities", hint: "g o", group: "Go to", icon: Lightbulb, run: go("/opportunities") },
+    { id: "nav-reminders", label: "Reminders", hint: "g t", group: "Go to", icon: Bell, run: go("/reminders") },
+    { id: "nav-focus", label: "Focus", hint: "g f", group: "Go to", icon: Target, run: go("/focus") },
     { id: "nav-settings", label: "Settings", hint: "g s", group: "Go to", icon: Settings, run: go("/settings") },
     { id: "toggle-sidebar", label: "Toggle sidebar", hint: `${modKey} \\`, group: "View", icon: PanelLeft, run: () => { toggleSidebar(); close(); } },
     { id: "toggle-panel", label: "Toggle context panel", hint: `${modKey} .`, group: "View", icon: PanelRight, run: () => { toggleRightPanel(); close(); } },
@@ -84,8 +93,8 @@ export function CommandPalette() {
       const meta = TYPE_META[r.type];
       return { id: `${r.type}-${r.id}`, label: r.title, hint: r.snippet && r.type !== "document" ? String(r.snippet).slice(0, 40) : undefined, group: meta.group, icon: meta.icon, run: go(meta.to(r.id)) };
     });
-    const acts = actions.filter((a) => !needle || a.id === "research" || a.id === "note" || `${a.label} ${a.keywords ?? ""}`.toLowerCase().includes(needle));
-    return needle ? [...found, ...acts] : acts;
+    const acts = actions.filter((a) => !needle || a.id === "search-all" || a.id === "research" || a.id === "note" || a.id === "learn" || `${a.label} ${a.keywords ?? ""}`.toLowerCase().includes(needle));
+    return needle ? [...found, ...acts.filter((a) => a.id === "search-all"), ...acts.filter((a) => a.id !== "search-all")] : acts;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [results, actions, q]);
 

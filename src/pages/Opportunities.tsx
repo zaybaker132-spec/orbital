@@ -9,8 +9,10 @@ import { usePanel, toast, toastError, useJobs } from "@/state/ui";
 import { Badge, Button, Dialog, Empty, IconButton, Input, PageHeader, Pulse, Select, Textarea, cx } from "@/components/ui";
 import { Section } from "@/components/RightPanel";
 import { label, timeAgo } from "@/lib/format";
+import { RemindMenu } from "@/components/RemindMenu";
 
 const STATUSES = ["identified", "investigating", "validated", "executing", "succeeded", "failed", "dismissed"];
+
 
 export function OpportunitiesPage() {
   const { data, loading } = useResource<any[]>("/opportunities");
@@ -122,6 +124,7 @@ function OpportunityCard({ o }: { o: any }) {
               <span className="flex-1" />
               <IconButton label="Useful suggestion" active={o.rating === 1} onClick={() => rate(1)}><ThumbsUp size={13} /></IconButton>
               <IconButton label="Not useful" active={o.rating === -1} onClick={() => rate(-1)}><ThumbsDown size={13} /></IconButton>
+              <RemindMenu itemType="opportunity" itemId={o.id} size={13} />
               <IconButton label="Delete" onClick={async () => { if (!confirm("Delete this opportunity?")) return; await api.del(`/opportunities/${o.id}`).catch(toastError); invalidate("/opportunities", "/graph"); }}><Trash2 size={13} /></IconButton>
             </div>
             <div className="border-t border-line px-5 py-3">

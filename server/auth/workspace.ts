@@ -2,6 +2,9 @@ import type { RequestHandler } from "express";
 import { db, type Queryable } from "../db/client.js";
 import { HttpError } from "../lib/http.js";
 
+/** GET endpoints a browser loads without custom headers (EventSource, <img>) may name the workspace in the query. */
+const QUERY_WORKSPACE_PATHS = /^\/(events|documents\/[^/]+\/file)$/;
+
 export type Role = "owner" | "admin" | "member" | "viewer";
 const RANK: Record<Role, number> = { viewer: 0, member: 1, admin: 2, owner: 3 };
 export const atLeast = (role: Role, min: Role) => RANK[role] >= RANK[min];
@@ -33,6 +36,9 @@ const VIEWER_WRITES = [
   /^\/preferences$/,
   /^\/invites\/accept$/,
   /^\/workspaces$/,
+  /^\/(reminders|focus)(\/[^/]+(\/end)?)?$/, // personal: reminders and focus sessions
+  /^\/nudges\/dismiss$/,
+  /^\/voice\/transcribe$/,
   /^\/meetings(\/[^/]+(\/(signal|state|chat|lock|remove|end))?)?$/, // meetings are personal, not workspace knowledge
 ];
 
@@ -41,7 +47,7 @@ export const resolveWorkspace: RequestHandler = async (req, _res, next) => {
   try {
     if (!req.user) return next(new HttpError(401, "Not authenticated", "unauthenticated"));
     // EventSource can't set headers, so the live event stream passes the workspace as a query parameter.
-    const requested = req.get("x-orbital-workspace") ?? (req.path === "/events" && typeof req.query.workspace === "string" ? req.query.workspace : undefined);
+    const requested = req.get("x-orbital-workspace") ?? (QUERY_WORKSPACE_PATHS.test(req.path) && typeof req.query.workspace === "string" ? req.query.workspace : undefined);
     const id = requested && UUID_RE.test(requested) ? requested : req.user.id;
     const m = await membership(req.user.id, id);
     if (!m) return next(new HttpError(404, "Workspace not found", "workspace_not_found"));

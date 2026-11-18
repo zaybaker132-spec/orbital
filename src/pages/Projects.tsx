@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { Plus, Trash2, Compass, MessageSquarePlus, FileText, Check, Flag } from "lucide-react";
+import { Plus, Trash2, Compass, MessageSquarePlus, FileText, Check, Flag, Target, CalendarClock } from "lucide-react";
 import { api } from "@/lib/api";
 import { invalidate, useResource } from "@/lib/resource";
 import { usePanel, toast, toastError } from "@/state/ui";
@@ -8,6 +8,16 @@ import { useCan } from "@/state/app";
 import { Badge, Button, Dialog, Empty, IconButton, Input, PageHeader, Pulse, Select, Textarea, cx } from "@/components/ui";
 import { Section } from "@/components/RightPanel";
 import { label, timeAgo } from "@/lib/format";
+import { localToday } from "@/lib/when";
+import { RemindMenu } from "@/components/RemindMenu";
+
+const daysUntil = (date: string, today = localToday()) => Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000);
+const shortDate = (date: string) => new Date(`${date}T12:00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+/** "Due Nov 30 · 5 days left", "3 days overdue" */
+export function dueLabel(date: string) {
+  const d = daysUntil(date);
+  return d < 0 ? `${shortDate(date)} · ${-d} day${d === -1 ? "" : "s"} overdue` : d === 0 ? "Due today" : `${shortDate(date)} · ${d} day${d === 1 ? "" : "s"} left`;
+}
 
 export function ProjectsPage() {
   const { id } = useParams();
@@ -17,7 +27,7 @@ export function ProjectsPage() {
 }
 
 function ProjectList() {
-  const { data, loading } = useResource<any[]>("/projects");
+  const { data, loading } = useResource<any[]>(`/projects?today=${localToday()}`);
   const [params, setParams] = useSearchParams();
   const [open, setOpen] = useState(!!params.get("new"));
   const can = useCan();
@@ -37,10 +47,16 @@ function ProjectList() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2"><span className="text-[0.95rem] text-white group-hover:underline decoration-white/30 underline-offset-2">{p.name}</span>{p.status !== "active" && <Badge>{p.status}</Badge>}</div>
                     {p.description && <p className="mt-0.5 line-clamp-1 text-[0.83rem] text-mute">{p.description}</p>}
+                    <div className="mt-1 flex flex-wrap gap-x-3 text-[0.72rem] text-mute">
+                      {p.deadline && <span className={cx(p.status === "active" && daysUntil(p.deadline) < 0 && "text-red-300", p.status === "active" && daysUntil(p.deadline) >= 0 && daysUntil(p.deadline) <= 7 && "text-amber-200/90")}>{dueLabel(p.deadline)}</span>}
+                      {p.tasks_overdue > 0 && <span className="text-red-300">{p.tasks_overdue} overdue task{p.tasks_overdue === 1 ? "" : "s"}</span>}
+                      {p.milestone_count > 0 && <span>{p.milestones_done}/{p.milestone_count} milestones</span>}
+                      {!p.tasks_overdue && p.next_due && <span>Next due {shortDate(p.next_due)}</span>}
+                    </div>
                   </div>
                   <div className="w-40 shrink-0">
-                    <div className="h-1 rounded-full bg-white/[0.07]"><div className="h-1 rounded-full bg-white/70 transition-all" style={{ width: `${progress * 100}%` }} /></div>
-                    <div className="mt-1 text-[0.72rem] text-mute">{p.task_count ? `${p.tasks_done} of ${p.task_count} tasks` : "No tasks"}</div>
+                    <div className="flex items-baseline justify-between text-[0.72rem]"><span className="text-white/80">{Math.round(progress * 100)}%</span><span className="text-mute">{p.task_count ? `${p.tasks_done}/${p.task_count} tasks` : "No tasks"}</span></div>
+                    <div className="mt-1 h-1 rounded-full bg-white/[0.07]"><div className="h-1 rounded-full bg-white/70 transition-all" style={{ width: `${progress * 100}%` }} /></div>
                   </div>
                   <span className="w-20 shrink-0 text-right text-[0.72rem] text-mute-soft">{timeAgo(p.updated_at)}</span>
                 </Link>
@@ -55,10 +71,10 @@ function ProjectList() {
 }
 
 function NewProject({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [f, setF] = useState({ name: "", description: "", goals: "" });
+  const [f, setF] = useState({ name: "", description: "", goals: "", deadline: "" });
   const navigate = useNavigate();
   const submit = async () => {
-    try { const p = await api.post("/projects", f); invalidate("/projects", "/graph", "/growth"); onClose(); setF({ name: "", description: "", goals: "" }); navigate(`/projects/${p.id}`); } catch (e) { toastError(e); }
+    try { const p = await api.post("/projects", { ...f, deadline: f.deadline || null }); invalidate("/projects", "/graph", "/growth"); onClose(); setF({ name: "", description: "", goals: "", deadline: "" }); navigate(`/projects/${p.id}`); } catch (e) { toastError(e); }
   };
   return (
     <Dialog open={open} onClose={onClose} title="New project">
@@ -66,6 +82,7 @@ function NewProject({ open, onClose }: { open: boolean; onClose: () => void }) {
         <Input placeholder="Name — e.g. Launch My SaaS" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} aria-label="Name" />
         <Textarea rows={2} placeholder="What is it?" value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} aria-label="Description" />
         <Textarea rows={2} placeholder="Goals — what does success look like?" value={f.goals} onChange={(e) => setF({ ...f, goals: e.target.value })} aria-label="Goals" />
+        <label className="flex items-center gap-3 text-[0.84rem] text-mute">Deadline <input type="date" className="input h-9 w-44" value={f.deadline} onChange={(e) => setF({ ...f, deadline: e.target.value })} /> <span className="text-[0.76rem] text-mute-soft">optional</span></label>
         <div className="flex justify-end gap-2"><Button variant="ghost" onClick={onClose}>Cancel</Button><Button variant="primary" disabled={!f.name.trim()} onClick={submit}>Create</Button></div>
       </div>
     </Dialog>
@@ -109,6 +126,7 @@ function ProjectDetail({ id }: { id: string }) {
             {!edit && p.goals && <p className="mt-2 text-[0.86rem] text-mute"><span className="text-white/70">Goals · </span>{p.goals}</p>}
           </div>
           <div className="flex shrink-0 items-center gap-1">
+            <RemindMenu itemType="project" itemId={id} />
             <Select label="Status" value={p.status} className="h-8 w-32 text-[0.8rem]" onChange={async (v) => { await api.patch(`/projects/${id}`, { status: v }).catch(toastError); reload(); }}
               options={["active", "paused", "completed", "archived"].map((s) => ({ value: s, label: s }))} />
             <Button size="sm" variant="ghost" onClick={() => setEdit(!edit)}>{edit ? "Done" : "Edit"}</Button>
@@ -120,8 +138,11 @@ function ProjectDetail({ id }: { id: string }) {
         <div className="mt-5 flex flex-wrap gap-2">
           <Button size="sm" icon={<MessageSquarePlus size={13} />} onClick={newChat}>Discuss with Orbital</Button>
           <Button size="sm" icon={<Compass size={13} />} onClick={() => navigate(`/research?q=${encodeURIComponent(p.name + ": ")}`)}>Research for this project</Button>
+          <Button size="sm" icon={<Target size={13} />} onClick={() => navigate(`/focus?project=${id}`)}>Focus on this</Button>
           <Button size="sm" icon={<FileText size={13} />} onClick={async () => { const d = await api.post("/documents", { title: `${p.name} — note`, body: "", projectId: id }); invalidate("/documents"); navigate(`/knowledge/${d.id}`); }}>Add note</Button>
         </div>
+
+        <Progress p={p} onDeadline={async (v) => { await api.patch(`/projects/${id}`, { deadline: v || null }).catch(toastError); reload(); }} />
 
         <Brief id={id} />
 
@@ -139,7 +160,8 @@ function ProjectDetail({ id }: { id: string }) {
                     className={cx("flex h-4 w-4 items-center justify-center rounded-full border", m.done ? "border-white bg-white text-black" : "border-white/40")}>{m.done && <Check size={10} />}</button>
                   <Flag size={12} className="text-mute" />
                   <span className={cx("text-[0.88rem]", m.done ? "text-mute line-through" : "text-white")}>{m.title}</span>
-                  <IconButton label="Delete milestone" className="ml-auto h-6 w-6" onClick={async () => { await api.del(`/milestones/${m.id}`); reload(); }}><Trash2 size={12} /></IconButton>
+                  <DateChip value={m.target_date} done={m.done} label="Target date" onChange={async (v) => { await api.patch(`/milestones/${m.id}`, { targetDate: v }).catch(toastError); reload(); }} className="ml-auto" />
+                  <IconButton label="Delete milestone" className="h-6 w-6" onClick={async () => { await api.del(`/milestones/${m.id}`); reload(); }}><Trash2 size={12} /></IconButton>
                 </div>
               )}
               {!m && p.milestones.length > 0 && <div className="mb-1.5 text-[0.8rem] text-mute">Other tasks</div>}
@@ -148,7 +170,8 @@ function ProjectDetail({ id }: { id: string }) {
                   <li key={t.id} className="group flex items-center gap-3 py-1.5">
                     <button aria-label={t.done ? "Mark incomplete" : "Mark complete"} onClick={() => toggle(t)} className={cx("flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors", t.done ? "border-white bg-white text-black" : "border-white/30 hover:border-white/70")}>{t.done && <Check size={11} />}</button>
                     <span className={cx("flex-1 text-[0.88rem]", t.done ? "text-mute line-through" : "text-white/90")}>{t.title}</span>
-                    {t.due_date && <span className="text-[0.72rem] text-mute">{t.due_date}</span>}
+                    <DateChip value={t.due_date} done={t.done} label="Due date" onChange={async (v) => { await api.patch(`/tasks/${t.id}`, { dueDate: v }).catch(toastError); reload(); }} />
+                    {!t.done && <RemindMenu itemType="task" itemId={t.id} size={12} className="opacity-0 group-hover:opacity-100 focus-within:opacity-100" />}
                     <IconButton label="Delete task" className="h-6 w-6 opacity-0 group-hover:opacity-100 focus:opacity-100" onClick={async () => { await api.del(`/tasks/${t.id}`); reload(); }}><Trash2 size={12} /></IconButton>
                   </li>
                 ))}
@@ -243,5 +266,41 @@ function ProjectSide({ p }: { p: any }) {
         {p.related.nodes.length === 0 ? <p className="text-[0.8rem] text-mute">None found.</p> : <ul className="space-y-1">{p.related.nodes.map((n: any) => <li key={n.id}><Link to={`/connections?node=${n.id}`} className="text-[0.82rem] text-white/85 hover:text-white">{n.title} <span className="text-[0.7rem] text-mute">{n.kind}</span></Link></li>)}</ul>}
       </Section>
     </>
+  );
+}
+
+/** A due/target date: shows "Nov 30" (red when overdue), click to change; empty shows on hover. */
+function DateChip({ value, done, label: aria, onChange, className }: { value: string | null; done?: boolean; label: string; onChange: (v: string | null) => void; className?: string }) {
+  const overdue = !!value && !done && daysUntil(value) < 0;
+  const soon = !!value && !done && !overdue && daysUntil(value) <= 2;
+  return (
+    <label className={cx("relative inline-flex h-6 cursor-pointer items-center gap-1 rounded-md px-1.5 text-[0.72rem] hover:bg-white/[0.06]",
+      value ? (overdue ? "text-red-300" : soon ? "text-amber-200/90" : "text-mute") : "text-mute-soft opacity-0 group-hover:opacity-100 focus-within:opacity-100", className)}
+      title={value ? (overdue ? `${aria}: overdue` : aria) : `Set ${aria.toLowerCase()}`}>
+      <CalendarClock size={11} />{value ? shortDate(value) : "Date"}
+      <input type="date" aria-label={aria} value={value ?? ""} onChange={(e) => onChange(e.target.value || null)} className="absolute inset-0 cursor-pointer opacity-0" />
+    </label>
+  );
+}
+
+/** Progress at a glance: completion, milestones, overdue work and time to the deadline. */
+function Progress({ p, onDeadline }: { p: any; onDeadline: (v: string) => void }) {
+  const total = p.tasks.length, done = p.tasks.filter((t: any) => t.done).length;
+  const overdue = p.tasks.filter((t: any) => !t.done && t.due_date && daysUntil(t.due_date) < 0).length;
+  const msDone = p.milestones.filter((m: any) => m.done).length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  const left = p.deadline ? daysUntil(p.deadline) : null;
+  const cell = "rounded-xl border border-line px-4 py-3";
+  return (
+    <section className="mt-8 grid gap-2 sm:grid-cols-4" aria-label="Progress">
+      <div className={cell}><div className="text-[1.4rem] font-light">{pct}%</div><div className="text-[0.74rem] text-mute">{done} of {total} tasks done</div></div>
+      <div className={cell}><div className="text-[1.4rem] font-light">{msDone}<span className="text-mute">/{p.milestones.length}</span></div><div className="text-[0.74rem] text-mute">milestones reached</div></div>
+      <div className={cell}><div className={cx("text-[1.4rem] font-light", overdue > 0 && "text-red-300")}>{overdue}</div><div className="text-[0.74rem] text-mute">overdue task{overdue === 1 ? "" : "s"}</div></div>
+      <label className={cx(cell, "relative cursor-pointer hover:border-line-strong")} title="Set the project deadline">
+        <div className={cx("text-[1.4rem] font-light", left !== null && left < 0 && p.status === "active" && "text-red-300")}>{left === null ? "—" : left < 0 ? `${-left}d late` : left === 0 ? "Today" : `${left}d`}</div>
+        <div className="text-[0.74rem] text-mute">{p.deadline ? `deadline ${shortDate(p.deadline)}` : "Set a deadline"}</div>
+        <input type="date" aria-label="Project deadline" value={p.deadline ?? ""} onChange={(e) => onDeadline(e.target.value)} className="absolute inset-0 cursor-pointer opacity-0" />
+      </label>
+    </section>
   );
 }

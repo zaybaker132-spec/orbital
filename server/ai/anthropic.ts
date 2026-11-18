@@ -56,6 +56,23 @@ export class AnthropicProvider implements LLMProvider {
     return parsed.data;
   }
 
+  async readFile(o: { data: Buffer; mediaType: string; instructions: string }): Promise<string> {
+    const b64 = o.data.toString("base64");
+    const block: Anthropic.Beta.BetaContentBlockParam = o.mediaType === "application/pdf"
+      ? { type: "document", source: { type: "base64", media_type: "application/pdf", data: b64 } }
+      : { type: "image", source: { type: "base64", media_type: o.mediaType as "image/png" | "image/jpeg" | "image/gif" | "image/webp", data: b64 } };
+    const stream = this.client.beta.messages.stream({
+      model: this.model,
+      max_tokens: 16000,
+      messages: [{ role: "user", content: [block, { type: "text", text: o.instructions }] }],
+      output_config: { effort: "low" },
+      ...this.fallback(),
+    });
+    const res = await stream.finalMessage();
+    if (res.stop_reason === "refusal") throw Object.assign(new Error("Model declined to read this file"), { noRetry: true });
+    return res.content.map((b) => (b.type === "text" ? b.text : "")).join("");
+  }
+
   async webSearch(o: { query: string; instructions: string; maxUses?: number }): Promise<WebSearchResult> {
     const messages: Anthropic.Beta.BetaMessageParam[] = [{ role: "user", content: `${o.instructions}\n\nResearch question: ${o.query}` }];
     const citations: WebCitation[] = [];

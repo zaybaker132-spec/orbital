@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Brain, Compass, FolderKanban, Lightbulb, LogOut, MessageSquarePlus, Network, PanelLeft, PanelRight, Search, Settings, BookOpen, Workflow, Video,
+  Brain, Compass, FolderKanban, Lightbulb, LogOut, MessageSquarePlus, Network, PanelLeft, PanelRight, Search, Settings, BookOpen, Workflow, Video, Bell, Target, X,
 } from "lucide-react";
 import { useApp } from "@/state/app";
 import { useCore } from "@/state/core";
@@ -21,6 +21,8 @@ export const NAV = [
   { to: "/knowledge", label: "Knowledge", icon: BookOpen, key: "k" },
   { to: "/connections", label: "Connections", icon: Network, key: "g" },
   { to: "/projects", label: "Projects", icon: FolderKanban, key: "p" },
+  { to: "/reminders", label: "Reminders", icon: Bell, key: "t" },
+  { to: "/focus", label: "Focus", icon: Target, key: "f" },
   { to: "/opportunities", label: "Opportunities", icon: Lightbulb, key: "o" },
   { to: "/meetings", label: "Meetings", icon: Video, key: "m" },
   { to: "/operations", label: "Operations", icon: Workflow, key: "w" },
@@ -108,6 +110,8 @@ function Sidebar({ width, collapsed, onResize }: { width: number; collapsed: boo
   const { data: convs } = useResource<any[]>("/conversations");
   const { data: actions } = useResource<any[]>("/actions?status=proposed");
   const pending = actions?.length ?? 0;
+  const { data: reminders } = useResource<any[]>("/reminders");
+  const due = reminders?.filter((r) => r.status === "fired").length ?? 0;
   const dragging = useRef(false);
 
   const startDrag = useCallback((e: React.PointerEvent) => {
@@ -150,6 +154,7 @@ function Sidebar({ width, collapsed, onResize }: { width: number; collapsed: boo
                   {isActive && <motion.span layoutId="nav-active" className="absolute inset-0 rounded-lg bg-white/[0.07]" transition={{ duration: 0.2 }} />}
                   <n.icon size={15} className="relative shrink-0" strokeWidth={1.6} />
                   {!collapsed && <span className="relative">{n.label}</span>}
+                  {n.to === "/reminders" && due > 0 && <span className={cx("relative rounded-full bg-white px-1.5 text-[0.66rem] leading-4 text-black", collapsed ? "absolute right-1 top-0.5" : "ml-auto")} aria-label={`${due} due`}>{due}</span>}
                   {n.to === "/operations" && pending > 0 && <span className={cx("relative rounded-full bg-white px-1.5 text-[0.66rem] leading-4 text-black", collapsed ? "absolute right-1 top-0.5" : "ml-auto")} aria-label={`${pending} awaiting approval`}>{pending}</span>}
                 </>
               )}
@@ -219,6 +224,7 @@ function Toaster() {
             className={cx("pointer-events-auto flex items-center gap-3 rounded-xl border bg-ink-2/95 px-4 py-2.5 text-[0.85rem] shadow-2xl backdrop-blur", t.tone === "error" ? "border-red-400/25 text-red-100" : "border-line-strong text-white")}>
             <span>{t.message}</span>
             {t.action && <button className="text-white underline decoration-white/30 underline-offset-2 hover:decoration-white" onClick={() => { navigate(t.action!.to); dismiss(t.id); }}>{t.action.label}</button>}
+            {t.sticky && <button aria-label="Dismiss" className="-mr-1 text-mute hover:text-white" onClick={() => dismiss(t.id)}><X size={14} /></button>}
           </motion.div>
         ))}
       </AnimatePresence>

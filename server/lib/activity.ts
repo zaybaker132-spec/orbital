@@ -7,7 +7,8 @@ export type ActivityType =
   | "document.created" | "document.imported"
   | "project.created" | "task.completed" | "milestone.completed"
   | "opportunity.identified" | "opportunity.status"
-  | "gap.opened" | "gap.resolved" | "feedback.given" | "automation.ran";
+  | "gap.opened" | "gap.resolved" | "feedback.given" | "automation.ran"
+  | "document.clipped" | "focus.completed" | "conversation.remembered";
 
 export async function logActivity(workspaceId: string, type: ActivityType, title: string, ref?: { type: string; id: string }, detail: Record<string, unknown> = {}) {
   await db().query(

@@ -32,6 +32,8 @@ export interface LLMProvider {
   json<T>(opts: JsonOptions<T>): Promise<T>;
   /** Live web search with verifiable citations. Only some providers support it. */
   webSearch?(opts: { query: string; instructions: string; maxUses?: number }): Promise<WebSearchResult>;
+  /** Read an image (or, for Claude, a PDF) and return Markdown. Only some providers support it. */
+  readFile?(opts: { data: Buffer; mediaType: string; instructions: string }): Promise<string>;
 }
 
 export class AIUnavailableError extends Error {
