@@ -1,7 +1,7 @@
 // Standalone Neural Core for the public preview page: the same geometry and shaders as the app,
 // driven without React. Built with scripts/build-preview.mjs into one script file.
 import * as THREE from "three";
-import { buildPointCloud, CLUSTER_CENTROIDS, type PointCloud } from "../neural/geometry";
+import { BRAIN_CENTER, buildPointCloud, CLUSTER_CENTROIDS, type PointCloud } from "../neural/geometry";
 import { fragmentShader, lineFragmentShader, lineVertexShader, vertexShader } from "../neural/shaders";
 
 type State = "idle" | "thinking" | "researching" | "learning" | "connecting" | "opportunity";
@@ -18,6 +18,8 @@ function lineGeometry(cloud: PointCloud) {
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.BufferAttribute(copy(cloud.position, 3), 3));
   g.setAttribute("aGraph", new THREE.BufferAttribute(copy(cloud.graph, 3), 3));
+  g.setAttribute("aOrb", new THREE.BufferAttribute(copy(cloud.orb, 3), 3));
+  g.setAttribute("aOrbColor", new THREE.BufferAttribute(copy(cloud.orbColor, 3), 3));
   g.setAttribute("color", new THREE.BufferAttribute(copy(cloud.color, 3), 3));
   for (const [name, arr] of [["aSize", cloud.size], ["aSeed", cloud.seed], ["aRegion", cloud.region], ["aCluster", cloud.cluster], ["aBirth", cloud.birth], ["aBright", cloud.bright]] as const) {
     g.setAttribute(name, new THREE.BufferAttribute(copy(arr, 1), 1));
@@ -47,7 +49,7 @@ export function mountNeuralCore(container: HTMLElement) {
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 50);
-  const FR = { camZ: 6.9, y: 0.42, scale: 1.25 };
+  const FR = { camZ: 6.9, y: 0.42, scale: 1.25, orb: 1.12 };
   camera.position.set(0, 0, FR.camZ);
 
   const g = new THREE.BufferGeometry();
@@ -60,11 +62,14 @@ export function mountNeuralCore(container: HTMLElement) {
   g.setAttribute("aBirth", new THREE.BufferAttribute(cloud.birth, 1));
   g.setAttribute("aBright", new THREE.BufferAttribute(cloud.bright, 1));
   g.setAttribute("aGraph", new THREE.BufferAttribute(cloud.graph, 3));
+  g.setAttribute("aOrb", new THREE.BufferAttribute(cloud.orb, 3));
+  g.setAttribute("aOrbColor", new THREE.BufferAttribute(cloud.orbColor, 3));
 
   const uniforms: Record<string, THREE.IUniform> = {
     uTime: { value: 0 }, uPixelRatio: { value: 1 }, uScale: { value: 9 }, uMotion: { value: reduced ? 0 : 1 },
     uMorph: { value: reduced ? 1 : 0 }, uSpin: { value: 0 }, uLineAlpha: { value: 0.028 },
     uGraphOffset: { value: new THREE.Vector3(0.05, -FR.y - 0.45, 0) }, uGraphScale: { value: FR.scale },
+    uOrbMode: { value: 1 }, uOrbRadius: { value: FR.orb }, uOrbSpin: { value: 0 },
     uMouse: { value: new THREE.Vector3(99, 99, 0) }, uMouseStrength: { value: 0 },
     uRipples: { value: Array.from({ length: 4 }, () => new THREE.Vector4(0, 0, 0, -99)) },
     uActivity: { value: 0 }, uThinking: { value: 0 }, uResearch: { value: 0 }, uLearning: { value: 0 },
@@ -102,6 +107,14 @@ export function mountNeuralCore(container: HTMLElement) {
       (uniforms.uRipples.value[rippleIdx++ % 4] as THREE.Vector4).set(local.x, local.y, local.z, uniforms.uTime.value);
     }
   });
+
+  // Effects defined around brain regions land on the orb's surface instead.
+  const center = new THREE.Vector3(BRAIN_CENTER[0], BRAIN_CENTER[1], BRAIN_CENTER[2]).add(uniforms.uGraphOffset.value);
+  const onOrb = (c: [number, number, number]) => {
+    const d = new THREE.Vector3(c[0] - BRAIN_CENTER[0], c[1] - BRAIN_CENTER[1], c[2] - BRAIN_CENTER[2]);
+    if (d.lengthSq() < 1e-4) d.set(0, 1, 0);
+    return d.normalize().multiplyScalar(FR.orb * 0.9).add(center);
+  };
 
   let state: State = "idle";
   let introStart: number | null = reduced ? null : -1;
@@ -151,12 +164,13 @@ export function mountNeuralCore(container: HTMLElement) {
       let b = Math.floor(Math.random() * 6);
       if (b === a) b = (a + 2) % 6;
       Object.assign(connect, { until: t + 2.2, a, b });
-      u.uConnectA.value.set(...CLUSTER_CENTROIDS[a]);
-      u.uConnectB.value.set(...CLUSTER_CENTROIDS[b]);
+      u.uConnectA.value.copy(onOrb(CLUSTER_CENTROIDS[a]));
+      u.uConnectB.value.copy(onOrb(CLUSTER_CENTROIDS[b]));
     }
     if (eased.opportunity > 0.05 && t - pulseStart > 2.6) pulseStart = t;
     const pt = (t - pulseStart) / 1.6;
-    u.uPulseX.value = pt <= 1 ? -0.9 + pt * 1.8 : -3;
+    u.uPulseX.value = pt <= 1 ? (pt * 2 - 1) * FR.orb * 1.05 : -3;
+    u.uOrbSpin.value += dt * 0.06 * u.uMotion.value;
     for (let i = 0; i < 8; i++) {
       const hl = (eased.opportunity > 0.05 && i <= 1) || (eased.connecting > 0.05 && (i === connect.a || i === connect.b)) ? 1 : 0;
       u.uHighlight.value[i] += (hl - u.uHighlight.value[i]) * Math.min(1, dt * 3);

@@ -7,7 +7,7 @@ import { createPersonalWorkspace, resolveWorkspace } from "../auth/workspace.js"
 import { isServerAdmin } from "./waitlist.js";
 import { createSession, destroySession, hashPassword, verifyPassword, COOKIE, requireUser } from "../auth/auth.js";
 import { rateLimit } from "../lib/rateLimit.js";
-import { aiStatus } from "../ai/provider.js";
+import { aiStatus, describeAiError } from "../ai/provider.js";
 import { subscribe } from "../lib/events.js";
 import { MODES, respond } from "../engines/chat.js";
 import { createMemory, deleteMemory, listMemories, MEMORY_CATEGORIES, strip, updateMemory } from "../engines/memory.js";
@@ -136,13 +136,7 @@ api.post("/conversations/:id/messages", chatLimit, ah(async (req, res) => {
   res.end();
 }));
 
-export function friendlyAiError(e: any) {
-  const status = e?.status;
-  if (status === 401) return "The AI provider rejected the API key. Check the server configuration.";
-  if (status === 429) return "The AI provider is rate-limiting requests. Try again shortly.";
-  if (status >= 500) return "The AI provider is temporarily unavailable. Try again shortly.";
-  return e?.message ? String(e.message).slice(0, 300) : "Something went wrong.";
-}
+export const friendlyAiError = describeAiError;
 
 // ── Memories ────────────────────────────────────────────────────────────────
 api.get("/memories", ah(async (req, res) => {

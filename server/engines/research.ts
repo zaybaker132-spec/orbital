@@ -1,6 +1,6 @@
 import * as z from "zod/v4";
 import { db } from "../db/client.js";
-import { getLLM } from "../ai/provider.js";
+import { describeAiError, getLLM } from "../ai/provider.js";
 import { emit } from "../lib/events.js";
 import { logActivity } from "../lib/activity.js";
 import { registerJob, enqueue } from "../lib/jobs.js";
@@ -271,7 +271,7 @@ async function runResearch({ workspaceId, payload }: { workspaceId: string; payl
       );
     }
   } catch (e: any) {
-    await setStatus(workspaceId, id, "failed", { error: String(e?.message ?? e).slice(0, 1000) });
+    await setStatus(workspaceId, id, "failed", { error: describeAiError(e) });
     await logActivity(workspaceId, "research.failed", rs.question.slice(0, 200), { type: "research", id });
     throw Object.assign(e instanceof Error ? e : new Error(String(e)), { noRetry: true });
   } finally {

@@ -65,3 +65,23 @@ export function aiStatus() {
     embeddings: config.embeddings.provider === "openai" ? `${config.embeddings.model} (remote)` : "local hashed features (lexical)",
   };
 }
+
+/**
+ * Turn provider failures into a sentence a person can act on (never raw JSON).
+ * Works for Anthropic SDK errors (status + parsed error body) and plain Errors.
+ */
+export function describeAiError(e: any): string {
+  const status: number | undefined = e?.status;
+  const body = e?.error?.error ?? e?.error;
+  const type: string = body?.type ?? "";
+  const detail: string = typeof body?.message === "string" ? body.message : "";
+  const text = `${detail} ${e?.message ?? ""}`;
+  if (/credit balance is too low|billing/i.test(text)) return "Your Anthropic account has no API credit. Add credit at console.anthropic.com under Plans & Billing, then try again.";
+  if (status === 401 || type === "authentication_error") return "The AI provider rejected the API key. Check the key in Settings (desktop app) or the server's ANTHROPIC_API_KEY.";
+  if (status === 403 || type === "permission_error") return "This API key isn't allowed to use that model or feature.";
+  if (status === 429 || type === "rate_limit_error") return "The AI provider is rate-limiting requests. Try again in a minute.";
+  if (status === 529 || type === "overloaded_error" || (status !== undefined && status >= 500)) return "The AI provider is temporarily unavailable. Try again shortly.";
+  if (e?.name === "APIConnectionError" || /fetch failed|ECONNREFUSED|ENOTFOUND|ETIMEDOUT/i.test(text)) return "Couldn't reach the AI provider. Check the internet connection and try again.";
+  if (detail) return detail.slice(0, 300);
+  return e?.message ? String(e.message).replace(/^\d{3}\s+\{.*$/s, "The AI provider returned an error.").slice(0, 300) : "Something went wrong.";
+}

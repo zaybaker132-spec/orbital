@@ -118,6 +118,38 @@ export interface PointCloud {
   graph: Float32Array;
   /** Faint connections: pairs of particle indices (hub spokes, local links, hub-to-hub web). */
   lines: Uint32Array;
+  /** The orb each particle settles into: unit-sphere coordinates (scaled and centred in the shader). */
+  orb: Float32Array;
+  /** Orb colour with brightness baked in: amber top, dark equator, silver bottom. */
+  orbColor: Float32Array;
+}
+
+const lerp3 = (a: number[], b: number[], t: number) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+
+/** A point of the Orbital orb and its colour. Region 4 (ambient dust) becomes a faint outer halo. */
+function orbPoint(region: number, rnd: () => number): [number, number, number, number, number, number] {
+  const u = rnd() * 2 - 1, th = rnd() * Math.PI * 2, sq = Math.sqrt(1 - u * u);
+  if (region === 4) {
+    const r = 1.5 + rnd() * 0.9, v = 0.04 + rnd() * 0.07;
+    return [sq * Math.cos(th) * r, u * r, sq * Math.sin(th) * r, v, v * 0.95, v * 0.9];
+  }
+  const shell = rnd() < 0.9;
+  const r = shell ? 0.94 + rnd() * 0.06 : Math.cbrt(rnd()) * 0.9;
+  let col: number[], b: number;
+  if (u > 0.1) {
+    const t = smooth(0.1, 1, u);
+    col = t < 0.55 ? lerp3([1, 0.33, 0.05], [1, 0.52, 0.11], t / 0.55) : lerp3([1, 0.52, 0.11], [1, 0.8, 0.66], (t - 0.55) / 0.45);
+    if (rnd() < 0.08) col = [1, 0.84, 0.3];
+    b = 0.42 + 0.78 * smooth(0.08, 0.92, u);
+  } else if (u < -0.1) {
+    col = rnd() < 0.85 ? [0.86, 0.88, 0.93] : [1, 1, 1];
+    b = 0.4 + 0.75 * smooth(-0.08, -0.92, u);
+  } else {
+    col = u >= 0 ? [1, 0.45, 0.12] : [0.8, 0.82, 0.88];
+    b = 0.05 + rnd() * 0.05;
+  }
+  b *= (0.75 + rnd() * 0.25) * (shell ? 1 : 0.3);
+  return [sq * Math.cos(th) * r, u * r, sq * Math.sin(th) * r, col[0] * b, col[1] * b, col[2] * b];
 }
 
 /**
@@ -402,6 +434,7 @@ export function buildPointCloud(density = 1): PointCloud {
     seed: new Float32Array(count), region: new Float32Array(count), cluster: new Float32Array(count),
     birth: new Float32Array(count), bright: new Float32Array(count),
     graph: new Float32Array(count * 3), lines: new Uint32Array(0),
+    orb: new Float32Array(count * 3), orbColor: new Float32Array(count * 3),
   };
   // Shuffle so any prefix (adaptive draw range) is a uniform subsample of the base set.
   const order = shuffled(baseCount, rnd).concat(Array.from({ length: count - baseCount }, (_, i) => baseCount + i));
@@ -416,6 +449,9 @@ export function buildPointCloud(density = 1): PointCloud {
     out.birth[i] = q.b;
     out.bright[i] = q.br;
     out.graph.set(q.g ?? q.p, i * 3);
+    const o = orbPoint(q.r, rnd);
+    out.orb.set([o[0], o[1], o[2]], i * 3);
+    out.orbColor.set([o[3], o[4], o[5]], i * 3);
   });
   const newIndex = new Uint32Array(count);
   order.forEach((src, i) => { newIndex[src] = i; });

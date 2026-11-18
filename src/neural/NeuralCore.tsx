@@ -1,7 +1,7 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { buildPointCloud, CLUSTER_CENTROIDS, type PointCloud } from "./geometry";
+import { BRAIN_CENTER, buildPointCloud, CLUSTER_CENTROIDS, type PointCloud } from "./geometry";
 import { fragmentShader, lineFragmentShader, lineVertexShader, vertexShader } from "./shaders";
 import { useCore, type CoreState } from "@/state/core";
 import { useMotionPrefs } from "@/state/app";
@@ -28,6 +28,8 @@ function buildLines(cloud: PointCloud) {
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.BufferAttribute(copy(cloud.position, 3), 3));
   g.setAttribute("aGraph", new THREE.BufferAttribute(copy(cloud.graph, 3), 3));
+  g.setAttribute("aOrb", new THREE.BufferAttribute(copy(cloud.orb, 3), 3));
+  g.setAttribute("aOrbColor", new THREE.BufferAttribute(copy(cloud.orbColor, 3), 3));
   g.setAttribute("color", new THREE.BufferAttribute(copy(cloud.color, 3), 3));
   for (const [name, arr] of [["aSize", cloud.size], ["aSeed", cloud.seed], ["aRegion", cloud.region], ["aCluster", cloud.cluster], ["aBirth", cloud.birth], ["aBright", cloud.bright]] as const) {
     g.setAttribute(name, new THREE.BufferAttribute(copy(arr, 1), 1));
@@ -41,15 +43,28 @@ function buildLines(cloud: PointCloud) {
   return g;
 }
 
+/** Map a brain-space cluster centroid onto the orb's surface (or keep it, for the brain). */
+const _v = new THREE.Vector3();
+function effectPoint(c: [number, number, number], u: Record<string, THREE.IUniform>) {
+  if (u.uOrbMode.value < 0.5) return _v.set(...c);
+  const dir = new THREE.Vector3(c[0] - BRAIN_CENTER[0], c[1] - BRAIN_CENTER[1], c[2] - BRAIN_CENTER[2]);
+  if (dir.lengthSq() < 1e-4) dir.set(0, 1, 0);
+  dir.normalize().multiplyScalar(u.uOrbRadius.value * 0.9);
+  return _v.set(BRAIN_CENTER[0], BRAIN_CENTER[1], BRAIN_CENTER[2]).add(u.uGraphOffset.value).add(dir);
+}
+
 /** The formation intro plays once per session (and on request), never with reduced motion. */
 let introPlayed = (() => { try { return sessionStorage.getItem("orbital.intro") === "1"; } catch { return false; } })();
 let lastNonce = 0;
 const INTRO_HOLD = 1.4, INTRO_MORPH = 3.6;
 
 export type Framing = "full" | "head";
-const FRAMING: Record<Framing, { camZ: number; y: number; scale: number }> = {
-  full: { camZ: 6.9, y: 0.42, scale: 1.25 },
-  head: { camZ: 4.1, y: -0.2, scale: 0.95 },
+/** The shape the core settles into: Orbital's orb (default) or the original head and brain. */
+export const CORE_SHAPE: "orb" | "brain" = "orb";
+
+const FRAMING: Record<Framing, { camZ: number; y: number; scale: number; orb: number }> = {
+  full: { camZ: 6.9, y: 0.42, scale: 1.25, orb: 1.12 },
+  head: { camZ: 4.1, y: -0.2, scale: 0.95, orb: 0.68 },
 };
 
 function webglAvailable() {
@@ -72,7 +87,7 @@ function initialDensity(pref: string): Density {
 /** `holdGraph`: stay in knowledge-graph form (slowly orbiting) until it turns false, then form the brain. */
 interface Props { framing?: Framing; className?: string; interactive?: boolean; label?: string; holdGraph?: boolean }
 
-export function NeuralCore({ framing = "full", className = "", interactive = true, label = "Neural Core: a particle visualization of your knowledge", holdGraph = false }: Props) {
+export function NeuralCore({ framing = "full", className = "", interactive = true, label = "Neural Core: a particle orb that grows with your knowledge", holdGraph = false }: Props) {
   const { reducedMotion, density: densityPref } = useMotionPrefs();
   const [supported] = useState(webglAvailable);
   const [density, setDensity] = useState<Density>(() => initialDensity(densityPref));
@@ -124,6 +139,8 @@ function Particles({ cloud, framing, interactive, motion, onSlow, holdGraph }: {
     g.setAttribute("aBirth", new THREE.BufferAttribute(cloud.birth, 1));
     g.setAttribute("aBright", new THREE.BufferAttribute(cloud.bright, 1));
     g.setAttribute("aGraph", new THREE.BufferAttribute(cloud.graph, 3));
+    g.setAttribute("aOrb", new THREE.BufferAttribute(cloud.orb, 3));
+    g.setAttribute("aOrbColor", new THREE.BufferAttribute(cloud.orbColor, 3));
     g.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, -0.4, 0), 3);
     return g;
   }, [cloud]);
@@ -138,7 +155,7 @@ function Particles({ cloud, framing, interactive, motion, onSlow, holdGraph }: {
         depthTest: false,
         blending: THREE.AdditiveBlending,
         uniforms: {
-          uTime: { value: 0 }, uPixelRatio: { value: 1 }, uScale: { value: 9 }, uMotion: { value: 1 }, uMorph: { value: 1 }, uSpin: { value: 0 }, uLineAlpha: { value: 0.028 }, uGraphOffset: { value: new THREE.Vector3() }, uGraphScale: { value: 1 },
+          uTime: { value: 0 }, uPixelRatio: { value: 1 }, uScale: { value: 9 }, uMotion: { value: 1 }, uMorph: { value: 1 }, uSpin: { value: 0 }, uLineAlpha: { value: 0.028 }, uGraphOffset: { value: new THREE.Vector3() }, uGraphScale: { value: 1 }, uOrbMode: { value: CORE_SHAPE === "orb" ? 1 : 0 }, uOrbRadius: { value: 1 }, uOrbSpin: { value: 0 },
           uMouse: { value: new THREE.Vector3(99, 99, 0) }, uMouseStrength: { value: 0 },
           uRipples: { value: Array.from({ length: 4 }, () => new THREE.Vector4(0, 0, 0, -99)) },
           uActivity: { value: 0 }, uThinking: { value: 0 }, uResearch: { value: 0 }, uLearning: { value: 0 },
@@ -235,6 +252,8 @@ function Particles({ cloud, framing, interactive, motion, onSlow, holdGraph }: {
     // Centre the intro graph on screen for this framing.
     u.uGraphOffset.value.set(0.05, -f.y - 0.45, 0);
     u.uGraphScale.value = f.scale;
+    u.uOrbRadius.value = f.orb;
+    u.uOrbSpin.value += step * 0.06 * motion; // the orb turns slowly
     if (held.current) {
       u.uMorph.value = 0;
       u.uSpin.value = t * (motion ? 0.22 : 0);
@@ -279,13 +298,15 @@ function Particles({ cloud, framing, interactive, motion, onSlow, holdGraph }: {
       let b = Math.floor(Math.random() * 6);
       if (b === a) b = (a + 2) % 6;
       connect.current = { until: t + 2.2, a, b };
-      u.uConnectA.value.set(...CLUSTER_CENTROIDS[a]);
-      u.uConnectB.value.set(...CLUSTER_CENTROIDS[b]);
+      u.uConnectA.value.copy(effectPoint(CLUSTER_CENTROIDS[a], u));
+      u.uConnectB.value.copy(effectPoint(CLUSTER_CENTROIDS[b], u));
     }
     // Opportunity pulse: one sweep back→front every 2.6s while active.
     if (e.opportunity > 0.05 && t - pulse.current.start > 2.6) pulse.current.start = t;
     const pt = (t - pulse.current.start) / 1.6;
-    u.uPulseX.value = pt <= 1 ? -0.9 + pt * 1.8 : -3;
+    // Opportunity pulse sweeps across whichever shape is showing.
+    const span = CORE_SHAPE === "orb" ? u.uOrbRadius.value * 1.05 : 0.9;
+    u.uPulseX.value = pt <= 1 ? -span + pt * span * 2 : -3;
     for (let i = 0; i < 8; i++) {
       const hl = (e.opportunity > 0.05 && (i === 0 || i === 1)) || (e.connecting > 0.05 && (i === connect.current.a || i === connect.current.b)) ? 1 : 0;
       u.uHighlight.value[i] += (hl - u.uHighlight.value[i]) * Math.min(1, step * 3);
@@ -350,16 +371,19 @@ function FallbackCore({ className, reducedMotion, framing, label }: { className:
       const w = (cv.width = cv.clientWidth * devicePixelRatio), h = (cv.height = cv.clientHeight * devicePixelRatio);
       ctx.fillStyle = "#000";
       ctx.fillRect(0, 0, w, h);
-      const scale = (framing === "head" ? 0.42 : 0.27) * h;
-      const oy = framing === "head" ? h * 0.42 : h * 0.4;
+      const orb = CORE_SHAPE === "orb";
+      const scale = orb ? h * 0.36 : (framing === "head" ? 0.42 : 0.27) * h;
+      const oy = orb ? h * 0.5 : framing === "head" ? h * 0.42 : h * 0.4;
       const t = reducedMotion ? 0 : time / 1000;
       ctx.globalCompositeOperation = "lighter";
       for (let i = 0; i < cloud.baseCount; i++) {
-        const x = cloud.position[i * 3], y = cloud.position[i * 3 + 1];
+        const src = orb ? cloud.orb : cloud.position;
+        const x = src[i * 3], y = src[i * 3 + 1];
         const s = cloud.seed[i];
         const dx = Math.sin(t * 0.5 + s * 40) * 0.006, dy = Math.sin(t * 0.45 + s * 23) * 0.006;
-        const b = cloud.bright[i];
-        ctx.fillStyle = `rgba(${(cloud.color[i * 3] * 255) | 0},${(cloud.color[i * 3 + 1] * 255) | 0},${(cloud.color[i * 3 + 2] * 255) | 0},${b})`;
+        const col = orb ? cloud.orbColor : cloud.color;
+        const b = orb ? 1 : cloud.bright[i];
+        ctx.fillStyle = `rgba(${(col[i * 3] * 255) | 0},${(col[i * 3 + 1] * 255) | 0},${(col[i * 3 + 2] * 255) | 0},${b})`;
         const r = cloud.size[i] * devicePixelRatio * 0.6;
         ctx.fillRect(w / 2 + (x + dx) * scale - r / 2, oy - (y + dy) * scale - r / 2, r, r);
       }

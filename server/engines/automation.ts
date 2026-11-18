@@ -3,7 +3,7 @@ import net from "node:net";
 import * as z from "zod/v4";
 import { db } from "../db/client.js";
 import { config } from "../config.js";
-import { getLLM, requireLLM } from "../ai/provider.js";
+import { describeAiError, getLLM, requireLLM } from "../ai/provider.js";
 import { emit } from "../lib/events.js";
 import { logActivity } from "../lib/activity.js";
 import { audit } from "../lib/audit.js";
@@ -296,7 +296,7 @@ registerJob("automation.run", async ({ payload }) => {
     await db().query("UPDATE automations SET last_run_at=now(), last_status='ok', last_error=NULL, last_result=$2 WHERE id=$1", [a.id, JSON.stringify(result)]);
     await logActivity(a.workspace_id, "automation.ran", a.name, { type: "automation", id: a.id });
   } catch (e: any) {
-    await db().query("UPDATE automations SET last_run_at=now(), last_status='error', last_error=$2 WHERE id=$1", [a.id, String(e?.message ?? e).slice(0, 1000)]);
+    await db().query("UPDATE automations SET last_run_at=now(), last_status='error', last_error=$2 WHERE id=$1", [a.id, describeAiError(e)]);
     throw Object.assign(e, { noRetry: true });
   }
 });

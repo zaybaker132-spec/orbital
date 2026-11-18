@@ -4,6 +4,10 @@ uniform float uMorph;
 uniform float uSpin;
 uniform vec3 uGraphOffset;
 uniform float uGraphScale;
+// 1 = settle into the Orbital orb, 0 = settle into the head and brain.
+uniform float uOrbMode;
+uniform float uOrbRadius;
+uniform float uOrbSpin;
 uniform float uPixelRatio;
 uniform float uScale;
 uniform float uMotion;
@@ -31,6 +35,8 @@ attribute float aCluster;
 attribute float aBirth;
 attribute float aBright;
 attribute vec3 aGraph;
+attribute vec3 aOrb;
+attribute vec3 aOrbColor;
 #ifdef IS_LINE
 attribute float aEnd;
 attribute float aLineSeed;
@@ -59,8 +65,9 @@ void main() {
   float isBrain = step(0.5, aRegion) * step(aRegion, 3.5);
   float glow = 0.0;
 
-  // Intro: the knowledge graph (spinning) streams into the head and brain. Brain first, then the body.
-  float stagger = seed * 0.45 + (isBrain > 0.5 ? 0.0 : 0.35);
+  // Intro: the spinning knowledge graph streams into the orb (or the head and brain).
+  // Brain: brain first, then the body. Orb: forms from the top pole down.
+  float stagger = mix(seed * 0.45 + (isBrain > 0.5 ? 0.0 : 0.35), seed * 0.4 + (0.5 - aOrb.y * 0.5) * 0.4, uOrbMode);
   float mt = clamp(uMorph * 1.8 - stagger, 0.0, 1.0);
   mt = mt * mt * mt * (mt * (mt * 6.0 - 15.0) + 10.0);
   vec3 gp = (aGraph - BRAIN_CENTER) * uGraphScale;
@@ -68,7 +75,12 @@ void main() {
   gp = vec3(gp.x * cs + gp.z * sn, gp.y, -gp.x * sn + gp.z * cs) + BRAIN_CENTER + uGraphOffset;
   // A gentle arc in flight so particles swirl in rather than sliding straight.
   vec3 arc = vec3(sin(seed * 31.0), cos(seed * 17.0), sin(seed * 23.0)) * 0.35 * sin(mt * 3.14159);
-  vec3 p = mix(gp, position, mt) + arc;
+  vec3 coreCenter = mix(BRAIN_CENTER, BRAIN_CENTER + uGraphOffset, uOrbMode);
+  float os = sin(uOrbSpin), oc = cos(uOrbSpin);
+  vec3 orbP = aOrb * uOrbRadius;
+  orbP = vec3(orbP.x * oc + orbP.z * os, orbP.y, -orbP.x * os + orbP.z * oc) + coreCenter;
+  vec3 target = mix(position, orbP, uOrbMode);
+  vec3 p = mix(gp, target, mt) + arc;
   float graphPhase = 1.0 - mt;
   glow += sin(mt * 3.14159) * 0.22;
 
@@ -91,7 +103,7 @@ void main() {
     cos(uTime * 0.51 + seed * 31.0)
   ) * amp;
 
-  vec3 radial = normalize(p - BRAIN_CENTER + 1e-4);
+  vec3 radial = normalize(p - coreCenter + 1e-4);
 
   // Thinking: coordinated waves sweep the brain.
   float wave = sin(p.x * 8.0 + p.y * 3.5 - uTime * 4.2);
@@ -153,10 +165,16 @@ void main() {
 
   vec4 mv = modelViewMatrix * vec4(p, 1.0);
   gl_Position = projectionMatrix * mv;
-  float size = aSize * (1.0 + min(glow, 2.0) * 0.45) * (1.0 + graphPhase * 0.3);
+  // In the orb every particle is a fine, even dot: graph hubs shrink back into the surface.
+  float orbSize = 0.75 + fract(seed * 7.13) * 0.85;
+  float size = mix(aSize, orbSize, uOrbMode * mt) * (1.0 + min(glow, 2.0) * 0.45) * (1.0 + graphPhase * 0.3);
   gl_PointSize = max(1.0, size * uPixelRatio * uScale / -mv.z);
   float depth = smoothstep(-8.0, -4.5, mv.z);
-  vColor = color * (aBright * (0.5 + 0.5 * depth) + glow * 0.65) + vec3(glow * 0.1);
+  // Colour moves from the graph's clusters to the orb's amber and silver as it forms.
+  float orbMix = uOrbMode * mt;
+  vec3 baseCol = mix(color * aBright, aOrbColor, orbMix);
+  vec3 tint = mix(color, aOrbColor / max(0.05, max(aOrbColor.r, max(aOrbColor.g, aOrbColor.b))), orbMix);
+  vColor = baseCol * (0.5 + 0.5 * depth) + tint * glow * 0.65 + vec3(glow * 0.1);
   vAlpha = reveal;
   vGraph = graphPhase;
 #ifdef IS_LINE
@@ -174,6 +192,7 @@ export const lineFragmentShader = /* glsl */ `
 uniform float uTime;
 uniform float uMotion;
 uniform float uLineAlpha;
+uniform float uOrbMode;
 varying vec3 vColor;
 varying float vAlpha;
 varying float vGraph;
@@ -182,7 +201,9 @@ varying float vLineSeed;
 void main() {
   float phase = fract(uTime * 0.06 + vLineSeed);
   float pulse = phase < 0.07 ? exp(-pow((vT - phase / 0.07) * 6.0, 2.0)) * uMotion : 0.0;
-  float a = (uLineAlpha * mix(1.0, 2.1, vGraph) + pulse * 0.75) * vAlpha;
+  // The orb is pure particles: connections dissolve as it forms.
+  float keep = mix(1.0, vGraph, uOrbMode);
+  float a = (uLineAlpha * mix(1.0, 2.1, vGraph) + pulse * 0.75) * vAlpha * keep;
   gl_FragColor = vec4(mix(vColor * 1.25, vec3(1.0), 0.12 + pulse * 0.55), a);
 }
 `;

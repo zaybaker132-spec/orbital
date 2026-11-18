@@ -1,6 +1,6 @@
 import * as z from "zod/v4";
 import { db } from "../db/client.js";
-import { requireLLM } from "../ai/provider.js";
+import { describeAiError, requireLLM } from "../ai/provider.js";
 import { emit } from "../lib/events.js";
 import { logActivity } from "../lib/activity.js";
 import { registerJob, enqueue } from "../lib/jobs.js";
@@ -99,7 +99,7 @@ async function discover({ workspaceId, payload }: { workspaceId: string; payload
     emit(workspaceId, { type: "core", state: count ? "opportunity" : "idle" });
     emit(workspaceId, { type: "opportunities", status: "done", count });
   } catch (e: any) {
-    emit(workspaceId, { type: "opportunities", status: "error", error: e.message });
+    emit(workspaceId, { type: "opportunities", status: "error", error: describeAiError(e) });
     emit(workspaceId, { type: "core", state: "idle" });
     throw Object.assign(e, { noRetry: true });
   }

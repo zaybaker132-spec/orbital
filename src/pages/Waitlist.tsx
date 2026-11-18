@@ -9,7 +9,7 @@ import { AI_TOOLS, COMPUTERS, DEVICES, HEARD_FROM, MAX_RANKED, NOTES_APPS, PERSO
 
 /**
  * Public waitlist. While you answer, the Neural Core holds its knowledge-graph form and orbits;
- * every choice makes it flicker. Joining forms the brain.
+ * every choice makes it flicker. Joining pulls it into Orbital's orb.
  */
 interface Form {
   email: string; persona: string; remember: string[]; rememberOther: string; scale: string;
@@ -79,7 +79,7 @@ export function WaitlistPage() {
     <div className="flex h-full flex-col bg-black lg:flex-row">
       {/* The orbiting graph */}
       <div className="relative h-[42vh] shrink-0 lg:sticky lg:top-0 lg:h-full lg:w-[48%]">
-        <NeuralCore framing="head" holdGraph={!joined} className="absolute inset-0" label="Orbital's Neural Core: a knowledge graph that forms a brain when you join" />
+        <NeuralCore framing="head" holdGraph={!joined} className="absolute inset-0" label="Orbital's Neural Core: a knowledge graph that pulls into an orb when you join" />
         <div className="pointer-events-none absolute left-6 top-6 flex items-center gap-2.5 lg:left-10 lg:top-9">
           <OrbitalMark size={20} />
           <span className="text-[0.8rem] tracking-[0.32em] text-white">ORBITAL</span>
@@ -90,7 +90,7 @@ export function WaitlistPage() {
               <motion.p key="in" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="text-[0.9rem] text-white/80">Your Orbital is forming.</motion.p>
             ) : (
               <motion.p key="out" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="max-w-sm text-[0.9rem] leading-relaxed text-mute">
-                Right now it's a graph of scattered ideas. Join, and watch it become a mind.
+                Right now it's a graph of scattered ideas. Join, and watch them fall into orbit.
               </motion.p>
             )}
           </AnimatePresence>

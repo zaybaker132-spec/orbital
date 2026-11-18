@@ -51,3 +51,13 @@ test("Wikipedia extracts keep page order and skip stubs", () => {
   assert.equal(s.length, 1);
   assert.equal(s[0].title, "Artificial intelligence — Wikipedia");
 });
+
+test("AI errors become plain sentences, never raw JSON", async () => {
+  const { describeAiError } = await import("../ai/provider.js");
+  const billing = Object.assign(new Error('400 {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."}}'),
+    { status: 400, error: { type: "error", error: { type: "invalid_request_error", message: "Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits." } } });
+  assert.match(describeAiError(billing), /^Your Anthropic account has no API credit/);
+  assert.match(describeAiError({ status: 401, error: { error: { type: "authentication_error", message: "invalid x-api-key" } } }), /rejected the API key/);
+  assert.match(describeAiError({ status: 529, error: { error: { type: "overloaded_error" } } }), /temporarily unavailable/);
+  assert.doesNotMatch(describeAiError(new Error('400 {"type":"error"}')), /\{/);
+});
