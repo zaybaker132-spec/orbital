@@ -1,5 +1,5 @@
 #!/bin/bash
-# Install Orbital on a Mac from the zip you downloaded, in one step.
+# Install Orbital on a Mac from the zip you downloaded, in one step (found in Downloads, or anywhere via Spotlight).
 #
 #   bash ~/Downloads/install-mac.sh
 #
@@ -18,6 +18,15 @@ while IFS= read -r f; do
   if [ "$chip" = "Intel" ] && [[ "$f" == *arm64* ]]; then continue; fi
   zip="$f"; break
 done < <(ls -t ~/Downloads/$pattern 2>/dev/null || true)
+
+# Not in Downloads? Ask Spotlight: browsers and chat apps sometimes save elsewhere.
+if [ -z "$zip" ]; then
+  while IFS= read -r f; do
+    if [ "$chip" = "Intel" ] && [[ "$f" == *arm64* ]]; then continue; fi
+    if [ "$chip" = "Apple chip" ] && [[ "$f" != *arm64* ]]; then continue; fi
+    zip="$f"; break
+  done < <(mdfind -name "Orbital" 2>/dev/null | grep -Ei '/Orbital[^/]*mac[^/]*\.zip$' || true)
+fi
 
 if [ -z "$zip" ]; then
   say "Couldn't find the Orbital download for your Mac ($chip) in Downloads."
