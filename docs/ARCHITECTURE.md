@@ -31,6 +31,7 @@ orbital/
 │  │  ├─ freshness.ts          living reports: shelf life per fact, daily checks, section refresh with history
 │  │  ├─ hypotheses.ts         hypothesis verdicts from hypothesis-mode research (research.ts plans and synthesizes)
 │  │  ├─ extraction.ts         long-document extraction: concepts, evidence, timeline, relationships
+│  │  ├─ maintenance.ts        knowledge maintenance: daily scans, stored suggestions, apply with undo, health score
 │  │  └─ growth.ts             metrics, timeline, maintenance
 │  ├─ research/sources.ts      Wikipedia, OpenAlex, web-search citation connectors
 │  ├─ lib/                     jobs (durable queue), events (SSE bus), activity + audit logs, crypto, rate limit, http helpers

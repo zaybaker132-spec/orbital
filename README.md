@@ -52,7 +52,7 @@ The server serves the built app with a strict Content-Security-Policy, secure co
 npm test
 ```
 
-50 tests: auth and CSRF, notes/graph/search, memory, chat without AI, projects, growth metrics, **cross-user and cross-workspace isolation**, research verification, source parsing, the full AI pipeline (streaming chat, memory extraction, research synthesis + verification, opportunity discovery → validation → execution plan), files (Word, Excel, PowerPoint, images through the AI provider), the web clipper (article extraction, SSRF refusal, selections, dedupe), reminders delivered only to their owner over the live stream, nudges, project deadlines and progress, focus sessions, universal search with highlights and privacy, voice transcription and "save to memory", research intelligence (source scoring, lineage verification, freshness and refresh with history, the contradiction lab, hypothesis verdicts that can't outrun their evidence, knowledge extraction that drops unquoted claims, with and without AI), and the business layer (roles, email-bound invites, private conversations, viewer restrictions, API token scopes and revocation, operations agent with auto-run internal actions and approval-gated signed webhooks, scheduled briefings, time-zone schedules, SSRF guard). AI paths run through the real Anthropic SDK against a deterministic local mock of the Messages API.
+52 tests: auth and CSRF, notes/graph/search, memory, chat without AI, projects, growth metrics, **cross-user and cross-workspace isolation**, research verification, source parsing, the full AI pipeline (streaming chat, memory extraction, research synthesis + verification, opportunity discovery → validation → execution plan), files (Word, Excel, PowerPoint, images through the AI provider), the web clipper (article extraction, SSRF refusal, selections, dedupe), reminders delivered only to their owner over the live stream, nudges, project deadlines and progress, focus sessions, universal search with highlights and privacy, voice transcription and "save to memory", research intelligence (source scoring, lineage verification, freshness and refresh with history, the contradiction lab, hypothesis verdicts that can't outrun their evidence, knowledge extraction that drops unquoted claims, with and without AI), knowledge maintenance (detection, archive-not-delete, undo, remembered dismissals, AI conflict review), and the business layer (roles, email-bound invites, private conversations, viewer restrictions, API token scopes and revocation, operations agent with auto-run internal actions and approval-gated signed webhooks, scheduled briefings, time-zone schedules, SSRF guard). AI paths run through the real Anthropic SDK against a deterministic local mock of the Messages API.
 
 ---
 
@@ -80,9 +80,24 @@ Orbital is usable with no AI provider: notes, PDF/Word/Excel/PowerPoint/text imp
 
 ---
 
+## How Orbital works
+
+Six levels of intelligence, each built on the last:
+
+| Level | | What powers it today |
+|---|---|---|
+| 01 Understand | Learn your interests, goals, preferences and knowledge | Memory with verified evidence; notes, files, web clips and voice |
+| 02 Connect | Discover relationships between memories, ideas and research | Knowledge graph, knowledge extraction, contradiction lab, lineage |
+| 03 Anticipate | Identify upcoming needs, problems and opportunities | Smart reminders and nudges, living reports, opportunity discovery, knowledge maintenance |
+| 04 Simulate *(early)* | Model possible futures and evaluate decisions | Hypothesis testing and the contradiction lab's weight of evidence; full scenario modelling is in development |
+| 05 Strategize | Develop long-term plans from accumulated knowledge | Projects, milestones and deadlines, execution plans, project briefs |
+| 06 Execute | Carry out approved tasks, coordinate agents, track outcomes | Operations agent and automations, approval queue, connectors, activity tracking |
+
+The same architecture is shown on the landing page and the preview site.
+
 ## Everyday tools
 
-**Voice** (talk to Orbital, dictate, save any conversation to memory) · **Universal search** across every conversation, note, file, web clip and research report · **File intelligence** for PDFs (including scanned), Word, Excel, PowerPoint and images · **Project tracking** with deadlines, due dates, progress and overdue work · **Smart reminders** you set, plus nudges about overdue tasks, slipping deadlines, stalled projects and unfinished ideas · **Web clipper** (dialog or bookmarklet) · **Learning mode** that teaches from what you already know · **Focus mode** for one objective with a timer, tasks and a scratchpad. What each needs and how it works: [Everyday tools](docs/EVERYDAY.md).
+**Voice** (talk to Orbital, dictate, save any conversation to memory) · **Universal search** across every conversation, note, file, web clip and research report · **File intelligence** for PDFs (including scanned), Word, Excel, PowerPoint and images · **Project tracking** with deadlines, due dates, progress and overdue work · **Smart reminders** you set, plus nudges about overdue tasks, slipping deadlines, stalled projects and unfinished ideas · **Web clipper** (dialog or bookmarklet) · **Learning mode** that teaches from what you already know · **Knowledge maintenance** that suggests fixes for duplicates, conflicts, outdated and disconnected knowledge (never changing anything silently, every fix undoable) · **Focus mode** for one objective with a timer, tasks and a scratchpad. What each needs and how it works: [Everyday tools](docs/EVERYDAY.md).
 
 ## Research intelligence
 

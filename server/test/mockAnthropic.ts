@@ -59,6 +59,15 @@ function structured(body: any): unknown {
       relations: [{ subject: "Booking software", relation: "reduces", object: "No-shows", quote: sentences.find((x) => /reduce/i.test(x)) ?? "missing quote that is not present" }],
     };
   }
+  if (props.includes("pairs")) {
+    const pairs = [...text.matchAll(/(\d+)\. A \(saved [^)]*\): (.*)\n\s+B \(saved [^)]*\): (.*)/g)];
+    return { pairs: pairs.map((m) => {
+      const neg = (x: string) => /no longer|not\b/i.test(x);
+      return neg(m[2]) !== neg(m[3])
+        ? { i: Number(m[1]), verdict: "conflict", explanation: "One says they work from the London office; the other says they no longer do.", likely_current: neg(m[3]) ? "b" : "a" }
+        : { i: Number(m[1]), verdict: "compatible", explanation: "Both can be true.", likely_current: "unknown" };
+    }) };
+  }
   if (props.includes("subquestions")) return { interpretation: "Mock interpretation", subquestions: [{ question: "How widely is AI used by small businesses?", search_query: "small business AI adoption" }], unknowns: ["Regional differences"] };
   if (props.includes("executive_summary")) {
     const base = {

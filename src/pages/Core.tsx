@@ -188,16 +188,9 @@ function Maintenance() {
   const research = async (id: string) => {
     try { const r = await api.post(`/gaps/${id}/research`); toast("Research started", { action: { label: "Open", to: `/research/${r.id}` } }); invalidate("/research"); } catch (e) { toastError(e); }
   };
-  const merge = async (keepId: string, removeId: string) => {
-    try { await api.post("/memories/merge", { keepId, removeId }); invalidate("/growth", "/memories"); toast("Memories merged"); } catch (e) { toastError(e); }
-  };
   const edge = async (id: string, status: "confirmed" | "rejected") => {
     try { await api.patch(`/edges/${id}`, { status }); invalidate("/growth", "/graph"); } catch (e) { toastError(e); }
   };
-  const archive = async (id: string) => {
-    try { await api.patch(`/memories/${id}`, { status: "archived" }); invalidate("/growth", "/memories"); } catch (e) { toastError(e); }
-  };
-  const nothing = !data.gaps.length && !data.duplicates.length && !data.contradictions.length && !data.outdated.length && !data.unused.length;
   return (
     <>
       <section id="questions" className="mt-12 scroll-mt-6">
@@ -216,12 +209,10 @@ function Maintenance() {
           </ul>
         )}
       </section>
-      <section id="maintenance" className="mt-12 scroll-mt-6">
-        <h2 className="label">Knowledge maintenance</h2>
-        <p className="mt-1.5 text-[0.8rem] text-mute">Orbital checks for duplicates, contradictions and stale knowledge. Nothing changes without your approval.</p>
-        {nothing && <p className="mt-4 text-[0.84rem] text-mute">Everything looks consistent.</p>}
-        {data.contradictions.length > 0 && (
-          <Group title="Possible contradictions">
+      <MaintenanceSummary />
+      {data.contradictions.length > 0 && (
+        <section className="mt-8">
+          <Group title="Possible contradictions in your knowledge graph">
             {data.contradictions.map((c: any) => (
               <Row key={c.id} actions={<>
                 <Button size="sm" variant="ghost" onClick={async () => { try { const r = await api.post(`/edges/${c.id}/investigate`); invalidate("/research"); navigate(`/research/${r.id}`); } catch (e) { toastError(e); } }}>Investigate in the lab</Button>
@@ -232,37 +223,32 @@ function Maintenance() {
               </Row>
             ))}
           </Group>
-        )}
-        {data.duplicates.length > 0 && (
-          <Group title="Near-duplicate memories">
-            {data.duplicates.map((d: any) => (
-              <Row key={d.a_id + d.b_id} actions={<><Button size="sm" variant="ghost" onClick={() => merge(d.a_id, d.b_id)}>Keep first</Button><Button size="sm" variant="ghost" onClick={() => merge(d.b_id, d.a_id)}>Keep second</Button></>}>
-                <span className="block">{d.a_content}</span><span className="block text-mute-bright">{d.b_content}</span>
-                <span className="text-[0.72rem] text-mute">{Math.round(d.similarity * 100)}% similar</span>
-              </Row>
-            ))}
-          </Group>
-        )}
-        {data.outdated.length > 0 && (
-          <Group title="Possibly outdated">
-            {data.outdated.map((m: any) => (
-              <Row key={m.id} actions={<><Link to="/knowledge?tab=memory"><Button size="sm" variant="ghost">Edit</Button></Link><Button size="sm" variant="ghost" onClick={() => archive(m.id)}>Archive</Button></>}>
-                {m.content}<span className="ml-2 text-[0.72rem] text-mute">{label(m.category)} · updated {timeAgo(m.updated_at)}</span>
-              </Row>
-            ))}
-          </Group>
-        )}
-        {data.unused.length > 0 && (
-          <Group title="Unused knowledge">
-            {data.unused.map((n: any) => (
-              <Row key={n.id} actions={<Link to={`/connections?node=${n.id}`}><Button size="sm" variant="ghost">Inspect</Button></Link>}>
-                {n.title}<span className="ml-2 text-[0.72rem] text-mute">{n.kind} · never opened, no confirmed links</span>
-              </Row>
-            ))}
-          </Group>
-        )}
-      </section>
+        </section>
+      )}
     </>
+  );
+}
+
+/** Knowledge maintenance lives on its own page; this is the summary. */
+function MaintenanceSummary() {
+  const { data } = useResource<any>("/maintenance");
+  if (!data) return null;
+  const h = data.health;
+  const top = data.suggestions.filter((s: any) => s.status === "open").slice(0, 3);
+  return (
+    <section id="maintenance" className="mt-12 scroll-mt-6">
+      <div className="flex items-baseline gap-3">
+        <h2 className="label">Knowledge maintenance</h2>
+        <Link to="/maintenance" className="ml-auto text-[0.78rem] text-mute hover:text-white">Knowledge health {h.score} →</Link>
+      </div>
+      <p className="mt-1.5 text-[0.8rem] text-mute">Orbital checks daily for duplicate notes, conflicting memories, outdated information and disconnected ideas. Nothing changes without your approval, and every change can be undone.</p>
+      {top.length === 0 ? <p className="mt-4 text-[0.84rem] text-mute">{h.lastScan ? "Everything looks consistent." : "The first check runs shortly."}</p> : (
+        <ul className="mt-3 divide-y divide-line">{top.map((s: any) => (
+          <li key={s.id}><Link to="/maintenance" className="flex items-baseline gap-3 py-2.5 hover:text-white"><span className="min-w-0 flex-1 truncate text-[0.86rem] text-white/90">{s.title}</span><span className="shrink-0 text-[0.74rem] text-mute">{s.reason.slice(0, 60)}</span></Link></li>
+        ))}</ul>
+      )}
+      {h.open > top.length && <Link to="/maintenance" className="mt-2 inline-block text-[0.78rem] text-mute hover:text-white">{h.open - top.length} more →</Link>}
+    </section>
   );
 }
 

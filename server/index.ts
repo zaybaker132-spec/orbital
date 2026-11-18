@@ -20,6 +20,7 @@ import { startReminders } from "./engines/reminders.js";
 import { productivity } from "./routes/productivity.js";
 import { researchIntel } from "./routes/researchIntel.js";
 import { startFreshnessChecks } from "./engines/freshness.js";
+import { startMaintenance } from "./engines/maintenance.js";
 import "./engines/extraction.js";
 import { isAppRoute } from "../shared/routes.js";
 
@@ -79,6 +80,7 @@ export async function createApp(opts: { jobs?: boolean } = {}) {
     startAutomations();
     startReminders();
     startFreshnessChecks();
+    startMaintenance();
   }
   return app;
 }

@@ -5,6 +5,7 @@ import { useCore } from "@/state/core";
 import { api } from "@/lib/api";
 import { OrbitalMark } from "@/components/Shell";
 import { cx } from "@/components/ui";
+import { LEVELS } from "@shared/levels";
 import { AI_TOOLS, COMPUTERS, DEVICES, HEARD_FROM, MAX_RANKED, NOTES_APPS, PERSONAS, REMEMBER, SCALE } from "@shared/waitlist";
 
 /**
@@ -125,6 +126,7 @@ export function WaitlistPage() {
                 <div className="wl-label">Early access</div>
                 <h1 className="mt-3 text-[2.2rem] font-light leading-[1.1] tracking-[-0.03em]">Enter the orbit.</h1>
                 <p className="mt-3 max-w-md text-[0.92rem] leading-relaxed text-mute">An intelligence that compounds with everything you learn. Tell us how you think and work, and we'll bring you in.</p>
+                <a href="#how-it-works" onClick={(e) => { e.preventDefault(); document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" }); }} className="mt-3 inline-block text-[0.8rem] text-white/70 underline decoration-white/20 underline-offset-4 hover:text-white">How Orbital works ↓</a>
 
                 <div className="mt-10 grid grid-cols-1 gap-x-8 gap-y-9 sm:grid-cols-2">
                   <Field id="email" label="Email" error={errors.email}>
@@ -201,9 +203,52 @@ export function WaitlistPage() {
               </motion.form>
             )}
           </AnimatePresence>
+          <HowItWorks />
         </div>
       </div>
     </div>
+  );
+}
+
+/** Six concentric orbits; the current level's ring is lit. */
+function OrbitLevel({ index, color }: { index: number; color: string }) {
+  return (
+    <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden className="shrink-0">
+      {Array.from({ length: 6 }, (_, i) => (
+        <circle key={i} cx="28" cy="28" r={5 + i * 4.3} fill="none" stroke={i === index ? color : "rgba(255,255,255,0.12)"} strokeWidth={i === index ? 1.6 : 0.8} />
+      ))}
+      <circle cx="28" cy="28" r="2" fill="#fff" />
+      <circle cx={28 + (5 + index * 4.3) * Math.cos(-0.7)} cy={28 + (5 + index * 4.3) * Math.sin(-0.7)} r="2.2" fill={color} />
+    </svg>
+  );
+}
+
+/** The intelligence architecture: what Orbital does, level by level, and what powers each today. */
+function HowItWorks() {
+  return (
+    <section id="how-it-works" aria-labelledby="how-title" className="mt-24 border-t border-white/10 pt-14">
+      <div className="wl-label">How Orbital works</div>
+      <h2 id="how-title" className="mt-3 text-[1.9rem] font-light leading-[1.1] tracking-[-0.025em]">Six levels of intelligence, each built on the last.</h2>
+      <p className="mt-3 max-w-[48ch] text-[0.95rem] leading-relaxed text-mute">Orbital starts by understanding you, and works outward, until it can act for you, with your approval.</p>
+      <ol className="mt-10 space-y-2">
+        {LEVELS.map((l, i) => (
+          <li key={l.n} className="group flex gap-5 rounded-2xl border border-transparent px-1 py-4 transition-colors hover:border-white/10 hover:bg-white/[0.02] sm:px-4">
+            <OrbitLevel index={i} color={l.color} />
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <span className="font-mono text-[0.7rem] tracking-[0.2em] text-mute">LEVEL {l.n}</span>
+                <h3 className="text-[1.15rem] font-normal text-white">{l.name}</h3>
+                {l.status === "early" && <span className="rounded-full border border-white/20 px-2 py-px text-[0.62rem] uppercase tracking-[0.14em] text-mute-bright">Early</span>}
+              </div>
+              <p className="mt-1 text-[0.92rem] leading-relaxed text-white/80">{l.summary}</p>
+              <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[0.78rem] text-mute">
+                {l.today.map((t) => <li key={t} className="flex items-center gap-1.5"><i className="h-1 w-1 rounded-full" style={{ background: l.color }} />{t}</li>)}
+              </ul>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }
 

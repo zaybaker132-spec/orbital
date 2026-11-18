@@ -12,6 +12,7 @@ export type OrbitalEvent =
   | { type: "opportunities"; status: "started" | "done" | "error"; count?: number; error?: string }
   | { type: "notice"; level: "info" | "warn"; message: string }
   | { type: "actions" }
+  | { type: "maintenance"; added: number }
   | { type: "extraction"; id: string; documentId: string; status: string; done: number; total: number }
   /** Personal: delivered only to the windows of `userId`. */
   | { type: "reminder"; userId: string; id: string; title: string; note: string; link: string | null };

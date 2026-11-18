@@ -6,7 +6,7 @@
 const SEG = "[^/]+";
 export const APP_ROUTES: RegExp[] = [
   "/", "/login", "/waitlist", "/clip", "/core", "/connections", "/opportunities", "/operations", "/team",
-  "/meetings", "/reminders", "/focus", "/search", "/settings",
+  "/meetings", "/reminders", "/focus", "/search", "/settings", "/maintenance",
   `/c/${SEG}`, `/m/${SEG}`, `/invite/${SEG}`,
   `/research(/${SEG})?`, `/knowledge(/${SEG})?`, `/projects(/${SEG})?`, `/hypotheses(/${SEG})?`,
 ].map((p) => new RegExp(`^${p}/?$`));

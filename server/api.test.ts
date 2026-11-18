@@ -297,3 +297,69 @@ test("knowledge extraction without AI: dated events, figures and key terms", asy
   assert.equal((await bob.req("GET", `/api/documents/${doc.data.id}/extraction`)).data, null, "another person can't see it");
   assert.equal((await bob.req("POST", `/api/documents/${doc.data.id}/extract`)).status, 404);
 });
+
+test("knowledge maintenance: suggestions, never silent changes; merge, review, connect, dismiss and undo", async () => {
+  const { db } = await import("./db/client.js");
+  const me = (await alice.req("GET", "/api/auth/me")).data.user.id;
+  const n1 = await alice.req("POST", "/api/documents", { title: "Pricing ideas", body: "Three tiers for salons: solo, studio and group. Annual plans get two months free. Offer a free trial for the first month." });
+  const n2 = await alice.req("POST", "/api/documents", { title: "Pricing ideas", body: "Three tiers for salons: solo, studio and group. Annual plans get two months free." });
+  await alice.req("POST", "/api/documents", { title: "Launch checklist", body: "Before launch, finish [[Press kit]] and review [[Pricing ideas]]." });
+  await alice.req("POST", "/api/memories", { content: "The team has 12 people working in the Lisbon studio", category: "context" });
+  await alice.req("POST", "/api/memories", { content: "The team has 20 people working in the Lisbon studio", category: "context" });
+  const old = await alice.req("POST", "/api/memories", { content: "Plan to launch the salon beta next month", category: "goal" });
+  await db().query("UPDATE memories SET updated_at = now() - interval '60 days', created_at = now() - interval '60 days' WHERE id=$1", [old.data.id]);
+  const lone = await alice.req("POST", "/api/nodes", { title: "Loyalty economics", summary: "Repeat clients and loyalty programs for salon pricing tiers" });
+  await db().query("UPDATE knowledge_nodes SET created_at = now() - interval '10 days' WHERE id=$1", [lone.data.id]);
+  await settle();
+
+  const scan = await alice.req("POST", "/api/maintenance/scan");
+  assert.equal(scan.data.ai, false);
+  let m = (await alice.req("GET", "/api/maintenance")).data;
+  const of = (k: string) => m.suggestions.filter((s: any) => s.kind === k);
+  const dupNotes = of("duplicate_notes")[0];
+  assert.ok(dupNotes, JSON.stringify(m.suggestions.map((s: any) => s.kind)));
+  assert.equal(dupNotes.proposal.keep, dupNotes.items[0].id === n1.data.id ? "a" : "b", "the fuller note is proposed as the one to keep");
+  assert.match(of("conflicting_memories")[0]?.reason ?? "", /Different figures/);
+  assert.ok(of("outdated").some((s: any) => s.items[0].id === old.data.id && /next month/.test(s.reason)));
+  const disc = of("disconnected").find((s: any) => s.items[0].id === lone.data.id);
+  assert.ok(disc?.proposal.options.length >= 1, "a disconnected concept comes with the closest things to connect it to");
+  assert.ok(of("broken_link").some((s: any) => /Press kit/.test(s.title)));
+  assert.ok(!of("broken_link").some((s: any) => /\[\[Pricing ideas\]\]/.test(s.title)), "links to existing notes aren't broken");
+  const before = m.health.score;
+  assert.ok(before < 100 && m.health.open >= 5);
+  // Nothing was changed by the scan.
+  assert.equal((await alice.req("GET", `/api/documents/${n2.data.id}`)).status, 200);
+
+  // Merge duplicate notes: the kept note keeps everything; the other can be restored.
+  const keepKey = dupNotes.items[0].id === n1.data.id ? "a" : "b";
+  assert.equal((await alice.req("POST", `/api/maintenance/${dupNotes.id}/apply`, { action: "merge", keep: keepKey })).status, 200);
+  assert.equal((await alice.req("GET", `/api/documents/${n2.data.id}`)).status, 404);
+  assert.match((await alice.req("GET", `/api/documents/${n1.data.id}`)).data.body, /free trial/);
+  assert.equal((await alice.req("POST", `/api/maintenance/${dupNotes.id}/undo`)).status, 200);
+  const restored = (await alice.req("GET", "/api/documents?q=Pricing ideas")).data.filter((d: any) => d.title === "Pricing ideas");
+  assert.equal(restored.length, 2, "undo brings the merged note back");
+
+  // Outdated: "still true" keeps it and stops it being flagged for months.
+  const out = of("outdated").find((s: any) => s.items[0].id === old.data.id);
+  assert.equal((await alice.req("POST", `/api/maintenance/${out.id}/apply`, { action: "reviewed" })).status, 200);
+  // Connect the lonely concept.
+  assert.equal((await alice.req("POST", `/api/maintenance/${disc.id}/apply`, { action: "connect", targetId: disc.proposal.options[0].id })).status, 200);
+  const g = (await alice.req("GET", "/api/graph")).data;
+  assert.ok(g.edges.some((e: any) => (e.source_id === lone.data.id || e.target_id === lone.data.id) && e.status === "confirmed"));
+  // Broken link: dismissed issues are remembered.
+  const broken = of("broken_link")[0];
+  assert.equal((await alice.req("POST", `/api/maintenance/${broken.id}/dismiss`)).status, 200);
+  await alice.req("POST", "/api/maintenance/scan");
+  m = (await alice.req("GET", "/api/maintenance")).data;
+  assert.ok(!m.suggestions.some((s: any) => s.id === broken.id || /Press kit/.test(s.title)), "a dismissed issue isn't raised again");
+  assert.ok(!m.suggestions.some((s: any) => s.kind === "outdated" && s.items[0].id === old.data.id), "a reviewed memory isn't flagged again");
+  assert.ok(m.recent.some((r: any) => r.resolution === "Connected" && r.undoable));
+  assert.ok(m.health.score > before, "handling suggestions raises knowledge health");
+  // Wrong action, other people, and the nudge.
+  const c = of("conflicting_memories")[0];
+  assert.equal((await alice.req("POST", `/api/maintenance/${c.id}/apply`, { action: "connect" })).status, 400);
+  assert.equal((await bob.req("POST", `/api/maintenance/${c.id}/apply`, { action: "resolve", keep: "a" })).status, 404);
+  assert.equal((await bob.req("GET", "/api/maintenance")).data.suggestions.length, 0);
+  assert.ok((await alice.req("GET", "/api/nudges")).data.some((n: any) => n.kind === "maintenance"));
+  void me;
+});

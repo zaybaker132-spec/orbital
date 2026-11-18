@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { FileText, FolderPlus, Plus, Search, Trash2, Upload, Eye, PenLine, Check, X, Folder, Hash, Layers, Archive, Link2, Scissors } from "lucide-react";
+import { FileText, FolderPlus, Plus, Search, Trash2, Upload, Eye, PenLine, Check, X, Folder, Hash, Layers, Archive, Link2, Scissors, HeartPulse } from "lucide-react";
 import { api, getWorkspaceId } from "@/lib/api";
 import { invalidate, useResource } from "@/lib/resource";
 import { usePanel, toast, toastError } from "@/state/ui";
@@ -30,7 +30,8 @@ export function KnowledgePage() {
   if (id) return <DocumentEditor id={id} />;
   return (
     <div className="flex h-full flex-col">
-      <PageHeader title="Knowledge" subtitle="Notes, documents and what Orbital remembers — all searchable, all connectable." />
+      <PageHeader title="Knowledge" subtitle="Notes, documents and what Orbital remembers — all searchable, all connectable."
+        actions={<Link to="/maintenance" className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-line px-3 text-[0.8rem] text-mute-bright hover:text-white"><HeartPulse size={13} />Knowledge health</Link>} />
       <Tabs className="mx-8" value={tab} onChange={(t) => setParams(t === "notes" ? {} : { tab: t })}
         tabs={[{ value: "notes", label: "Notes & documents" }, { value: "memory", label: "Memory" }, { value: "review", label: "Review", count: (pending?.length ?? 0) + suggested }]} />
       <div className="min-h-0 flex-1">

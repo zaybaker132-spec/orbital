@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Video, Brain, Compass, FileText, FolderKanban, Lightbulb, MessageSquare, MessageSquarePlus, Network, PanelLeft, PanelRight, Search, Settings, StickyNote, Sparkles, BookOpen, Upload, Scissors, Target, Bell, Mic, GraduationCap, Scale, FlaskConical } from "lucide-react";
+import { Video, Brain, Compass, FileText, FolderKanban, Lightbulb, MessageSquare, MessageSquarePlus, Network, PanelLeft, PanelRight, Search, Settings, StickyNote, Sparkles, BookOpen, Upload, Scissors, Target, Bell, Mic, GraduationCap, Scale, FlaskConical, HeartPulse } from "lucide-react";
 import { useApp } from "@/state/app";
 import { api } from "@/lib/api";
 import { invalidate } from "@/lib/resource";
@@ -69,6 +69,7 @@ export function CommandPalette() {
       run: () => { navigate(`/research?kind=contradiction${q.trim() ? `&q=${encodeURIComponent(q.trim())}` : ""}`); close(); } },
     { id: "hypothesis", label: q.trim() ? `Test hypothesis: "${q.trim()}"` : "Test a hypothesis", group: "Actions", icon: FlaskConical, keywords: "hypothesis test evidence for against verdict",
       run: () => { navigate(`/hypotheses${q.trim() ? `?q=${encodeURIComponent(q.trim())}` : ""}`); close(); } },
+    { id: "health", label: "Knowledge health and cleanup", group: "Actions", icon: HeartPulse, keywords: "maintenance cleanup duplicates conflicts outdated tidy health", run: go("/maintenance") },
     { id: "voice", label: "Talk to Orbital", group: "Actions", icon: Mic, keywords: "voice speak talk microphone", run: go("/?voice=1") },
     { id: "project", label: "New project", group: "Actions", icon: FolderKanban, keywords: "create project", run: go("/projects?new=1") },
     { id: "meeting-new", label: "Start a meeting", group: "Actions", icon: Video, keywords: "call video zoom meet",

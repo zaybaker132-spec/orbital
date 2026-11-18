@@ -51,7 +51,8 @@ after(async () => {
   mock?.close();
   const { stopReminders } = await import("./engines/reminders.js");
   const { stopFreshnessChecks } = await import("./engines/freshness.js");
-  stopReminders(); stopFreshnessChecks();
+  const { stopMaintenance } = await import("./engines/maintenance.js");
+  stopReminders(); stopFreshnessChecks(); stopMaintenance();
   const { db } = await import("./db/client.js");
   await until(async () => (await db().query<any>("SELECT count(*)::int AS n FROM jobs WHERE status IN ('queued','running')")).rows[0].n === 0);
   await new Promise((r) => setTimeout(r, 800)); // let fire-and-forget graph suggestions settle
@@ -246,4 +247,37 @@ test("knowledge extraction: verified concepts, evidence, timeline and relationsh
   const filtered = (await req("GET", `/api/documents/${doc.data.id}/extraction?q=2019`)).data.items;
   assert.ok(filtered.length >= 1 && filtered.every((i: any) => /2019/.test(`${i.title} ${i.quote} ${i.date_text}`)));
   assert.equal((await req("POST", "/api/documents", { title: "short", body: "too short" })).status, 201);
+});
+
+test("knowledge maintenance with AI: conflicting memories are resolved by choice, archived not deleted, and undoable", async () => {
+  const a = await req("POST", "/api/memories", { content: "Works from the London office three days a week", category: "context" });
+  const b = await req("POST", "/api/memories", { content: "No longer works from the London office; fully remote since spring", category: "context" });
+  const { db } = await import("./db/client.js");
+  await until(async () => (await db().query<any>("SELECT count(*)::int AS n FROM memories WHERE embedding IS NULL")).rows[0].n === 0);
+  const s1 = await req("POST", "/api/maintenance/scan");
+  assert.equal(s1.data.ai, true);
+  const m = (await req("GET", "/api/maintenance")).data;
+  const conflict = m.suggestions.find((x: any) => x.kind === "conflicting_memories");
+  assert.ok(conflict, JSON.stringify(m.suggestions.map((x: any) => x.kind)));
+  assert.equal(conflict.ai, true);
+  assert.match(conflict.reason, /London office/);
+  const newer = conflict.items[0].id === b.data.id ? "a" : "b";
+  assert.equal(conflict.proposal.keep, newer, "the statement of a change is proposed as current");
+  // Nothing has changed yet: both memories are still active.
+  const mems = (await req("GET", "/api/memories")).data;
+  assert.ok(mems.some((x: any) => x.id === a.data.id) && mems.some((x: any) => x.id === b.data.id));
+
+  const r = await req("POST", `/api/maintenance/${conflict.id}/apply`, { action: "resolve", keep: newer });
+  assert.equal(r.status, 200, r.text);
+  assert.equal((await req("POST", `/api/maintenance/${conflict.id}/apply`, { action: "resolve", keep: newer })).status, 409);
+  const archived = (await req("GET", "/api/memories?status=archived")).data;
+  assert.ok(archived.some((x: any) => x.id === a.data.id), "the other memory is archived, not deleted");
+
+  assert.equal((await req("POST", `/api/maintenance/${conflict.id}/undo`)).status, 200);
+  const back = (await req("GET", "/api/memories")).data;
+  assert.ok(back.some((x: any) => x.id === a.data.id), "undo restores it");
+  // Compatible pairs the AI checked are remembered, so they aren't sent again.
+  const calls = mock.calls.length;
+  await req("POST", "/api/maintenance/scan");
+  assert.equal(mock.calls.slice(calls).filter((c) => JSON.stringify(c.body).includes("personal knowledge base")).length, 0, "already-reviewed pairs aren't re-sent to the AI");
 });

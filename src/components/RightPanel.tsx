@@ -85,13 +85,13 @@ function AnswerContextView({ highlight }: { highlight: string | null }) {
 
 function Insights() {
   const { data } = useResource<any>("/growth/maintenance");
+  const { data: health } = useResource<any>("/maintenance");
   if (!data) return null;
   const items: { text: string; to: string }[] = [];
   if (data.pendingMemories) items.push({ text: `${data.pendingMemories} proposed memor${data.pendingMemories === 1 ? "y" : "ies"} awaiting review`, to: "/knowledge?tab=review" });
   if (data.contradictions.length) items.push({ text: `${data.contradictions.length} possible contradiction${data.contradictions.length === 1 ? "" : "s"} in your knowledge`, to: "/core#maintenance" });
-  if (data.duplicates.length) items.push({ text: `${data.duplicates.length} near-duplicate memor${data.duplicates.length === 1 ? "y" : "ies"}`, to: "/core#maintenance" });
   if (data.gaps.length) items.push({ text: `${data.gaps.length} unresolved question${data.gaps.length === 1 ? "" : "s"}`, to: "/core#questions" });
-  if (data.outdated.length) items.push({ text: `${data.outdated.length} memor${data.outdated.length === 1 ? "y" : "ies"} may be outdated`, to: "/core#maintenance" });
+  if (health?.health.open) items.push({ text: `${health.health.open} knowledge cleanup suggestion${health.health.open === 1 ? "" : "s"}`, to: "/maintenance" });
   if (!items.length) return null;
   return (
     <Section title="Insights">

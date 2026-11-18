@@ -12,6 +12,7 @@ Eight features for daily use, on top of the five engines. Each one runs on Orbit
 | [Web clipper](#web-clipper) | Knowledge → **Clip a page**, or the bookmarklet | — |
 | [Learning mode](#learning-mode) | Chat → **Learning**, or `⌘K` → "Learn about…" | An AI provider |
 | [Focus mode](#focus-mode) | **Focus** in the sidebar, or **Focus on this** on a project | — |
+| [Knowledge maintenance](#knowledge-maintenance) | Knowledge → **Knowledge health** | An AI provider only for reading memory pairs for conflicts (a simpler check runs without one) |
 
 ## Voice
 
@@ -148,3 +149,24 @@ Pick one objective. If you start from a project, Orbital suggests its next open 
   - your outcome
 
 The Focus page shows this week's focused time and recent sessions.
+
+## Knowledge maintenance
+
+**Knowledge health** (`/maintenance`, linked from Knowledge, the Neural Core page and `⌘K`). Orbital checks your knowledge once a day, or whenever you press **Check now**. It looks for:
+
+| Issue | How it's found | Suggested fix |
+|---|---|---|
+| **Duplicate notes** | Similar notes, or notes with the same title, whose passages overlap heavily, or where one note's text is inside the other | Merge into the fuller note. The other note's text is added under "Merged from …" unless it's already there, so nothing is lost. Or keep both. |
+| **Duplicate memories** | Nearly identical memories (with AI: memories that say the same thing in different words) | Keep one; the other is archived |
+| **Conflicting memories** | Related memories where one negates the other, or that give different figures for the same thing. With AI, every related pair is read once and only genuine contradictions are raised. | Choose which is true now (the newer statement of a change is suggested), correct it, or say both are true. The other one is archived. |
+| **Outdated information** | Memories that refer to a past year as if it were still ahead, say "next month" months later, or describe a project as in progress after it was completed; old goals and decisions that haven't come up since; research reports with stale facts | Still true (it won't be flagged for 6 months), update it, archive it, or refresh the report |
+| **Disconnected concepts** | Notes, concepts and findings with no connections at all | Connect to one of the three closest items, or remove a standalone concept from the graph |
+| **Broken links** | `[[Links]]` to notes that don't exist | Create the note, or fix the link |
+
+**Nothing changes on its own:**
+- A check only makes suggestions; important information is never silently changed.
+- When you apply a fix, removed memories are **archived**, not deleted, and merged notes are kept in full.
+- Every applied change can be **undone for 30 days**.
+- **Dismissed** issues are remembered and never raised again. **Snoozed** ones come back in 30 days.
+
+**Health score:** the score falls with each open issue, weighted by how serious it is (conflicts count most) and scaled to how much knowledge you have. Conflicts, or five or more open suggestions, also show up in Reminders under "Orbital noticed".

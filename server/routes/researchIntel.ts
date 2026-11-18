@@ -11,6 +11,7 @@ import { researchLineage } from "../engines/lineage.js";
 import { startExtraction } from "../engines/extraction.js";
 import { deleteNodeByRef } from "../engines/graph.js";
 import { ownProject } from "./core.js";
+import { apply, ApplySchema, health, MaintenanceError, scan, undoSuggestion } from "../engines/maintenance.js";
 
 /** Source intelligence, the contradiction lab, lineage, hypotheses, living reports and knowledge extraction. */
 export const researchIntel = Router();
@@ -148,4 +149,42 @@ researchIntel.get("/documents/:id/extraction", ah(async (req, res) => {
      WHERE document_id=$1 AND workspace_id=$2 AND ($3 = '' OR tsv @@ websearch_to_tsquery('english', $3) OR title ILIKE '%' || $3 || '%')
      ORDER BY CASE kind WHEN 'event' THEN sort_date ELSE '' END, mentions DESC, part LIMIT 2000`, [idParam(req), ws(req), q])).rows;
   res.json({ ...ex, items });
+}));
+
+// ── Knowledge maintenance ──────────────────────────────────────────────────
+researchIntel.get("/maintenance", ah(async (req, res) => {
+  const [h, open, recent] = await Promise.all([
+    health(ws(req)),
+    db().query("SELECT id, kind, title, reason, items, proposal, severity, ai, status, snoozed_until, created_at FROM maintenance_suggestions WHERE workspace_id=$1 AND status IN ('open','snoozed') ORDER BY status, severity DESC, created_at DESC LIMIT 300", [ws(req)]),
+    db().query("SELECT id, kind, title, status, resolution, resolved_at, (undo IS NOT NULL AND jsonb_array_length(undo) > 0) AS undoable FROM maintenance_suggestions WHERE workspace_id=$1 AND status IN ('applied','dismissed') AND resolved_at > now() - interval '30 days' ORDER BY resolved_at DESC LIMIT 50", [ws(req)]),
+  ]);
+  res.json({ health: h, suggestions: open.rows, recent: recent.rows });
+}));
+
+researchIntel.post("/maintenance/scan", rateLimit({ windowMs: 60_000, max: 6, key: "user", name: "maintenance" }), ah(async (req, res) => {
+  res.json(await scan(ws(req)));
+}));
+
+const mErr = (e: unknown) => { if (e instanceof MaintenanceError) throw new HttpError(e.status, e.message); throw e; };
+
+researchIntel.post("/maintenance/:id/apply", ah(async (req, res) => {
+  const b = parse(ApplySchema, req.body);
+  res.json(await apply(ws(req), actor(req), idParam(req), b).catch(mErr));
+}));
+
+researchIntel.post("/maintenance/:id/undo", ah(async (req, res) => {
+  res.json(await undoSuggestion(ws(req), idParam(req)).catch(mErr));
+}));
+
+/** Dismiss (remembered: the same issue won't be raised again) or snooze for a number of days. */
+researchIntel.post("/maintenance/:id/dismiss", ah(async (req, res) => {
+  const b = parse(z.object({ snoozeDays: z.number().int().min(1).max(365).nullish() }), req.body ?? {});
+  const r = await db().query(
+    `UPDATE maintenance_suggestions SET status = CASE WHEN $3::int IS NULL THEN 'dismissed' ELSE 'snoozed' END,
+       snoozed_until = CASE WHEN $3::int IS NULL THEN NULL ELSE now() + make_interval(days => $3::int) END,
+       resolved_at = CASE WHEN $3::int IS NULL THEN now() ELSE NULL END, resolved_by=$4, resolution = CASE WHEN $3::int IS NULL THEN 'Dismissed' ELSE '' END
+     WHERE id=$1 AND workspace_id=$2 AND status IN ('open','snoozed') RETURNING id`,
+    [idParam(req), ws(req), b.snoozeDays ?? null, actor(req)]);
+  if (!r.rows[0]) throw notFound("Suggestion");
+  res.json({ ok: true });
 }));
