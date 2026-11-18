@@ -9,6 +9,7 @@ import { Badge, Button, Dialog, Empty, IconButton, Input, PageHeader, Pulse, Sel
 import { Markdown } from "@/components/Markdown";
 import { ClipPage, ClipBookmarklet } from "./Clip";
 import { RemindMenu } from "@/components/RemindMenu";
+import { NotFoundPage } from "./NotFound";
 import { Section } from "@/components/RightPanel";
 import { label, pct, timeAgo } from "@/lib/format";
 
@@ -176,6 +177,7 @@ function DocumentEditor({ id }: { id: string }) {
   const [mode, setMode] = useState<"write" | "preview">("write");
   const [saving, setSaving] = useState<"idle" | "saving" | "saved">("idle");
   const [tagInput, setTagInput] = useState("");
+  const [missing, setMissing] = useState(false);
   const { data: folders } = useResource<any[]>("/folders");
   const { data: projects } = useResource<any[]>("/projects");
   const { data: collections } = useResource<any[]>("/collections");
@@ -183,7 +185,8 @@ function DocumentEditor({ id }: { id: string }) {
   const setContent = usePanel((s) => s.setContent);
 
   useEffect(() => {
-    api.get(`/documents/${id}`).then((d) => { setDoc(d); setMode(d.kind === "note" && !d.body ? "write" : d.kind === "note" ? "write" : "preview"); }).catch(() => navigate("/knowledge", { replace: true }));
+    setMissing(false);
+    api.get(`/documents/${id}`).then((d) => { setDoc(d); setMode(d.kind === "note" && !d.body ? "write" : d.kind === "note" ? "write" : "preview"); }).catch((e) => { if (e?.status === 404 || e?.status === 400) setMissing(true); else navigate("/knowledge", { replace: true }); });
   }, [id, navigate]);
 
   useEffect(() => {
@@ -200,6 +203,7 @@ function DocumentEditor({ id }: { id: string }) {
     }, 700);
   };
 
+  if (missing) return <NotFoundPage what="note" back={{ to: "/knowledge", label: "All knowledge" }} />;
   if (!doc) return <div className="p-10 text-center"><Pulse /></div>;
   const addTag = () => {
     const t = tagInput.trim().replace(/^#/, "");

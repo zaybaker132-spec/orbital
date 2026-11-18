@@ -8,6 +8,7 @@ import { usePanel, toast, toastError } from "@/state/ui";
 import { Badge, Button, ErrorNote, IconButton, Pulse, Textarea, cx } from "@/components/ui";
 import { Markdown } from "@/components/Markdown";
 import { timeAgo } from "@/lib/format";
+import { NotFoundPage } from "./NotFound";
 import { Section } from "@/components/RightPanel";
 
 const RUNNING = ["queued", "planning", "searching", "synthesizing"];
@@ -98,6 +99,7 @@ function ResearchDetail({ id }: { id: string }) {
     if (r) setContent("Research", <ResearchSide r={r} />);
   }, [r, setContent]);
 
+  if (error && (error as any).status === 404) return <NotFoundPage what="research report" back={{ to: "/research", label: "All research" }} />;
   if (error) return <div className="p-8"><ErrorNote error={error} /></div>;
   if (!r) return <div className="p-10 text-center"><Pulse /></div>;
   const running = RUNNING.includes(r.status);

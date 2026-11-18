@@ -268,3 +268,9 @@ test("without an AI provider: images are kept, conversations save as notes, voic
   assert.equal((await alice.req("GET", "/api/voice/config")).data.serverTranscription, false);
   await settle();
 });
+
+test("routes: real pages are recognised; anything else is a 404", async () => {
+  const { isAppRoute } = await import("../shared/routes.js");
+  for (const p of ["/", "/login", "/c/123", "/projects", "/projects/abc", "/knowledge/x/", "/m/abc-defg-hij", "/invite/token", "/search", "/focus"]) assert.ok(isAppRoute(p), p);
+  for (const p of ["/pricing", "/projects/a/b", "/c", "/wp-admin", "/knowledgebase", "/api/x"]) assert.ok(!isAppRoute(p), p);
+});

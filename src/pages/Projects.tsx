@@ -11,6 +11,7 @@ import { label, timeAgo } from "@/lib/format";
 import { localToday } from "@/lib/when";
 import { RemindMenu } from "@/components/RemindMenu";
 import { ContributionGraph } from "@/components/ContributionGraph";
+import { NotFoundPage } from "./NotFound";
 
 const daysUntil = (date: string, today = localToday()) => Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000);
 const shortDate = (date: string) => new Date(`${date}T12:00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric" });
@@ -100,7 +101,7 @@ function ProjectDetail({ id }: { id: string }) {
   const [edit, setEdit] = useState(false);
 
   useEffect(() => { if (p) setContent("Project context", <ProjectSide p={p} />); }, [p, setContent]);
-  if (error) return <div className="p-8 text-mute">Project not found.</div>;
+  if (error) return <NotFoundPage what="project" back={{ to: "/projects", label: "All projects" }} />;
   if (!p) return <div className="p-10 text-center"><Pulse /></div>;
 
   const reload = () => invalidate(`/projects/${id}`, "/projects");

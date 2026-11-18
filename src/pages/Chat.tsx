@@ -13,6 +13,7 @@ import { Badge, Button, IconButton, Pulse, Select, cx } from "@/components/ui";
 import { VoiceMode } from "@/components/VoiceMode";
 import { useSpeechInput } from "@/lib/voice";
 import { useCan } from "@/state/app";
+import { NotFoundPage } from "./NotFound";
 
 export const MODES = [
   { id: "standard", label: "Standard", hint: "Everyday questions with your context" },
@@ -43,6 +44,7 @@ export function ChatPage() {
   const setPanelContent = usePanel((s) => s.setContent);
   const [search, setSearch] = useSearchParams();
   const [voice, setVoice] = useState(search.get("voice") === "1");
+  const [missing, setMissing] = useState(false);
   const [draft, setDraft] = useState("");
   useEffect(() => {
     const m = search.get("mode");
@@ -60,6 +62,7 @@ export function ChatPage() {
     const id = params.id ?? null;
     if (id === convId && messages.length) return;
     setConvId(id);
+    setMissing(false);
     if (!id) { setMessages([]); setTitle(""); setProjectId(null); setAnswer(null); return; }
     setLoading(true);
     api.get(`/conversations/${id}`).then((c) => {
@@ -68,7 +71,7 @@ export function ChatPage() {
       setProjectId(c.project_id);
       const last = [...c.messages].reverse().find((m: Msg) => m.role === "assistant" && m.metadata?.context);
       setAnswer(last?.metadata.context ?? null);
-    }).catch(() => navigate("/", { replace: true })).finally(() => setLoading(false));
+    }).catch((e) => { if (e?.status === 404 || e?.status === 400) setMissing(true); else navigate("/", { replace: true }); }).finally(() => setLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
@@ -127,6 +130,7 @@ export function ChatPage() {
     } catch (e) { toastError(e); }
   };
 
+  if (missing) return <NotFoundPage what="conversation" back={{ to: "/", label: "New conversation" }} />;
   return (
     <div className="flex h-full flex-col">
       {voice && <VoiceMode messages={messages} streaming={streaming} onSend={(t) => send(t, [])} onClose={() => setVoice(false)} onRemember={remember} canRemember={!!convId && can.write} />}

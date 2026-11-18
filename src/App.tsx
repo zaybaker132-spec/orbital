@@ -9,6 +9,8 @@ import { Shell } from "./components/Shell";
 import { Pulse } from "./components/ui";
 import { AuthPage } from "./pages/Auth";
 import { ChatPage } from "./pages/Chat";
+import { NotFoundPage } from "./pages/NotFound";
+import { isAppRoute } from "@shared/routes";
 
 const CorePage = lazy(() => import("./pages/Core").then((m) => ({ default: m.CorePage })));
 const ResearchPage = lazy(() => import("./pages/Research").then((m) => ({ default: m.ResearchPage })));
@@ -64,6 +66,8 @@ export function App() {
   if (!user) {
     // Signed out: the waitlist is the front door (the desktop app goes straight to sign-in).
     if (loc.pathname === "/" && !desktop) return <Suspense fallback={<div className="h-full bg-black" />}><WaitlistPage /></Suspense>;
+    // A mistyped address isn't a page behind sign-in: say so instead of asking to sign in.
+    if (!isAppRoute(loc.pathname)) return <NotFoundPage standalone />;
     // Any other link (a meeting, a project) continues there after signing in.
     if (loc.pathname !== "/" && loc.pathname !== "/login") { try { sessionStorage.setItem(NEXT_KEY, loc.pathname + loc.search); } catch { /* ignore */ } }
     return <AuthPage />;
@@ -99,7 +103,7 @@ export function App() {
               <Route path="/focus" element={<FocusPage />} />
               <Route path="/search" element={<SearchPage />} />
               <Route path="/settings" element={<SettingsPage />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>
         </motion.div>

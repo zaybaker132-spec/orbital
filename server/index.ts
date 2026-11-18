@@ -18,6 +18,7 @@ import { meetings } from "./routes/meetings.js";
 import { startAutomations } from "./engines/automation.js";
 import { startReminders } from "./engines/reminders.js";
 import { productivity } from "./routes/productivity.js";
+import { isAppRoute } from "../shared/routes.js";
 
 export async function createApp(opts: { jobs?: boolean } = {}) {
   const database = await getDb();
@@ -58,7 +59,8 @@ export async function createApp(opts: { jobs?: boolean } = {}) {
       next();
     });
     app.use(express.static(dist, { index: false, maxAge: "1h" }));
-    app.get("*", (_req, res) => res.sendFile(path.join(dist, "index.html")));
+    // The app handles every page itself; unknown addresses still get it (it shows "not found"), with a real 404 status.
+    app.get("*", (req, res) => res.status(isAppRoute(req.path) ? 200 : 404).sendFile(path.join(dist, "index.html")));
   }
 
   app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
