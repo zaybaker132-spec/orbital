@@ -1,0 +1,59 @@
+import fs from "node:fs";
+import path from "node:path";
+
+// Load .env if present (Node >= 21). Never committed; see .env.example.
+const envPath = path.resolve(process.cwd(), ".env");
+if (fs.existsSync(envPath)) process.loadEnvFile(envPath);
+
+const bool = (v: string | undefined, d: boolean) => (v === undefined || v === "" ? d : /^(1|true|yes|on)$/i.test(v));
+
+function resolveProvider(): "anthropic" | "openai" | "none" {
+  const explicit = (process.env.AI_PROVIDER || "").toLowerCase();
+  if (explicit === "anthropic" || explicit === "openai" || explicit === "none") return explicit;
+  if (process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN) return "anthropic";
+  if (process.env.OPENAI_API_KEY || process.env.OPENAI_BASE_URL) return "openai";
+  return "none";
+}
+
+export const config = {
+  port: Number(process.env.PORT || 8787),
+  production: process.env.NODE_ENV === "production",
+  databaseUrl: process.env.DATABASE_URL || "",
+  dataDir: path.resolve(process.env.ORBITAL_DATA_DIR || ".orbital-data"),
+  allowSignup: bool(process.env.ORBITAL_ALLOW_SIGNUP, true),
+  sessionTtlDays: Number(process.env.SESSION_TTL_DAYS || 30),
+  cookieSecure: bool(process.env.COOKIE_SECURE, process.env.NODE_ENV === "production"),
+  maxUploadMb: Number(process.env.MAX_UPLOAD_MB || 25),
+  /** Set by the desktop shell: single-machine install, loopback only. */
+  desktop: bool(process.env.ORBITAL_DESKTOP, false),
+  /** Where the built web app lives (the desktop app ships it inside its bundle). */
+  staticDir: path.resolve(process.env.ORBITAL_STATIC_DIR || "dist"),
+  /** Public base URL, used for invite links. Defaults to the request origin. */
+  publicUrl: (process.env.ORBITAL_PUBLIC_URL || "").replace(/\/$/, ""),
+  /** Where people download the desktop app (shown in Settings). */
+  downloadUrl: process.env.ORBITAL_DOWNLOAD_URL || "",
+  automationTickMs: Number(process.env.AUTOMATION_TICK_MS || 60_000),
+  ai: {
+    provider: resolveProvider(),
+    anthropicModel: process.env.ANTHROPIC_MODEL || "claude-opus-5-5",
+    // Server-side refusal fallback (Anthropic beta). Set ANTHROPIC_FALLBACKS=off to disable.
+    anthropicFallbacks: bool(process.env.ANTHROPIC_FALLBACKS, true),
+    openaiBaseUrl: (process.env.OPENAI_BASE_URL || "https://api.openai.com/v1").replace(/\/$/, ""),
+    openaiModel: process.env.OPENAI_MODEL || "gpt-4o",
+  },
+  embeddings: {
+    // "local" = deterministic hashed-feature vectors computed on this server (no network, lexical-semantic).
+    // "openai" = any OpenAI-compatible /embeddings endpoint that supports `dimensions`.
+    provider: (process.env.EMBEDDINGS_PROVIDER || "local").toLowerCase() as "local" | "openai",
+    model: process.env.EMBEDDINGS_MODEL || "text-embedding-3-small",
+    baseUrl: (process.env.EMBEDDINGS_BASE_URL || process.env.OPENAI_BASE_URL || "https://api.openai.com/v1").replace(/\/$/, ""),
+  },
+  research: {
+    webSearch: bool(process.env.RESEARCH_WEB_SEARCH, true),
+    wikipedia: bool(process.env.RESEARCH_WIKIPEDIA, true),
+    openalex: bool(process.env.RESEARCH_OPENALEX, true),
+    maxSourcesPerQuestion: Number(process.env.RESEARCH_MAX_SOURCES || 4),
+  },
+} as const;
+
+export const EMBEDDING_DIM = 256;

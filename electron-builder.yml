@@ -1,0 +1,55 @@
+# Desktop packaging for macOS, Windows and Linux.
+# Build locally:   npm run desktop:dist      (builds for the current OS)
+# Build all three: push a tag like v0.2.0 — .github/workflows/desktop.yml builds on real macOS/Windows/Linux runners.
+appId: app.orbital.desktop
+productName: Orbital
+copyright: Copyright © Orbital
+directories:
+  output: release
+  buildResources: build-resources
+files:
+  - package.json
+  - desktop/**
+  - desktop-build/**
+  - dist/**
+  - "!**/*.map"
+# PGlite loads its WASM/data files from disk; keep them outside the asar archive.
+asarUnpack:
+  - node_modules/@electric-sql/**
+extraMetadata:
+  main: desktop/main.cjs
+mac:
+  category: public.app-category.productivity
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+    - target: zip
+      arch: [arm64, x64]
+  hardenedRuntime: true
+  darkModeSupport: true
+  # Signing + notarization run automatically when CSC_LINK/CSC_KEY_PASSWORD and
+  # APPLE_ID/APPLE_APP_SPECIFIC_PASSWORD/APPLE_TEAM_ID are set (see docs/DESKTOP.md).
+  notarize: false
+dmg:
+  title: Orbital
+win:
+  target:
+    - target: nsis
+      arch: [x64, arm64]
+  # Signing runs when CSC_LINK/CSC_KEY_PASSWORD (or Azure Trusted Signing vars) are set.
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  shortcutName: Orbital
+linux:
+  target: [AppImage, deb]
+  category: Office
+  maintainer: Orbital
+# Auto-updates: set a GitHub repo (owner/repo) to publish releases and enable in-app updates.
+# publish:
+#   provider: github
+#   owner: YOUR_GITHUB_ORG
+#   repo: orbital
+publish: null

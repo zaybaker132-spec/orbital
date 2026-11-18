@@ -1,0 +1,279 @@
+<title>Orbital</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+  /* Layout: a live instrument up top (the Neural Core), then a guided tour of the real interface.
+     Single dark theme by choice: the product is pure black with color reserved for the particles. */
+  :root {
+    color-scheme: dark;
+    --bg: #000000;
+    --panel: #080808;
+    --raised: #111111;
+    --fg: #ffffff;
+    --mute: #8a8a93;
+    --soft: #5c5c66;
+    --line: rgba(255, 255, 255, 0.09);
+    --line-strong: rgba(255, 255, 255, 0.18);
+    --spark: #b02bff;
+    --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  :focus-visible { outline: 1.5px solid rgba(255,255,255,0.7); outline-offset: 3px; border-radius: 6px; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mute); }
+
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: rgba(0,0,0,0.82); }
+  header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; background: rgba(0,0,0,0.72); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  header.top .wrap { display: flex; align-items: center; gap: 24px; height: 56px; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; letter-spacing: 0.3em; font-size: 13px; }
+  nav.links { display: flex; gap: 22px; margin-left: auto; font-size: 13px; }
+  nav.links a { color: var(--mute); text-decoration: none; }
+  nav.links a:hover { color: var(--fg); }
+  @media (max-width: 720px) { nav.links { display: none; } }
+
+  /* Hero: the live core */
+  .hero { position: relative; height: min(82vh, 820px); min-height: 520px; border-bottom: 1px solid var(--line); overflow: hidden; }
+  #core { position: absolute; inset: 0; }
+  #core canvas { display: block; width: 100%; height: 100%; touch-action: pan-y; }
+  #core.no-webgl::after { content: "Your browser doesn't support WebGL, so the live Neural Core can't run here. The screenshots below show it."; position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--mute); }
+  .hero-copy { position: absolute; left: 0; right: 0; bottom: 0; pointer-events: none; background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0) 70%); }
+  .hero-copy .wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 24px; padding-block: 28px 30px; }
+  .hero h1 { margin: 10px 0 8px; font-weight: 300; font-size: clamp(30px, 4.4vw, 52px); line-height: 1.05; letter-spacing: -0.03em; text-wrap: balance; }
+  .hero p { margin: 0; max-width: 54ch; color: var(--mute); }
+  .controls { pointer-events: auto; display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
+  .states { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; max-width: 420px; }
+  .chip { font: inherit; font-size: 12.5px; color: var(--mute); background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; cursor: pointer; transition: color .15s, border-color .15s, background .15s; }
+  .chip:hover { color: var(--fg); border-color: var(--line-strong); }
+  .chip[aria-pressed="true"] { background: #fff; color: #000; border-color: #fff; }
+  .hint { font-size: 12px; color: var(--soft); }
+  .live { display: inline-flex; align-items: center; gap: 8px; }
+  .live i { width: 6px; height: 6px; border-radius: 50%; background: #2cff7a; box-shadow: 0 0 10px #2cff7a; }
+  @media (max-width: 760px) {
+    .hero-copy .wrap { grid-template-columns: 1fr; }
+    .controls { align-items: flex-start; }
+    .states { justify-content: flex-start; }
+  }
+
+  section { padding-block: 72px; border-bottom: 1px solid var(--line); }
+  h2 { margin: 10px 0 12px; font-weight: 300; font-size: clamp(24px, 2.8vw, 34px); letter-spacing: -0.02em; text-wrap: balance; }
+  .lede { color: var(--mute); max-width: 62ch; margin: 0; }
+
+  /* Tour */
+  .tour { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 32px; margin-top: 36px; }
+  .group-label { margin: 18px 0 6px; }
+  .group-label:first-child { margin-top: 0; }
+  .stops { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  .stop { width: 100%; text-align: left; font: inherit; color: var(--mute); background: none; border: 0; border-radius: 10px; padding: 9px 12px; cursor: pointer; display: grid; gap: 1px; }
+  .stop strong { font-weight: 400; color: var(--fg); font-size: 14px; }
+  .stop span { font-size: 12.5px; line-height: 1.45; }
+  .stop:hover { background: rgba(255,255,255,0.04); }
+  .stop[aria-selected="true"] { background: rgba(255,255,255,0.08); }
+  .viewer { min-width: 0; }
+  .frame { border: 1px solid var(--line-strong); border-radius: 12px; overflow: hidden; background: var(--panel); aspect-ratio: 16 / 10; max-width: 100%; }
+  .frame img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top left; }
+  .caption { margin-top: 14px; color: var(--mute); max-width: 70ch; font-size: 14px; }
+  .caption b { color: var(--fg); font-weight: 400; }
+  @media (max-width: 900px) {
+    .tour { grid-template-columns: 1fr; }
+    .stops { grid-auto-flow: column; grid-auto-columns: max-content; overflow-x: auto; padding-bottom: 6px; }
+    .stop span { display: none; }
+    .group-label { display: none; }
+    .groups { display: flex; gap: 2px; overflow-x: auto; }
+  }
+
+  /* Two-column feature lists */
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 28px 40px; margin-top: 36px; }
+  .cols h3 { margin: 0 0 6px; font-weight: 400; font-size: 16px; }
+  .cols p { margin: 0; color: var(--mute); font-size: 14px; }
+  .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 9px; vertical-align: 1px; }
+
+  /* Status note */
+  .note { margin-top: 36px; border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px 32px; }
+  .note h3 { margin: 0 0 4px; font-size: 14px; font-weight: 400; }
+  .note p { margin: 0; font-size: 13.5px; color: var(--mute); }
+
+  /* Commands */
+  .cmds { display: grid; gap: 10px; margin-top: 28px; max-width: 760px; }
+  .cmd { display: flex; align-items: center; gap: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); padding: 10px 10px 10px 16px; min-width: 0; }
+  .cmd code { flex: 1; min-width: 0; font-family: var(--mono); font-size: 13px; overflow-x: auto; white-space: nowrap; }
+  .cmd .what { color: var(--soft); font-size: 12px; white-space: nowrap; }
+  .copy { font: inherit; font-size: 12px; color: var(--mute); background: transparent; border: 1px solid var(--line); border-radius: 7px; padding: 4px 10px; cursor: pointer; }
+  .copy:hover { color: var(--fg); border-color: var(--line-strong); }
+  @media (max-width: 600px) { .cmd .what { display: none; } }
+
+  footer { padding-block: 40px 56px; color: var(--soft); font-size: 13px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Orbital">
+      <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><g fill="#fff"><circle cx="12" cy="12" r="2.6"/><circle cx="21" cy="12" r="1.1"/><circle cx="19.3" cy="16.8" r=".7" opacity=".7"/><circle cx="15.4" cy="20.3" r=".7" opacity=".5"/><circle cx="10.4" cy="20.9" r="1.1" opacity=".9"/><circle cx="5.6" cy="18.3" r=".7" opacity=".6"/><circle cx="3" cy="13.6" r=".7" opacity=".8"/><circle cx="3.6" cy="8.3" r="1.1" opacity=".5"/><circle cx="7" cy="4.4" r=".7" opacity=".9"/><circle cx="12" cy="3" r=".7" opacity=".6"/><circle cx="17" cy="4.4" r="1.1" opacity=".8"/><circle cx="20.3" cy="7.6" r=".7" opacity=".5"/></g></svg>
+      ORBITAL
+    </a>
+    <nav class="links" aria-label="Sections">
+      <a href="#tour">Tour</a>
+      <a href="#business">For business</a>
+      <a href="#desktop">Desktop</a>
+      <a href="#run">Run it</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero" id="top">
+  <div id="core" role="img" aria-label="The Neural Core: a human head and brain made of tens of thousands of particles, forming out of a knowledge graph"></div>
+  <div class="hero-copy">
+    <div class="wrap">
+      <div>
+        <div class="label live"><i></i>Live Neural Core&nbsp;&middot; running in your browser</div>
+        <h1>Your intelligence.<br>Compounding.</h1>
+        <p>Orbital remembers what matters, connects your ideas, researches with verified sources, and turns what you know into opportunities. For one person or a whole company.</p>
+      </div>
+      <div class="controls">
+        <div class="states" role="group" aria-label="Neural Core state">
+          <button class="chip" data-state="idle" aria-pressed="true">Idle</button>
+          <button class="chip" data-state="thinking" aria-pressed="false">Thinking</button>
+          <button class="chip" data-state="researching" aria-pressed="false">Researching</button>
+          <button class="chip" data-state="learning" aria-pressed="false">Learning</button>
+          <button class="chip" data-state="connecting" aria-pressed="false">Connecting</button>
+          <button class="chip" data-state="opportunity" aria-pressed="false">Opportunity</button>
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <span class="hint">Move through the particles&nbsp;&middot; click for a ripple</span>
+          <button class="chip" id="replay">Replay formation</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="tour">
+  <div class="wrap">
+    <div class="label">The interface</div>
+    <h2>A tour of Orbital</h2>
+    <p class="lede">Each screen is a capture of the running app with real data from a test account. Pick a screen to see it.</p>
+    <div class="tour">
+      <div class="groups" role="tablist" aria-label="Screens" id="stops"></div>
+      <div class="viewer">
+        <div class="frame"><img id="shot" alt="" src="shots/chat-home.jpg"></div>
+        <p class="caption" id="caption"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="business">
+  <div class="wrap">
+    <div class="label">Orbital for business</div>
+    <h2>A shared brain that does work on a schedule</h2>
+    <p class="lede">A business workspace shares knowledge, research and projects across a team, then puts them to work. People approve anything that leaves the system.</p>
+    <div class="cols">
+      <div><h3><span class="dot" style="background:#ff1f2e"></span>Briefings</h3><p>Every morning or week: what changed, what's due, open questions, approvals waiting. Delivered to the team channel if you allow it.</p></div>
+      <div><h3><span class="dot" style="background:#1fd0ff"></span>Monitors</h3><p>Recurring research on markets and competitors, with every citation and statistic checked against the source text.</p></div>
+      <div><h3><span class="dot" style="background:#b02bff"></span>Operations agent</h3><p>Works toward a goal you set: proposes tasks in the right project, notes, research and team messages. Internal work can run on its own.</p></div>
+      <div><h3><span class="dot" style="background:#ffd23a"></span>Approvals and audit</h3><p>Messages wait for an admin, who can edit them first. Every decision is logged with who made it.</p></div>
+      <div><h3><span class="dot" style="background:#a6ff2e"></span>Connectors and API</h3><p>Signed webhooks into Slack, Teams, Zapier, Make or n8n. An API lets a CRM or help desk add knowledge and ask grounded questions.</p></div>
+      <div><h3><span class="dot" style="background:#ff2bd6"></span>Roles</h3><p>Owner, admin, member and viewer. Knowledge is shared; each person's conversations stay private.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="desktop">
+  <div class="wrap">
+    <div class="label">Desktop</div>
+    <h2>Native apps for macOS, Windows and Linux</h2>
+    <p class="lede">The desktop app runs the full Orbital server on your computer with its own private database. Your API key is stored in the system keychain. Installers are built by the project's release workflow on real Mac, Windows and Linux machines.</p>
+    <div class="note">
+      <div><h3>What runs on this page</h3><p>The Neural Core above is the app's own geometry and shader code, live. Everything else is a screenshot.</p></div>
+      <div><h3>What needs the full app</h3><p>Chat, memory, research and automations run on Orbital's server. Run it locally, install the desktop app, or deploy it to a host.</p></div>
+      <div><h3>AI</h3><p>Answers, research synthesis and the operations agent use Claude with your own API key. Without one, Orbital still works as a knowledge base.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="run">
+  <div class="wrap">
+    <div class="label">Run it</div>
+    <h2>Start Orbital on your computer</h2>
+    <p class="lede">Requires Node.js 22. No database setup: Orbital embeds PostgreSQL. Add <code style="font-family:var(--mono);font-size:13px">ANTHROPIC_API_KEY</code> to <code style="font-family:var(--mono);font-size:13px">.env</code> to turn on AI.</p>
+    <div class="cmds">
+      <div class="cmd"><code>npm install</code><span class="what">dependencies</span><button class="copy" type="button">Copy</button></div>
+      <div class="cmd"><code>cp .env.example .env</code><span class="what">configuration</span><button class="copy" type="button">Copy</button></div>
+      <div class="cmd"><code>npm run dev</code><span class="what">web app on :5173</span><button class="copy" type="button">Copy</button></div>
+      <div class="cmd"><code>npm run desktop</code><span class="what">or the desktop app</span><button class="copy" type="button">Copy</button></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">Orbital&nbsp;&middot; Your intelligence. Compounding.</div>
+</footer>
+
+<script src="neural-core.js"></script>
+<script>
+  // Live Neural Core
+  const core = window.OrbitalCore && window.OrbitalCore.mountNeuralCore(document.getElementById("core"));
+  const chips = document.querySelectorAll(".chip[data-state]");
+  chips.forEach((b) => b.addEventListener("click", () => {
+    chips.forEach((c) => c.setAttribute("aria-pressed", String(c === b)));
+    core && core.setState(b.dataset.state);
+  }));
+  document.getElementById("replay").addEventListener("click", () => core && core.replay());
+
+  // Tour
+  const STOPS = [
+    { group: "Personal", items: [
+      ["chat-home", "Home", "The Neural Core greets you, with shortcuts into active projects.", "<b>Home.</b> Five AI modes (Standard, Deep Research, Deep Thinking, Opportunity, Learning) each run a different workflow. Shortcuts come from your real projects and open questions."],
+      ["chat-answer", "A grounded answer", "What informed each answer, shown alongside it.", "<b>Grounded answers.</b> Orbital retrieves the memories, notes and documents that matter and cites them inline. The context panel shows exactly what it used. This capture ran without an AI key, so it lists your knowledge instead of writing an answer."],
+      ["core", "Neural Core and activity", "Live counts of how your knowledge is growing.", "<b>Neural activity.</b> Separates sheer volume from meaningful growth: verified findings, confirmed connections, helpful retrievals and resolved questions. Plus a 12-week timeline and maintenance for duplicates and contradictions."],
+      ["memory", "Memory", "Everything Orbital remembers, and why.", "<b>Memory.</b> Each memory shows where it came from and why it was kept. Edit, archive or delete anything; corrections take priority in future answers."],
+      ["connections", "Connections", "Your knowledge as a graph.", "<b>Connections.</b> Notes, memories, research and projects become nodes. Suggested relationships stay dashed until you confirm them."],
+      ["project", "Projects", "Goals, tasks and a brief to pick up where you left off.", "<b>Projects.</b> Tasks, milestones, linked research and conversations, and a brief built from the project's real state."],
+      ["palette", "Command palette", "Search everything and act from the keyboard.", "<b>Command palette.</b> Ctrl K or ⌘K searches knowledge, projects and conversations, starts research and creates notes."],
+    ]},
+    { group: "Business", items: [
+      ["operations", "Automations", "Briefings, monitors and an operations agent.", "<b>Automations.</b> Scheduled in the business's own time zone. Each shows where it delivers and whether it needs approval."],
+      ["approvals", "Approvals", "Nothing leaves without a person deciding.", "<b>Approvals.</b> Proposed actions wait here; admins can edit a message before sending. The history records every decision."],
+      ["team", "Team", "Members, roles and invite links.", "<b>Team.</b> Invite by link with a role. Owners, admins, members and viewers each see the controls they're allowed to use."],
+      ["api", "API and integrations", "Connect a CRM, help desk or automation tool.", "<b>API.</b> Workspace tokens with scopes for adding knowledge and asking questions, with copy-ready examples."],
+    ]},
+    { group: "Desktop", items: [
+      ["desktop", "Desktop app", "The packaged app running on Linux.", "<b>Desktop app.</b> The same interface in a native window, with its own server and database on your computer."],
+    ]},
+  ];
+  const stopsEl = document.getElementById("stops"), shot = document.getElementById("shot"), cap = document.getElementById("caption");
+  const buttons = [];
+  STOPS.forEach((g) => {
+    const lab = document.createElement("div"); lab.className = "label group-label"; lab.textContent = g.group; stopsEl.appendChild(lab);
+    const ul = document.createElement("ul"); ul.className = "stops"; ul.setAttribute("role", "presentation");
+    g.items.forEach(([id, title, sub, caption]) => {
+      const li = document.createElement("li"); li.setAttribute("role", "presentation");
+      const b = document.createElement("button"); b.className = "stop"; b.type = "button"; b.setAttribute("role", "tab");
+      b.innerHTML = `<strong>${title}</strong><span>${sub}</span>`;
+      b.addEventListener("click", () => select(id, title, caption, b));
+      li.appendChild(b); ul.appendChild(li); buttons.push(b);
+      new Image().src = `shots/${id}.jpg`;
+    });
+    stopsEl.appendChild(ul);
+  });
+  function select(id, title, caption, btn) {
+    shot.src = `shots/${id}.jpg`; shot.alt = `Orbital: ${title}`; cap.innerHTML = caption;
+    buttons.forEach((x) => x.setAttribute("aria-selected", String(x === btn)));
+  }
+  const first = STOPS[0].items[0];
+  select(first[0], first[1], first[3], buttons[0]);
+
+  // Copy buttons
+  document.querySelectorAll(".cmd").forEach((row) => {
+    const btn = row.querySelector(".copy"), code = row.querySelector("code");
+    btn.addEventListener("click", () => {
+      navigator.clipboard.writeText(code.textContent).then(() => { btn.textContent = "Copied"; setTimeout(() => (btn.textContent = "Copy"), 1400); })
+        .catch(() => { const r = document.createRange(); r.selectNodeContents(code); const s = getSelection(); s.removeAllRanges(); s.addRange(r); });
+    });
+  });
+</script>
