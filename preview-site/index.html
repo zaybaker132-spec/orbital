@@ -68,18 +68,17 @@
   .group-label { margin: 18px 0 6px; }
   .group-label:first-child { margin-top: 0; }
   .stops { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-  /* Each stop has its own colour (--c) from the Neural Core palette: hovering flashes it, selecting keeps a glow. */
-  .stop { --c: #ffffff; position: relative; overflow: hidden; width: 100%; text-align: left; font: inherit; color: var(--mute); background: none; border: 0; border-radius: 10px; padding: 9px 12px 9px 14px; cursor: pointer; display: grid; gap: 1px; transition: background .25s, box-shadow .25s, color .2s; }
-  .stop strong { position: relative; font-weight: 400; color: var(--fg); font-size: 14px; transition: color .2s; }
-  .stop span { position: relative; font-size: 12.5px; line-height: 1.45; }
-  .stop::before { content: ""; position: absolute; left: 0; top: 18%; bottom: 18%; width: 2px; border-radius: 2px; background: var(--c); opacity: 0; transform: scaleY(.3); transition: opacity .2s, transform .25s; }
-  .stop::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 0%, color-mix(in srgb, var(--c) 38%, transparent) 45%, transparent 75%); transform: translateX(-110%); pointer-events: none; }
-  .stop:hover, .stop:focus-visible { background: color-mix(in srgb, var(--c) 10%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 35%, transparent), 0 0 22px -6px color-mix(in srgb, var(--c) 55%, transparent); }
-  .stop:hover strong, .stop:focus-visible strong { color: color-mix(in srgb, var(--c) 55%, #fff); }
-  .stop:hover::before, .stop:focus-visible::before, .stop[aria-selected="true"]::before { opacity: 1; transform: scaleY(1); }
-  .stop:hover::after { animation: stop-flash .7s ease-out; }
-  @keyframes stop-flash { from { transform: translateX(-110%); } to { transform: translateX(110%); } }
-  .stop[aria-selected="true"] { background: color-mix(in srgb, var(--c) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 30%, transparent); }
+  /* Each stop has its own colour (--c) from the Neural Core palette: on hover, just the title flashes it for a second. */
+  .stop { --c: #ffffff; width: 100%; text-align: left; font: inherit; color: var(--mute); background: none; border: 0; border-radius: 10px; padding: 9px 12px; cursor: pointer; display: grid; gap: 1px; }
+  .stop strong { font-weight: 400; color: var(--fg); font-size: 14px; }
+  .stop span { font-size: 12.5px; line-height: 1.45; }
+  .stop:hover strong, .stop:focus-visible strong { animation: title-flash 1s ease-out; }
+  @keyframes title-flash {
+    0% { color: var(--c); text-shadow: 0 0 14px var(--c); }
+    35% { color: var(--c); text-shadow: 0 0 8px color-mix(in srgb, var(--c) 60%, transparent); }
+    100% { color: var(--fg); text-shadow: none; }
+  }
+  .stop[aria-selected="true"] { background: rgba(255,255,255,0.08); }
   .viewer { min-width: 0; }
   .frame { border: 1px solid var(--line-strong); border-radius: 12px; overflow: hidden; background: var(--panel); aspect-ratio: 16 / 10; max-width: 100%; }
   .frame img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top left; }
@@ -159,7 +158,7 @@
 
 
   footer { padding-block: 40px 56px; color: var(--soft); font-size: 13px; }
-  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } .stop:hover::after { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } .stop:hover strong { animation: none; } }
 </style>
 
 <header class="top">
