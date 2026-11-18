@@ -19,8 +19,11 @@ const TYPES = [
 const ICON = Object.fromEntries(TYPES.map((t) => [t.value, t.icon]));
 
 /** Render the server's ⟦highlight⟧ markers as <mark> without injecting HTML. */
+/** Snippets come from Markdown: drop the syntax so they read as plain sentences. */
+const plain = (t: string) => t.replace(/\[\[|\]\]/g, "").replace(/\*\*|__|`/g, "").replace(/(^|\s)[_*](\S[^_*]*?)[_*](?=\s|[.,;:]|$)/g, "$1$2").replace(/^#+\s*/gm, "").replace(/\s*\n\s*/g, " ");
+
 function Highlighted({ text }: { text: string }) {
-  const parts = text.split(/(⟦[^⟧]*⟧)/g);
+  const parts = plain(text).split(/(⟦[^⟧]*⟧)/g);
   return <>{parts.map((p, i) => p.startsWith("⟦") ? <mark key={i} className="rounded-sm bg-white/15 px-0.5 text-white">{p.slice(1, -1)}</mark> : <Fragment key={i}>{p}</Fragment>)}</>;
 }
 
