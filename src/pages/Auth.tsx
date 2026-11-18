@@ -55,6 +55,7 @@ export function AuthPage() {
               </button>
             </p>
           )}
+          <p className="mt-6 text-center text-[0.8rem] text-mute"><a href="/waitlist" className="text-white underline decoration-white/30 underline-offset-2 hover:decoration-white">Join the waitlist</a> for early access</p>
           <p className="mt-10 text-center text-[0.72rem] leading-relaxed text-mute-soft">Your data stays on this server and is never used to answer anyone else's questions.</p>
         </motion.form>
       </div>

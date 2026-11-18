@@ -4,6 +4,7 @@ import { db } from "../db/client.js";
 import { config } from "../config.js";
 import { ah, HttpError, idParam, notFound, parse, ws, actor, isUuid } from "../lib/http.js";
 import { createPersonalWorkspace, resolveWorkspace } from "../auth/workspace.js";
+import { isServerAdmin } from "./waitlist.js";
 import { createSession, destroySession, hashPassword, verifyPassword, COOKIE, requireUser } from "../auth/auth.js";
 import { rateLimit } from "../lib/rateLimit.js";
 import { aiStatus } from "../ai/provider.js";
@@ -55,7 +56,7 @@ authRouter.get("/me", ah(async (req, res) => {
   const workspaces = (await db().query(
     `SELECT w.id, w.name, w.kind, m.role FROM workspaces w JOIN workspace_members m ON m.workspace_id=w.id
      WHERE m.user_id=$1 ORDER BY (w.kind='personal') DESC, w.name`, [req.user.id])).rows;
-  res.json({ user: req.user, preferences: prefs, workspaces, ai: aiStatus(), signupAllowed: config.allowSignup, desktop: config.desktop, downloadUrl: config.downloadUrl });
+  res.json({ user: req.user, preferences: prefs, workspaces, ai: aiStatus(), signupAllowed: config.allowSignup, desktop: config.desktop, downloadUrl: config.downloadUrl, serverAdmin: isServerAdmin(req.user.email) });
 }));
 
 export const api = Router();

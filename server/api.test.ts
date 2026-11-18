@@ -12,6 +12,7 @@ process.env.AI_PROVIDER = "none";
 process.env.RESEARCH_WIKIPEDIA = "false";
 process.env.RESEARCH_OPENALEX = "false";
 process.env.DATABASE_URL = "";
+process.env.ORBITAL_ADMIN_EMAILS = "alice@example.com";
 
 let server: Server;
 let base = "";
@@ -168,4 +169,33 @@ test("isolation: one user can never read or change another's data", async () => 
   assert.doesNotMatch(r.text, /local business/i, "bob's retrieval never surfaces alice's knowledge");
   const nodes = (await alice.req("GET", "/api/graph")).data.nodes;
   assert.equal((await bob.req("POST", "/api/edges", { sourceId: nodes[0].id, targetId: nodes[1].id, relation: "supports" })).status, 404);
+});
+
+test("waitlist: public signup, validation, spam trap, admin-only export", async () => {
+  const anon = new Client();
+  const entry = {
+    email: "Founder@Startup.io", persona: "Founder or operator", remember: ["Projects I'm building"], scale: "Me and a small team",
+    aiTools: ["Claude", "Cursor"], notesApps: ["Obsidian"], computers: ["macOS", "Windows"], devices: ["iPhone or iPad"],
+    heardFrom: "A friend", instagram: "@founder.io", compound: "=HYPERLINK(\"x\")",
+  };
+  const a = await anon.req("POST", "/api/public/waitlist", entry);
+  assert.equal(a.status, 201);
+  assert.equal(a.data.position, 1);
+  const again = await anon.req("POST", "/api/public/waitlist", { ...entry, persona: "Builder or engineer" });
+  assert.equal(again.data.position, 1, "re-joining updates, never duplicates");
+  assert.equal((await anon.req("POST", "/api/public/waitlist", { ...entry, email: "x@y.io", computers: ["macOS", "Windows", "Linux", "ChromeOS"] })).status, 400, "main + two more at most");
+  assert.equal((await anon.req("POST", "/api/public/waitlist", { ...entry, email: "x@y.io", devices: ["None", "Android"] })).status, 400, "None stands alone");
+  assert.equal((await anon.req("POST", "/api/public/waitlist", { ...entry, email: "x@y.io", remember: [], rememberOther: "" })).status, 400);
+  assert.equal((await anon.req("POST", "/api/public/waitlist", { ...entry, email: "bot@spam.io", website: "http://spam" })).status, 201);
+  assert.equal((await anon.req("GET", "/api/admin/waitlist")).status, 401);
+  assert.equal((await bob.req("GET", "/api/admin/waitlist")).status, 403, "only server admins");
+  const list = await alice.req("GET", "/api/admin/waitlist");
+  assert.equal(list.data.total, 1, "spam-trap entry was not stored");
+  assert.equal(list.data.rows[0].email, "founder@startup.io");
+  assert.equal(list.data.rows[0].persona, "Builder or engineer");
+  assert.equal(list.data.rows[0].instagram, "founder.io");
+  const csv = await alice.req("GET", "/api/admin/waitlist.csv");
+  assert.match(csv.text, /founder@startup\.io/);
+  assert.match(csv.text, /"'=HYPERLINK/, "formula cells are neutralised");
+  assert.equal((await alice.req("GET", "/api/auth/me")).data.serverAdmin, true);
 });

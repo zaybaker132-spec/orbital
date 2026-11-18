@@ -33,6 +33,8 @@ export const config = {
   /** Where people download the desktop app (shown in Settings). */
   downloadUrl: process.env.ORBITAL_DOWNLOAD_URL || "",
   automationTickMs: Number(process.env.AUTOMATION_TICK_MS || 60_000),
+  /** Accounts that can read the waitlist (comma-separated emails). */
+  adminEmails: (process.env.ORBITAL_ADMIN_EMAILS || "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean),
   ai: {
     provider: resolveProvider(),
     anthropicModel: process.env.ANTHROPIC_MODEL || "claude-opus-5-5",

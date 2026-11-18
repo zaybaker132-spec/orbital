@@ -13,6 +13,7 @@ import { authRouter, api } from "./routes/core.js";
 import { workspace } from "./routes/workspace.js";
 import { business } from "./routes/business.js";
 import { v1 } from "./routes/v1.js";
+import { waitlistAdmin, waitlistPublic } from "./routes/waitlist.js";
 import { startAutomations } from "./engines/automation.js";
 
 export async function createApp(opts: { jobs?: boolean } = {}) {
@@ -35,9 +36,11 @@ export async function createApp(opts: { jobs?: boolean } = {}) {
   app.use("/api", loadUser, requireCsrfHeader);
   app.get("/api/health", (_req, res) => res.json({ ok: true, db: database.kind, ai: aiStatus() }));
   app.use("/api/auth", authRouter);
+  app.use("/api/public", waitlistPublic); // no account needed
   app.use("/api", api);
   app.use("/api", workspace);
   app.use("/api", business);
+  app.use("/api", waitlistAdmin);
   app.use("/api", (_req, _res, next) => next(new HttpError(404, "Not found", "not_found")));
 
   const dist = config.staticDir;

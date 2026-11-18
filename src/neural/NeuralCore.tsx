@@ -69,9 +69,10 @@ function initialDensity(pref: string): Density {
   return "high";
 }
 
-interface Props { framing?: Framing; className?: string; interactive?: boolean; label?: string }
+/** `holdGraph`: stay in knowledge-graph form (slowly orbiting) until it turns false, then form the brain. */
+interface Props { framing?: Framing; className?: string; interactive?: boolean; label?: string; holdGraph?: boolean }
 
-export function NeuralCore({ framing = "full", className = "", interactive = true, label = "Neural Core: a particle visualization of your knowledge" }: Props) {
+export function NeuralCore({ framing = "full", className = "", interactive = true, label = "Neural Core: a particle visualization of your knowledge", holdGraph = false }: Props) {
   const { reducedMotion, density: densityPref } = useMotionPrefs();
   const [supported] = useState(webglAvailable);
   const [density, setDensity] = useState<Density>(() => initialDensity(densityPref));
@@ -98,6 +99,7 @@ export function NeuralCore({ framing = "full", className = "", interactive = tru
           framing={framing}
           interactive={interactive}
           motion={reducedMotion ? 0 : 1}
+          holdGraph={holdGraph}
           onSlow={() => densityPref === "auto" && setDensity((d) => (d === "high" ? "medium" : d === "medium" ? "low" : d))}
         />
       </Canvas>
@@ -107,7 +109,7 @@ export function NeuralCore({ framing = "full", className = "", interactive = tru
 
 const STATES: Exclude<CoreState, "idle">[] = ["thinking", "researching", "learning", "connecting", "opportunity"];
 
-function Particles({ cloud, framing, interactive, motion, onSlow }: { cloud: PointCloud; framing: Framing; interactive: boolean; motion: number; onSlow: () => void }) {
+function Particles({ cloud, framing, interactive, motion, onSlow, holdGraph }: { cloud: PointCloud; framing: Framing; interactive: boolean; motion: number; onSlow: () => void; holdGraph: boolean }) {
   const group = useRef<THREE.Group>(null);
   const { size, camera, gl, raycaster, pointer } = useThree();
 
@@ -161,6 +163,7 @@ function Particles({ cloud, framing, interactive, motion, onSlow }: { cloud: Poi
   const intro = useRef<{ start: number | null }>({ start: null });
   const introNonce = useCore((s) => s.introNonce);
   useEffect(() => {
+    if (holdGraph) return; // the graph is held; formation happens when it's released
     if (motion && (!introPlayed || introNonce !== lastNonce)) {
       lastNonce = introNonce;
       intro.current.start = -1; // resolved to clock time on the next frame
@@ -168,7 +171,16 @@ function Particles({ cloud, framing, interactive, motion, onSlow }: { cloud: Poi
       try { sessionStorage.setItem("orbital.intro", "1"); } catch { /* ignore */ }
       material.uniforms.uMorph.value = 0;
     }
-  }, [introNonce, motion, material]);
+  }, [introNonce, motion, material, holdGraph]);
+
+  // Held graph: stays a knowledge graph; on release it forms the brain straight away.
+  const held = useRef(holdGraph);
+  const spinOffset = useRef(0);
+  useEffect(() => {
+    if (held.current && !holdGraph) intro.current.start = motion ? -2 : null;
+    if (!holdGraph && !motion) material.uniforms.uMorph.value = 1;
+    held.current = holdGraph;
+  }, [holdGraph, motion, material]);
   useEffect(() => () => { material.dispose(); }, [material]);
 
   // Pointer tracking + click ripples (on the canvas element).
@@ -223,11 +235,16 @@ function Particles({ cloud, framing, interactive, motion, onSlow }: { cloud: Poi
     // Centre the intro graph on screen for this framing.
     u.uGraphOffset.value.set(0.05, -f.y - 0.45, 0);
     u.uGraphScale.value = f.scale;
-    if (intro.current.start !== null) {
-      if (intro.current.start < 0) intro.current.start = t;
+    if (held.current) {
+      u.uMorph.value = 0;
+      u.uSpin.value = t * (motion ? 0.22 : 0);
+    } else if (intro.current.start !== null) {
+      // -1: full intro (hold, then morph). -2: released from a held graph, morph now.
+      if (intro.current.start === -2) { intro.current.start = t - INTRO_HOLD; spinOffset.current = u.uSpin.value - INTRO_HOLD * 0.45; }
+      else if (intro.current.start < 0) { intro.current.start = t; spinOffset.current = 0; }
       const it = t - intro.current.start;
       u.uMorph.value = Math.min(1, Math.max(0, (it - INTRO_HOLD) / INTRO_MORPH));
-      u.uSpin.value = it * 0.45;
+      u.uSpin.value = spinOffset.current + it * 0.45;
       if (it > INTRO_HOLD + INTRO_MORPH + 0.5) { intro.current.start = null; u.uMorph.value = 1; }
     }
 

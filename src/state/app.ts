@@ -18,6 +18,7 @@ interface AppStore {
   workspace: Workspace | null;
   desktop: boolean;
   downloadUrl: string;
+  serverAdmin: boolean;
   switchWorkspace(id: string): void;
   refreshWorkspaces(): Promise<void>;
   signupAllowed: boolean;
@@ -45,6 +46,7 @@ export const useApp = create<AppStore>((set, get) => ({
   workspace: null,
   desktop: false,
   downloadUrl: "",
+  serverAdmin: false,
   signupAllowed: true,
   rightPanel: stored("orbital.rightPanel", true),
   sidebarCollapsed: stored("orbital.sidebarCollapsed", false),
@@ -54,7 +56,7 @@ export const useApp = create<AppStore>((set, get) => ({
     const workspaces: Workspace[] = me.workspaces ?? [];
     const current = workspaces.find((w) => w.id === getWorkspaceId()) ?? workspaces[0] ?? null;
     setWorkspaceId(current?.id ?? null);
-    set({ loaded: true, user: me.user, ai: me.ai, prefs: me.preferences ?? {}, signupAllowed: me.signupAllowed, workspaces, workspace: current, desktop: !!me.desktop, downloadUrl: me.downloadUrl ?? "" });
+    set({ loaded: true, user: me.user, ai: me.ai, prefs: me.preferences ?? {}, signupAllowed: me.signupAllowed, workspaces, workspace: current, desktop: !!me.desktop, downloadUrl: me.downloadUrl ?? "", serverAdmin: !!me.serverAdmin });
   },
   async setPrefs(p) {
     set({ prefs: { ...get().prefs, ...p } });

@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useState } from "react";
 import { Download, Monitor, FolderOpen } from "lucide-react";
 import { useApp } from "@/state/app";
+import { useResource } from "@/lib/resource";
 import { api } from "@/lib/api";
 import { toast, toastError } from "@/state/ui";
 import { Badge, Button, Dialog, Input, PageHeader, Select } from "@/components/ui";
@@ -21,6 +22,8 @@ export function SettingsPage() {
         </Group>
 
         <DesktopGroup />
+
+        <WaitlistGroup />
 
         <Group title="AI" description="Orbital's AI runs on your server. API keys live in server environment variables and are never sent to the browser.">
           <Row label="Provider">{ai?.provider === "none" ? <Badge tone="warn">Not configured</Badge> : <span>{ai?.provider} · <span className="font-mono text-[0.82rem]">{ai?.model}</span></span>}</Row>
@@ -141,6 +144,39 @@ function DesktopGroup() {
         <p className="mt-1.5 text-[0.76rem] text-mute">{status?.secureStorage === false ? "Secure storage isn't available on this system, so the key can't be saved." : "Encrypted with your operating system's keychain and given only to the local Orbital server. Get a key at console.anthropic.com."}</p>
       </Row>
       <Row label="Data"><Button size="sm" icon={<FolderOpen size={13} />} onClick={() => bridge.openDataFolder()}>Open data folder</Button></Row>
+    </Group>
+  );
+}
+
+/** Server admins (ORBITAL_ADMIN_EMAILS) see who has joined the public waitlist. */
+function WaitlistGroup() {
+  const serverAdmin = useApp((s) => s.serverAdmin);
+  const { data } = useResource<any>(serverAdmin ? "/admin/waitlist" : null);
+  if (!serverAdmin) return null;
+  const tally = (rows: { k: string; n: number }[]) => rows.map((r) => `${r.k || "—"} ${r.n}`).join(" · ") || "—";
+  return (
+    <Group title="Waitlist" description="People who joined from the public waitlist page (/waitlist).">
+      {!data ? <p className="text-[0.84rem] text-mute">Loading…</p> : (
+        <>
+          <Row label="Signups">{data.total} total · {data.last7} in the last 7 days</Row>
+          <Row label="Who">{tally(data.personas)}</Row>
+          <Row label="Main computer">{tally(data.computers)}</Row>
+          <Row label="Heard from">{tally(data.sources)}</Row>
+          <a href="/api/admin/waitlist.csv"><Button icon={<Download size={14} />}>Export CSV</Button></a>
+          {data.rows.length > 0 && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-[0.8rem]">
+                <thead className="text-mute"><tr><th className="py-2 pr-4 font-normal">Email</th><th className="py-2 pr-4 font-normal">Is</th><th className="py-2 pr-4 font-normal">Wants Orbital for</th><th className="py-2 font-normal">Joined</th></tr></thead>
+                <tbody className="divide-y divide-line">
+                  {data.rows.slice(0, 50).map((r: any) => (
+                    <tr key={r.email}><td className="py-2 pr-4 text-white">{r.email}</td><td className="py-2 pr-4 text-mute-bright">{r.persona}</td><td className="py-2 pr-4 text-mute-bright">{[...r.remember, r.remember_other].filter(Boolean).join("; ")}</td><td className="whitespace-nowrap py-2 text-mute">{new Date(r.created_at).toLocaleDateString()}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      )}
     </Group>
   );
 }

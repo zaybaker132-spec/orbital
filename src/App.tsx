@@ -18,6 +18,7 @@ const ProjectsPage = lazy(() => import("./pages/Projects").then((m) => ({ defaul
 const OpportunitiesPage = lazy(() => import("./pages/Opportunities").then((m) => ({ default: m.OpportunitiesPage })));
 const OperationsPage = lazy(() => import("./pages/Operations").then((m) => ({ default: m.OperationsPage })));
 const TeamPage = lazy(() => import("./pages/Team").then((m) => ({ default: m.TeamPage })));
+const WaitlistPage = lazy(() => import("./pages/Waitlist").then((m) => ({ default: m.WaitlistPage })));
 const SettingsPage = lazy(() => import("./pages/Settings").then((m) => ({ default: m.SettingsPage })));
 
 /** Invite links (/invite/<token>) survive sign-in: the token is held for this tab until accepted. */
@@ -42,6 +43,8 @@ export function App() {
       .catch(toastError);
   }, [user, refreshWorkspaces, switchWorkspace, navigate]);
 
+  // The waitlist is public: no account, no app shell.
+  if (loc.pathname === "/waitlist") return <Suspense fallback={<div className="h-full bg-black" />}><WaitlistPage /></Suspense>;
   if (!loaded) return <div className="flex h-full items-center justify-center bg-black"><Pulse /></div>;
   if (!user) return <AuthPage />;
 
