@@ -197,6 +197,7 @@ export function WaitlistPage() {
                   </button>
                   <span className="text-[0.75rem] text-mute-soft">We'll only email you about Orbital.</span>
                 </div>
+                <p className="mt-8 border-t border-white/10 pt-6 text-[0.85rem] text-mute">Already have an account? <a href="/login" className="text-white underline decoration-white/30 underline-offset-4 hover:decoration-white">Sign in to Orbital →</a></p>
               </motion.form>
             )}
           </AnimatePresence>
