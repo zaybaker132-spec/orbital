@@ -37,7 +37,7 @@ class Client {
 const settle = () => new Promise((r) => setTimeout(r, 600)); // let background jobs (indexing) run
 
 before(async () => {
-  const { createApp } = await import("./index.js");
+  const { createApp } = await import("../index.js");
   const app = await createApp();
   await new Promise<void>((resolve) => { server = app.listen(0, () => resolve()); });
   const addr = server.address();
@@ -46,7 +46,7 @@ before(async () => {
 
 after(async () => {
   server?.close();
-  const { db } = await import("./db/client.js");
+  const { db } = await import("../db/client.js");
   await db().close();
   fs.rmSync(dir, { recursive: true, force: true });
 });
@@ -270,7 +270,7 @@ test("without an AI provider: images are kept, conversations save as notes, voic
 });
 
 test("routes: real pages are recognised; anything else is a 404", async () => {
-  const { isAppRoute } = await import("../shared/routes.js");
+  const { isAppRoute } = await import("../../shared/routes.js");
   for (const p of ["/", "/login", "/c/123", "/projects", "/projects/abc", "/knowledge/x/", "/m/abc-defg-hij", "/invite/token", "/search", "/focus"]) assert.ok(isAppRoute(p), p);
   for (const p of ["/pricing", "/projects/a/b", "/c", "/wp-admin", "/knowledgebase", "/api/x"]) assert.ok(!isAppRoute(p), p);
 });
@@ -299,7 +299,7 @@ test("knowledge extraction without AI: dated events, figures and key terms", asy
 });
 
 test("knowledge maintenance: suggestions, never silent changes; merge, review, connect, dismiss and undo", async () => {
-  const { db } = await import("./db/client.js");
+  const { db } = await import("../db/client.js");
   const me = (await alice.req("GET", "/api/auth/me")).data.user.id;
   const n1 = await alice.req("POST", "/api/documents", { title: "Pricing ideas", body: "Three tiers for salons: solo, studio and group. Annual plans get two months free. Offer a free trial for the first month." });
   const n2 = await alice.req("POST", "/api/documents", { title: "Pricing ideas", body: "Three tiers for salons: solo, studio and group. Annual plans get two months free." });

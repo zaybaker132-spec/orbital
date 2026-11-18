@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import http, { type Server } from "node:http";
 import { zipSync, strToU8 } from "fflate";
-import { startMockAnthropic } from "./test/mockAnthropic.js";
+import { startMockAnthropic } from "./mockAnthropic.js";
 
 // Files, web clipper, reminders and nudges, project tracking, focus sessions, universal search, voice.
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), "orbital-prod-test-"));
@@ -82,7 +82,7 @@ before(async () => {
     RESEARCH_WIKIPEDIA: "false", RESEARCH_OPENALEX: "false", DATABASE_URL: "",
     TRANSCRIPTION_BASE_URL: `http://127.0.0.1:${typeof ta === "object" && ta ? ta.port : 0}/v1`, TRANSCRIPTION_API_KEY: "stt-test-key",
   });
-  const { createApp } = await import("./index.js");
+  const { createApp } = await import("../index.js");
   const app = await createApp();
   await new Promise<void>((resolve) => { server = app.listen(0, () => resolve()); });
   const addr = server.address();
@@ -93,9 +93,9 @@ before(async () => {
 
 after(async () => {
   server?.close(); site?.close(); stt?.close(); mock?.close();
-  const { stopReminders } = await import("./engines/reminders.js");
+  const { stopReminders } = await import("../engines/reminders.js");
   stopReminders();
-  const { db } = await import("./db/client.js");
+  const { db } = await import("../db/client.js");
   await db().close();
   fs.rmSync(dir, { recursive: true, force: true });
 });
@@ -180,7 +180,7 @@ test("files: images are read by the AI provider and served back only to their wo
 
 // ── Web clipper ────────────────────────────────────────────────────────────
 test("clipper: article extraction keeps the story and drops the chrome", async () => {
-  const { extractArticle } = await import("./engines/clipper.js");
+  const { extractArticle } = await import("../engines/clipper.js");
   const a = extractArticle(ARTICLE, "https://salonweekly.example/article");
   assert.equal(a.title, "How salons lose 20% of bookings");
   assert.equal(a.site, "Salon Weekly");
@@ -254,7 +254,7 @@ test("projects: deadline, progress and overdue counts", async () => {
 
 test("nudges: overdue and upcoming work, deadlines, stale ideas; dismiss and snooze", async () => {
   const idea = (await owner.req("POST", "/api/documents", { title: "Loyalty card idea", body: "Stamp card for repeat clients", tags: ["idea"] })).data;
-  const { db } = await import("./db/client.js");
+  const { db } = await import("../db/client.js");
   await db().query("UPDATE documents SET updated_at = now() - interval '9 days' WHERE id=$1", [idea.id]);
   const nudges = (await owner.req("GET", `/api/nudges?today=${day(0)}`)).data;
   const kinds = (k: string) => nudges.filter((n: any) => n.kind === k);
@@ -277,7 +277,7 @@ test("nudges: overdue and upcoming work, deadlines, stale ideas; dismiss and sno
 });
 
 test("reminders: personal, fire on time over the live stream, snooze and finish", async () => {
-  const { tickReminders } = await import("./engines/reminders.js");
+  const { tickReminders } = await import("../engines/reminders.js");
   const later = await owner.req("POST", "/api/reminders", { itemType: "task", itemId: taskSoon, dueAt: new Date(Date.now() + 3_600_000).toISOString() });
   assert.equal(later.status, 201);
   assert.equal(later.data.title, "Draft pricing", "title taken from the task");
@@ -364,7 +364,7 @@ test("search: finds words inside conversations, notes, files, clips and research
   await owner.req("POST", `/api/conversations/${c.data.id}/messages`, { content: "Should I offer a membership tier for balayage clients?" });
   const oc = await other.req("POST", "/api/conversations", {});
   await other.req("POST", `/api/conversations/${oc.data.id}/messages`, { content: "Secret balayage plans for my own salon" });
-  const { db } = await import("./db/client.js");
+  const { db } = await import("../db/client.js");
   const me = (await owner.req("GET", "/api/auth/me")).data.user.id;
   await db().query(
     "INSERT INTO research_sessions(workspace_id, question, status, report) VALUES ($1, 'What do salons charge for colour?', 'completed', $2)",
@@ -414,13 +414,13 @@ test("voice: server transcription and saving a conversation to memory", async ()
   const mems = await until(async () => { const m = (await owner.req("GET", "/api/memories")).data; return m.some((x: any) => /Porto/.test(x.content)) && m; });
   assert.equal(mems.filter((m: any) => /Porto/.test(m.content)).length, 1);
   // Let background indexing and extraction finish before the database closes.
-  const { db } = await import("./db/client.js");
+  const { db } = await import("../db/client.js");
   await until(async () => (await db().query<any>("SELECT count(*)::int AS n FROM jobs WHERE status IN ('queued','running')")).rows[0].n === 0);
   assert.equal((await other.req("POST", `/api/conversations/${c.data.id}/remember`)).status, 404);
 });
 
 test("activity calendar: a year of days, colour-coded by kind, per project and in the viewer's time zone", async () => {
-  const { db } = await import("./db/client.js");
+  const { db } = await import("../db/client.js");
   const me = (await owner.req("GET", "/api/auth/me")).data.user.id;
   // Three tasks done on one day ten days ago (11:30 UTC), one note the day before.
   for (let i = 0; i < 3; i++) await db().query("INSERT INTO activity_events(workspace_id, type, title, ref_type, ref_id, created_at) VALUES ($1,'task.completed','t','project',$2, date_trunc('day', now()) - interval '10 days' + interval '11 hours 30 minutes')", [me, projectId]);

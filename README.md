@@ -2,9 +2,27 @@
 
 **Your intelligence. Compounding.**
 
-Orbital is a personal — and team — intelligence environment. Every conversation, note, document, research session and project feeds a private knowledge system that remembers what matters, connects ideas, researches with verifiable sources, and turns accumulated knowledge into practical opportunities. Its signature is the **Neural Core**: a human head and brain built from tens of thousands of individually rendered particles, animated by what the system is actually doing.
+Orbital is a personal — and team — intelligence environment. Every conversation, note, document, research session and project feeds a private knowledge system that remembers what matters, connects ideas, researches with verifiable sources, and turns accumulated knowledge into practical opportunities. Its signature is the **Neural Core**: tens of thousands of individually rendered particles that start as your knowledge graph and pull into an orb, animated by what the system is actually doing.
 
 ---
+
+## Open Orbital
+
+**On a Mac**
+1. Download the Mac zip into your Downloads folder: `Orbital-…-arm64-mac.zip` for Apple chips (M1–M4), `Orbital-…-mac.zip` for Intel.
+2. Download [`scripts/install-mac.sh`](scripts/install-mac.sh) into Downloads too, open **Terminal** and run:
+
+   ```bash
+   bash ~/Downloads/install-mac.sh
+   ```
+
+   It installs Orbital in Applications (replacing any older copies), marks it as trusted on your Mac, and opens it. The app isn't signed with a paid Apple certificate yet, which is why macOS needs this step; your data in `~/Library/Application Support/Orbital` is never touched.
+
+**On Windows:** unzip `Orbital-…-win.zip` and double-click `Orbital.exe` (choose **More info → Run anyway** the first time).
+
+Then create an account (any email and password: everything stays on your computer). To turn on AI, add your Anthropic API key in **Settings → Desktop**.
+
+**From the code** (developers): see Quick start below. Installers for every platform are built by the GitHub release workflow; see [Desktop app](docs/DESKTOP.md).
 
 ## Quick start
 

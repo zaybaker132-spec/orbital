@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { Server } from "node:http";
-import { startMockAnthropic, type MockCall } from "./test/mockAnthropic.js";
+import { startMockAnthropic, type MockCall } from "./mockAnthropic.js";
 
 // Research intelligence: source assessment, lineage, living reports, the contradiction lab,
 // hypothesis testing and knowledge extraction, through the real SDK against the local mock.
@@ -37,7 +37,7 @@ before(async () => {
     ORBITAL_DATA_DIR: dir, AI_PROVIDER: "anthropic", ANTHROPIC_API_KEY: "test-key-not-real", ANTHROPIC_BASE_URL: mock.url,
     RESEARCH_WIKIPEDIA: "false", RESEARCH_OPENALEX: "false", RESEARCH_WEB_SEARCH: "true", DATABASE_URL: "",
   });
-  const { createApp } = await import("./index.js");
+  const { createApp } = await import("../index.js");
   const app = await createApp();
   await new Promise<void>((r) => { server = app.listen(0, () => r()); });
   const a = server.address();
@@ -49,11 +49,11 @@ before(async () => {
 after(async () => {
   server?.close();
   mock?.close();
-  const { stopReminders } = await import("./engines/reminders.js");
-  const { stopFreshnessChecks } = await import("./engines/freshness.js");
-  const { stopMaintenance } = await import("./engines/maintenance.js");
+  const { stopReminders } = await import("../engines/reminders.js");
+  const { stopFreshnessChecks } = await import("../engines/freshness.js");
+  const { stopMaintenance } = await import("../engines/maintenance.js");
   stopReminders(); stopFreshnessChecks(); stopMaintenance();
-  const { db } = await import("./db/client.js");
+  const { db } = await import("../db/client.js");
   await until(async () => (await db().query<any>("SELECT count(*)::int AS n FROM jobs WHERE status IN ('queued','running')")).rows[0].n === 0);
   await new Promise((r) => setTimeout(r, 800)); // let fire-and-forget graph suggestions settle
   await db().close();
@@ -62,7 +62,7 @@ after(async () => {
 
 // ── Pure functions ─────────────────────────────────────────────────────────
 test("source intelligence: authority, recency, methodology, conflicts and corroboration signals", async () => {
-  const { authorityOf, recencyOf, methodFromText, conflictsFromText, corroborationOf, combine } = await import("./engines/sourceIntel.js");
+  const { authorityOf, recencyOf, methodFromText, conflictsFromText, corroborationOf, combine } = await import("../engines/sourceIntel.js");
   const a = (url: string, extra: Partial<{ provider: string; source_type: string; published: string }> = {}) => authorityOf({ url, provider: "web", source_type: "web", published: "", ...extra });
   assert.equal(a("https://www.bls.gov/data").kind, "government");
   assert.equal(a("https://who.int/report").kind, "government");
@@ -90,7 +90,7 @@ test("source intelligence: authority, recency, methodology, conflicts and corrob
 });
 
 test("living reports: shelf life by sensitivity, measured from the newest evidence", async () => {
-  const { computeFreshness } = await import("./engines/freshness.js");
+  const { computeFreshness } = await import("../engines/freshness.js");
   const report: any = {
     mode: "synthesized",
     findings: [
@@ -114,7 +114,7 @@ test("living reports: shelf life by sensitivity, measured from the newest eviden
 });
 
 test("lineage: the best matching passage is the sentence that shares the claim's words", async () => {
-  const { bestPassage } = await import("./engines/lineage.js");
+  const { bestPassage } = await import("../engines/lineage.js");
   const p = bestPassage("42% of small businesses used AI for scheduling", "Many firms exist. In 2025, 42% of small businesses used AI tools for scheduling and customer communication. Weather was mild.");
   assert.match(p.passage, /^In 2025, 42% of small businesses/);
   assert.ok(p.overlap >= 4);
@@ -252,7 +252,7 @@ test("knowledge extraction: verified concepts, evidence, timeline and relationsh
 test("knowledge maintenance with AI: conflicting memories are resolved by choice, archived not deleted, and undoable", async () => {
   const a = await req("POST", "/api/memories", { content: "Works from the London office three days a week", category: "context" });
   const b = await req("POST", "/api/memories", { content: "No longer works from the London office; fully remote since spring", category: "context" });
-  const { db } = await import("./db/client.js");
+  const { db } = await import("../db/client.js");
   await until(async () => (await db().query<any>("SELECT count(*)::int AS n FROM memories WHERE embedding IS NULL")).rows[0].n === 0);
   const s1 = await req("POST", "/api/maintenance/scan");
   assert.equal(s1.data.ai, true);

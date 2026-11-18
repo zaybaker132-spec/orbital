@@ -35,14 +35,16 @@ orbital/
 │  │  └─ growth.ts             metrics, timeline, maintenance
 │  ├─ research/sources.ts      Wikipedia, OpenAlex, web-search citation connectors
 │  ├─ lib/                     jobs (durable queue), events (SSE bus), activity + audit logs, crypto, rate limit, http helpers
-│  └─ routes/                  core.ts (auth, events, chat, memory, graph, feedback), workspace.ts (knowledge, research,
+│  ├─ routes/                  core.ts (auth, events, chat, memory, graph, feedback), workspace.ts (knowledge, research,
 │                              projects, opportunities, growth), business.ts (workspaces, team, connectors, automations,
 │                              approvals, tokens, audit), v1.ts (token-authenticated public API), productivity.ts
 │                              (reminders, nudges, focus sessions, voice transcription, save conversation to memory),
 │                              meetings.ts, waitlist.ts, researchIntel.ts (lineage, assessment, refresh,
 │                              contradiction lab from the graph, hypotheses, knowledge extraction)
+│  └─ test/                    all server tests (npm test) and the deterministic Anthropic mock they use
 ├─ desktop/                    Electron main process + preload bridge
-├─ scripts/build-server.mjs    esbuild bundle of the server for the desktop app
+├─ scripts/                    build-server.mjs (desktop server bundle), build-preview.mjs (preview site),
+│                              install-mac.sh (one-step Mac install from the downloaded zip)
 ├─ electron-builder.yml        installer configuration (dmg, nsis, AppImage, deb)
 ├─ .github/workflows/          desktop.yml — test, then build installers on macOS/Windows/Linux
 ├─ src/                        React + TypeScript + Tailwind (Vite)

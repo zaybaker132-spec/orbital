@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import http, { type Server } from "node:http";
 import crypto from "node:crypto";
-import { startMockAnthropic } from "./test/mockAnthropic.js";
+import { startMockAnthropic } from "./mockAnthropic.js";
 
 // Business layer: workspaces, roles, invites, private conversations, API tokens, connectors, automations, approvals, audit.
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), "orbital-biz-test-"));
@@ -58,7 +58,7 @@ before(async () => {
     RESEARCH_WIKIPEDIA: "false", RESEARCH_OPENALEX: "false", DATABASE_URL: "", ORBITAL_ALLOW_PRIVATE_WEBHOOKS: "true",
     ORBITAL_SECRET_KEY: "a-test-secret-key-that-is-long-enough-123",
   });
-  const { createApp } = await import("./index.js");
+  const { createApp } = await import("../index.js");
   const app = await createApp();
   await new Promise<void>((r) => { server = app.listen(0, () => r()); });
   const a = server.address();
@@ -70,7 +70,7 @@ before(async () => {
 
 after(async () => {
   server?.close(); hook?.close(); mock?.close();
-  const { db } = await import("./db/client.js");
+  const { db } = await import("../db/client.js");
   await db().close();
   fs.rmSync(dir, { recursive: true, force: true });
 });
@@ -199,9 +199,9 @@ test("operations agent: internal actions auto-run, external messages wait for ap
 test("briefing with standing authorization delivers automatically; scheduler fires due automations", async () => {
   const conn = (await owner.req("GET", "/api/connectors")).data[0];
   const b = await owner.req("POST", "/api/automations", { name: "Morning brief", kind: "briefing", schedule: { freq: "daily", hour: 7, tz: "Europe/London" }, config: { period: "day", connectorId: conn.id, autoDeliver: true } });
-  const { db } = await import("./db/client.js");
+  const { db } = await import("../db/client.js");
   await db().query("UPDATE automations SET next_run_at = now() - interval '1 minute' WHERE id=$1", [b.data.id]);
-  const { tickAutomations } = await import("./engines/automation.js");
+  const { tickAutomations } = await import("../engines/automation.js");
   const before = received.length;
   assert.ok((await tickAutomations()) >= 1);
   await until(async () => received.length > before);
@@ -214,7 +214,7 @@ test("briefing with standing authorization delivers automatically; scheduler fir
 });
 
 test("schedules respect time zones; webhook SSRF guard", async () => {
-  const { nextRun, assertSafeUrl } = await import("./engines/automation.js");
+  const { nextRun, assertSafeUrl } = await import("../engines/automation.js");
   const from = new Date("2026-03-07T15:00:00Z"); // Saturday, 10am in New York (EST)
   const ny = nextRun({ freq: "daily", hour: 9, minute: 0, weekday: 1, tz: "America/New_York" }, from);
   assert.equal(ny.toISOString(), "2026-03-08T13:00:00.000Z", "9am New York on the DST-change day is 13:00 UTC");

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { verifyReport } from "./research.js";
+import { verifyReport } from "../engines/research.js";
 import { parseOpenAlex, parseWikipediaExtracts, invertAbstract } from "../research/sources.js";
 
 const sources = [

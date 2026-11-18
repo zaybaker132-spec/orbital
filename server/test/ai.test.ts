@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { Server } from "node:http";
-import { startMockAnthropic, type MockCall } from "./test/mockAnthropic.js";
+import { startMockAnthropic, type MockCall } from "./mockAnthropic.js";
 
 // AI pipeline through the real Anthropic SDK against a local deterministic mock (no network, no key).
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), "orbital-ai-test-"));
@@ -36,7 +36,7 @@ before(async () => {
     ORBITAL_DATA_DIR: dir, AI_PROVIDER: "anthropic", ANTHROPIC_API_KEY: "test-key-not-real", ANTHROPIC_BASE_URL: mock.url,
     RESEARCH_WIKIPEDIA: "false", RESEARCH_OPENALEX: "false", RESEARCH_WEB_SEARCH: "true", DATABASE_URL: "",
   });
-  const { createApp } = await import("./index.js");
+  const { createApp } = await import("../index.js");
   const app = await createApp();
   await new Promise<void>((r) => { server = app.listen(0, () => r()); });
   const a = server.address();
@@ -47,7 +47,7 @@ before(async () => {
 after(async () => {
   server?.close();
   mock?.close();
-  const { db } = await import("./db/client.js");
+  const { db } = await import("../db/client.js");
   await db().close();
   fs.rmSync(dir, { recursive: true, force: true });
 });
