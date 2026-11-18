@@ -170,7 +170,7 @@ void main() {
   float size = mix(aSize, orbSize, uOrbMode * mt) * (1.0 + min(glow, 2.0) * 0.45) * (1.0 + graphPhase * 0.3);
   gl_PointSize = max(1.0, size * uPixelRatio * uScale / -mv.z);
   float depth = smoothstep(-8.0, -4.5, mv.z);
-  // Colour moves from the graph's clusters to the orb's amber and silver as it forms.
+  // Colour moves from the graph's clusters to the orb's colour field as it forms.
   float orbMix = uOrbMode * mt;
   vec3 baseCol = mix(color * aBright, aOrbColor, orbMix);
   vec3 tint = mix(color, aOrbColor / max(0.05, max(aOrbColor.r, max(aOrbColor.g, aOrbColor.b))), orbMix);
