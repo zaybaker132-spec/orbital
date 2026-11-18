@@ -106,6 +106,50 @@
   .copy:hover { color: var(--fg); border-color: var(--line-strong); }
   @media (max-width: 600px) { .cmd .what { display: none; } }
 
+
+  /* Waitlist */
+  .wl { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); gap: 48px; margin-top: 8px; }
+  .wl-form { display: grid; gap: 26px; }
+  .wl-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .wl-q { display: grid; gap: 10px; }
+  .wl-q .label small { color: var(--soft); letter-spacing: 0.1em; margin-left: 6px; }
+  .wl-input, .wl-select { font: inherit; color: var(--fg); background: transparent; border: 0; border-bottom: 1px solid var(--line-strong); padding: 8px 0; width: 100%; border-radius: 0; }
+  .wl-select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--mute) 50%), linear-gradient(135deg, var(--mute) 50%, transparent 50%); background-position: right 6px top 55%, right 1px top 55%; background-size: 5px 5px; background-repeat: no-repeat; }
+  .wl-select option { background: #111; }
+  .wl-input::placeholder { color: var(--soft); }
+  .wl-input:focus, .wl-select:focus { outline: none; border-bottom-color: #fff; }
+  .wl-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .wl-chips .chip { font-size: 13.5px; padding: 7px 14px; color: #d8d8de; }
+  .chip .rank { display: inline-grid; place-items: center; width: 17px; height: 17px; border-radius: 50%; background: #000; color: #fff; font-size: 10.5px; margin-right: 7px; vertical-align: 1px; }
+  .wl-submit { font: inherit; font-size: 14px; justify-self: start; background: #fff; color: #000; border: 0; border-radius: 999px; padding: 11px 26px; cursor: pointer; }
+  .wl-submit[disabled] { opacity: 0.4; cursor: not-allowed; }
+  .wl-msg { font-size: 13.5px; color: var(--mute); min-height: 1.2em; margin: 0; }
+  .wl-msg.err { color: #ff8a8a; }
+  .wl-done { border: 1px solid var(--line); border-radius: 14px; padding: 28px; display: grid; gap: 10px; justify-items: start; }
+  .wl-done h3 { margin: 0; font-weight: 300; font-size: 26px; letter-spacing: -0.02em; }
+  .wl-done p { margin: 0; color: var(--mute); }
+  .wl-side p { color: var(--mute); margin: 0 0 14px; max-width: 46ch; }
+  .wl-gate { border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; font-size: 13.5px; color: var(--mute); }
+  @media (max-width: 900px) { .wl { grid-template-columns: 1fr; gap: 28px; } }
+  @media (max-width: 560px) { .wl-row { grid-template-columns: 1fr; } }
+
+  /* Sign-ups (owner and editors only) */
+  #signups { display: none; }
+  .su-head { display: flex; align-items: end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .su-count { font-size: 44px; font-weight: 300; letter-spacing: -0.03em; line-height: 1; }
+  .su-stats { display: flex; gap: 28px; flex-wrap: wrap; margin-top: 18px; font-size: 13px; color: var(--mute); }
+  .su-stats b { color: var(--fg); font-weight: 400; }
+  .su-table-wrap { margin-top: 24px; border: 1px solid var(--line); border-radius: 12px; overflow-x: auto; }
+  table.su { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 760px; }
+  .su th { text-align: left; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mute); font-weight: 400; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .su td { padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; color: #d8d8de; }
+  .su tr:last-child td { border-bottom: 0; }
+  .su td.em { color: #fff; }
+  .su td.dt { color: var(--mute); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .su-del { font: inherit; font-size: 12px; color: var(--soft); background: none; border: 0; cursor: pointer; padding: 0; }
+  .su-del:hover { color: #ff8a8a; }
+  .su-empty { padding: 28px; color: var(--mute); font-size: 14px; }
+
   footer { padding-block: 40px 56px; color: var(--soft); font-size: 13px; }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -117,6 +161,7 @@
       ORBITAL
     </a>
     <nav class="links" aria-label="Sections">
+      <a href="#waitlist">Waitlist</a>
       <a href="#tour">Tour</a>
       <a href="#business">For business</a>
       <a href="#desktop">Desktop</a>
@@ -126,7 +171,7 @@
 </header>
 
 <div class="hero" id="top">
-  <div id="core" role="img" aria-label="The Neural Core: tens of thousands of particles that start as a knowledge graph and pull into an orb, amber above and silver below"></div>
+  <div id="core" role="img" aria-label="The Neural Core: tens of thousands of particles that start as a knowledge graph and pull into an orb in the same colours"></div>
   <div class="hero-copy">
     <div class="wrap">
       <div>
@@ -151,6 +196,58 @@
     </div>
   </div>
 </div>
+
+<section id="waitlist">
+  <div class="wrap wl">
+    <div class="wl-side">
+      <div class="label">Early access</div>
+      <h2>Enter the orbit.</h2>
+      <p>An intelligence that compounds with everything you learn. Tell us how you think and work, and we'll bring you in.</p>
+      <div class="wl-gate" id="wl-gate" hidden></div>
+    </div>
+    <div>
+      <form class="wl-form" id="wl-form" novalidate>
+        <div class="wl-row">
+          <label class="wl-q"><span class="label">Email</span><input class="wl-input" id="wl-email" type="email" autocomplete="email" placeholder="you@domain.com" required></label>
+          <label class="wl-q"><span class="label">You are</span><select class="wl-select" id="wl-persona" required><option value="">Choose one</option></select></label>
+        </div>
+        <div class="wl-q" data-q="remember" data-mode="multi"><span class="label">What should Orbital compound for you?<small>pick at least one</small></span><div class="wl-chips"></div></div>
+        <div class="wl-q" data-q="scale" data-mode="single"><span class="label">Who is it for?</span><div class="wl-chips"></div></div>
+        <div class="wl-q" data-q="aiTools" data-mode="ranked"><span class="label">Which AI tools do you use most?<small>main one first, up to 3</small></span><div class="wl-chips"></div></div>
+        <div class="wl-q" data-q="notes" data-mode="multi"><span class="label">Where do your notes live?</span><div class="wl-chips"></div></div>
+        <div class="wl-row">
+          <div class="wl-q" data-q="computers" data-mode="multi"><span class="label">Computers</span><div class="wl-chips"></div></div>
+          <div class="wl-q" data-q="devices" data-mode="multi"><span class="label">Phones and tablets</span><div class="wl-chips"></div></div>
+        </div>
+        <div class="wl-q" data-q="heard" data-mode="single"><span class="label">How did you hear about Orbital?</span><div class="wl-chips"></div></div>
+        <label class="wl-q"><span class="label">Anything else?<small>optional</small></span><input class="wl-input" id="wl-note" maxlength="500" placeholder="What would make Orbital indispensable for you"></label>
+        <button class="wl-submit" id="wl-submit" type="submit">Enter orbit</button>
+        <p class="wl-msg" id="wl-msg" role="status"></p>
+      </form>
+      <div class="wl-done" id="wl-done" hidden>
+        <div class="label">You're on the list</div>
+        <h3>You're in orbit.</h3>
+        <p id="wl-done-sub">We'll be in touch at your email when your spot opens.</p>
+        <button class="chip" id="wl-edit" type="button">Edit my answers</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="signups">
+  <div class="wrap">
+    <div class="su-head">
+      <div>
+        <div class="label">Sign-ups&nbsp;&middot; only you and editors see this</div>
+        <div class="su-count" id="su-count">0</div>
+      </div>
+      <button class="chip" id="su-csv" type="button" hidden>Download CSV</button>
+    </div>
+    <div class="su-stats" id="su-stats"></div>
+    <p class="wl-msg" id="su-msg"></p>
+    <div class="su-table-wrap"><table class="su"><thead><tr><th>Email</th><th>You are</th><th>For</th><th>AI tools</th><th>Compound</th><th>Heard from</th><th>Joined</th><th></th></tr></thead><tbody id="su-body"></tbody></table><div class="su-empty" id="su-empty">No sign-ups yet. They'll appear here the moment someone joins.</div></div>
+  </div>
+</section>
 
 <section id="tour">
   <div class="wrap">
@@ -214,7 +311,146 @@
   <div class="wrap">Orbital&nbsp;&middot; Your intelligence. Compounding.</div>
 </footer>
 
-<script src="neural-core.js"></script>
+<script src="neural-core.js">
+  // ── Waitlist (stored in this page's own database) ──────────────────────
+  const Q = {
+    persona: ["Founder or operator", "Builder or engineer", "Researcher or student", "Creator or writer", "Investor or analyst", "Leading a team at a company", "Something else"],
+    remember: ["Ideas and decisions I keep losing", "Research and the sources behind it", "Projects I'm building", "My business's knowledge", "Opportunities worth chasing", "Learning something deeply"],
+    scale: ["Just me", "Me and a small team", "A whole company"],
+    aiTools: ["ChatGPT", "Claude", "Gemini", "Claude Code or Codex", "Cursor", "Perplexity", "None yet", "Other"],
+    notes: ["Obsidian", "Notion", "Apple Notes", "Google Docs", "Paper", "Nowhere", "Other"],
+    computers: ["macOS", "Windows", "Linux", "ChromeOS", "None"],
+    devices: ["iPhone or iPad", "Android", "None"],
+    heard: ["A friend", "X / Twitter", "TikTok", "Instagram", "YouTube", "Discord", "Reddit", "Search", "Somewhere else"],
+  };
+  const MAX_RANKED = 3;
+  const $ = (id) => document.getElementById(id);
+  const answers = { remember: [], scale: "", aiTools: [], notes: [], computers: [], devices: [], heard: "" };
+  const persona = $("wl-persona");
+  Q.persona.forEach((v) => persona.add(new Option(v, v)));
+
+  const groups = {};
+  document.querySelectorAll(".wl-q[data-q]").forEach((el) => {
+    const key = el.dataset.q, mode = el.dataset.mode, box = el.querySelector(".wl-chips");
+    const paint = () => box.querySelectorAll(".chip").forEach((b) => {
+      const v = b.dataset.v, cur = answers[key];
+      const on = mode === "single" ? cur === v : cur.includes(v);
+      b.setAttribute("aria-pressed", String(on));
+      b.textContent = "";
+      if (mode === "ranked" && on) { const r = document.createElement("span"); r.className = "rank"; r.textContent = cur.indexOf(v) + 1; b.appendChild(r); }
+      b.appendChild(document.createTextNode(v));
+    });
+    Q[key].forEach((v) => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.dataset.v = v;
+      b.addEventListener("click", () => {
+        const cur = answers[key];
+        if (mode === "single") answers[key] = cur === v ? "" : v;
+        else if (cur.includes(v)) answers[key] = cur.filter((x) => x !== v);
+        else if (mode === "ranked" && cur.length >= MAX_RANKED) return flash(`Pick up to ${MAX_RANKED}: tap one to remove it first.`);
+        else answers[key] = [...cur, v];
+        paint();
+      });
+      box.appendChild(b);
+    });
+    groups[key] = paint; paint();
+  });
+
+  const msg = $("wl-msg");
+  function flash(text, err) { msg.textContent = text; msg.classList.toggle("err", !!err); }
+  function gate(text) { const g = $("wl-gate"); g.textContent = text; g.hidden = !text; }
+  function showDone(done) { $("wl-form").hidden = done; $("wl-done").hidden = !done; }
+
+  let db = null, me = null, readOnly = false;
+  function fill(d) {
+    $("wl-email").value = d.email || ""; persona.value = d.persona || ""; $("wl-note").value = d.note || "";
+    for (const k of Object.keys(answers)) answers[k] = d[k] ?? (Array.isArray(answers[k]) ? [] : "");
+    Object.values(groups).forEach((p) => p());
+  }
+
+  $("wl-edit").addEventListener("click", () => showDone(false));
+  $("wl-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = $("wl-email").value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return flash("Enter a valid email.", true);
+    if (!persona.value) return flash("Tell us what you do.", true);
+    if (!answers.remember.length) return flash("Pick at least one thing for Orbital to compound.", true);
+    if (!answers.scale) return flash("Tell us who it's for.", true);
+    if (!answers.aiTools.length) return flash("Pick at least one AI tool, or \"None yet\".", true);
+    if (!db || !me) return flash("Signing up here needs a signed-in Claude account with access to this page.", true);
+    if (readOnly) return flash("You can view this page but not sign up on it. Ask the owner to add you as a Contributor.", true);
+    const btn = $("wl-submit"); btn.disabled = true; flash("Saving…");
+    const ref = db.doc("waitlist/" + me);
+    try {
+      const prev = await ref.get();
+      const now = new Date().toISOString();
+      await ref.set({ email, persona: persona.value, ...answers, note: $("wl-note").value.trim().slice(0, 500),
+        createdAt: prev.exists ? prev.data().createdAt || now : now, updatedAt: now });
+      flash(""); showDone(true);
+    } catch (err) {
+      if (err && err.code === "invalid_argument") { readOnly = true; flash("You can view this page but not sign up on it. Ask the owner to add you as a Contributor.", true); }
+      else if (err && err.code === "quota_exceeded") flash("The waitlist is full right now. Please try again later.", true);
+      else flash("Couldn't save your sign-up. Please try again.", true);
+    } finally { btn.disabled = false; }
+  });
+
+  // Owner and editors: live list of sign-ups.
+  let rows = [];
+  const fmtDate = (iso) => { try { return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }); } catch { return ""; } };
+  function td(text, cls) { const c = document.createElement("td"); if (cls) c.className = cls; c.textContent = text; return c; }
+  function renderSignups(canDelete) {
+    $("su-count").textContent = rows.length;
+    $("su-empty").hidden = rows.length > 0;
+    $("su-csv").hidden = rows.length === 0;
+    const tally = (k) => { const m = {}; rows.forEach((r) => [].concat(r[k] || []).slice(0, 1).forEach((v) => v && (m[v] = (m[v] || 0) + 1))); const top = Object.entries(m).sort((a, b) => b[1] - a[1])[0]; return top ? `${top[0]} (${top[1]})` : "—"; };
+    const stats = $("su-stats"); stats.textContent = "";
+    if (rows.length) [["Top persona", tally("persona")], ["Main AI tool", tally("aiTools")], ["Most heard from", tally("heard")]].forEach(([l, v]) => {
+      const d = document.createElement("div"); d.append(l + ": "); const b = document.createElement("b"); b.textContent = v; d.appendChild(b); stats.appendChild(d);
+    });
+    const body = $("su-body"); body.textContent = "";
+    rows.forEach((r) => {
+      const tr = document.createElement("tr");
+      tr.append(td(r.email, "em"), td(r.persona), td(r.scale), td((r.aiTools || []).join(", ")), td((r.remember || []).join("; ")), td(r.heard || "—"), td(fmtDate(r.createdAt), "dt"));
+      const act = document.createElement("td");
+      if (canDelete) {
+        const x = document.createElement("button"); x.className = "su-del"; x.type = "button"; x.textContent = "Remove";
+        x.addEventListener("click", async () => { if (!confirm(`Remove ${r.email} from the waitlist?`)) return; try { await db.doc("waitlist/" + r.id).delete(); } catch { $("su-msg").textContent = "Couldn't remove that sign-up."; } });
+        act.appendChild(x);
+      }
+      tr.appendChild(act); body.appendChild(tr);
+    });
+  }
+  const csvCell = (v) => { let s = Array.isArray(v) ? v.join("; ") : String(v ?? ""); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
+  $("su-csv").addEventListener("click", async () => {
+    const cols = ["email", "persona", "scale", "remember", "aiTools", "notes", "computers", "devices", "heard", "note", "createdAt"];
+    const csv = [cols.join(","), ...rows.map((r) => cols.map((c) => csvCell(r[c])).join(","))].join("\n");
+    const dl = window.claude ? await window.claude.use("downloads") : null;
+    try {
+      if (dl) await dl.save({ filename: "orbital-waitlist.csv", data: csv });
+      else { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = "orbital-waitlist.csv"; a.click(); }
+    } catch { /* the viewer declined the download */ }
+  });
+
+  (async () => {
+    if (!window.claude) { gate("Sign-ups are saved through claude.ai. Open this page from its claude.ai link to join."); return; }
+    const [dbNs, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+    db = dbNs; me = user ? await user.id() : null;
+    if (!db || !me) { gate("Signing up needs a claude.ai account with access to this page. Sign in to claude.ai, then reopen this link."); return; }
+    const canWrite = await user.can("data.write");
+    if (canWrite === false) { readOnly = true; gate("You can view this page but not sign up on it. Ask the owner to add you as a Contributor."); }
+    try { const mine = await db.doc("waitlist/" + me).get(); if (mine.exists) { fill(mine.data()); showDone(true); } } catch { /* fresh form */ }
+
+    const [isOwner, canEdit] = await Promise.all([user.isOwner(), user.canEdit()]);
+    if (!isOwner && !canEdit) return;
+    $("signups").style.display = "block";
+    const note = $("su-msg");
+    const timer = setTimeout(() => { note.textContent = "Can't reach the sign-up list yet. It will appear when the connection comes back."; }, 10000);
+    db.collection("waitlist").orderBy("createdAt", "desc").onSnapshot((snap) => {
+      if (!snap.metadata.fromCache) { clearTimeout(timer); note.textContent = ""; }
+      rows = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      renderSignups(isOwner);
+    }, () => { clearTimeout(timer); note.textContent = "The sign-up list stopped updating. Reload the page to reconnect."; });
+  })();
+</script>
 <script>
   // Live Neural Core
   const core = window.OrbitalCore && window.OrbitalCore.mountNeuralCore(document.getElementById("core"));
@@ -276,4 +512,143 @@
         .catch(() => { const r = document.createRange(); r.selectNodeContents(code); const s = getSelection(); s.removeAllRanges(); s.addRange(r); });
     });
   });
+
+  // ── Waitlist (stored in this page's own database) ──────────────────────
+  const Q = {
+    persona: ["Founder or operator", "Builder or engineer", "Researcher or student", "Creator or writer", "Investor or analyst", "Leading a team at a company", "Something else"],
+    remember: ["Ideas and decisions I keep losing", "Research and the sources behind it", "Projects I'm building", "My business's knowledge", "Opportunities worth chasing", "Learning something deeply"],
+    scale: ["Just me", "Me and a small team", "A whole company"],
+    aiTools: ["ChatGPT", "Claude", "Gemini", "Claude Code or Codex", "Cursor", "Perplexity", "None yet", "Other"],
+    notes: ["Obsidian", "Notion", "Apple Notes", "Google Docs", "Paper", "Nowhere", "Other"],
+    computers: ["macOS", "Windows", "Linux", "ChromeOS", "None"],
+    devices: ["iPhone or iPad", "Android", "None"],
+    heard: ["A friend", "X / Twitter", "TikTok", "Instagram", "YouTube", "Discord", "Reddit", "Search", "Somewhere else"],
+  };
+  const MAX_RANKED = 3;
+  const $ = (id) => document.getElementById(id);
+  const answers = { remember: [], scale: "", aiTools: [], notes: [], computers: [], devices: [], heard: "" };
+  const persona = $("wl-persona");
+  Q.persona.forEach((v) => persona.add(new Option(v, v)));
+
+  const groups = {};
+  document.querySelectorAll(".wl-q[data-q]").forEach((el) => {
+    const key = el.dataset.q, mode = el.dataset.mode, box = el.querySelector(".wl-chips");
+    const paint = () => box.querySelectorAll(".chip").forEach((b) => {
+      const v = b.dataset.v, cur = answers[key];
+      const on = mode === "single" ? cur === v : cur.includes(v);
+      b.setAttribute("aria-pressed", String(on));
+      b.textContent = "";
+      if (mode === "ranked" && on) { const r = document.createElement("span"); r.className = "rank"; r.textContent = cur.indexOf(v) + 1; b.appendChild(r); }
+      b.appendChild(document.createTextNode(v));
+    });
+    Q[key].forEach((v) => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.dataset.v = v;
+      b.addEventListener("click", () => {
+        const cur = answers[key];
+        if (mode === "single") answers[key] = cur === v ? "" : v;
+        else if (cur.includes(v)) answers[key] = cur.filter((x) => x !== v);
+        else if (mode === "ranked" && cur.length >= MAX_RANKED) return flash(`Pick up to ${MAX_RANKED}: tap one to remove it first.`);
+        else answers[key] = [...cur, v];
+        paint();
+      });
+      box.appendChild(b);
+    });
+    groups[key] = paint; paint();
+  });
+
+  const msg = $("wl-msg");
+  function flash(text, err) { msg.textContent = text; msg.classList.toggle("err", !!err); }
+  function gate(text) { const g = $("wl-gate"); g.textContent = text; g.hidden = !text; }
+  function showDone(done) { $("wl-form").hidden = done; $("wl-done").hidden = !done; }
+
+  let db = null, me = null, readOnly = false;
+  function fill(d) {
+    $("wl-email").value = d.email || ""; persona.value = d.persona || ""; $("wl-note").value = d.note || "";
+    for (const k of Object.keys(answers)) answers[k] = d[k] ?? (Array.isArray(answers[k]) ? [] : "");
+    Object.values(groups).forEach((p) => p());
+  }
+
+  $("wl-edit").addEventListener("click", () => showDone(false));
+  $("wl-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = $("wl-email").value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return flash("Enter a valid email.", true);
+    if (!persona.value) return flash("Tell us what you do.", true);
+    if (!answers.remember.length) return flash("Pick at least one thing for Orbital to compound.", true);
+    if (!answers.scale) return flash("Tell us who it's for.", true);
+    if (!answers.aiTools.length) return flash("Pick at least one AI tool, or \"None yet\".", true);
+    if (!db || !me) return flash("Signing up here needs a signed-in Claude account with access to this page.", true);
+    if (readOnly) return flash("You can view this page but not sign up on it. Ask the owner to add you as a Contributor.", true);
+    const btn = $("wl-submit"); btn.disabled = true; flash("Saving…");
+    const ref = db.doc("waitlist/" + me);
+    try {
+      const prev = await ref.get();
+      const now = new Date().toISOString();
+      await ref.set({ email, persona: persona.value, ...answers, note: $("wl-note").value.trim().slice(0, 500),
+        createdAt: prev.exists ? prev.data().createdAt || now : now, updatedAt: now });
+      flash(""); showDone(true);
+    } catch (err) {
+      if (err && err.code === "invalid_argument") { readOnly = true; flash("You can view this page but not sign up on it. Ask the owner to add you as a Contributor.", true); }
+      else if (err && err.code === "quota_exceeded") flash("The waitlist is full right now. Please try again later.", true);
+      else flash("Couldn't save your sign-up. Please try again.", true);
+    } finally { btn.disabled = false; }
+  });
+
+  // Owner and editors: live list of sign-ups.
+  let rows = [];
+  const fmtDate = (iso) => { try { return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }); } catch { return ""; } };
+  function td(text, cls) { const c = document.createElement("td"); if (cls) c.className = cls; c.textContent = text; return c; }
+  function renderSignups(canDelete) {
+    $("su-count").textContent = rows.length;
+    $("su-empty").hidden = rows.length > 0;
+    $("su-csv").hidden = rows.length === 0;
+    const tally = (k) => { const m = {}; rows.forEach((r) => [].concat(r[k] || []).slice(0, 1).forEach((v) => v && (m[v] = (m[v] || 0) + 1))); const top = Object.entries(m).sort((a, b) => b[1] - a[1])[0]; return top ? `${top[0]} (${top[1]})` : "—"; };
+    const stats = $("su-stats"); stats.textContent = "";
+    if (rows.length) [["Top persona", tally("persona")], ["Main AI tool", tally("aiTools")], ["Most heard from", tally("heard")]].forEach(([l, v]) => {
+      const d = document.createElement("div"); d.append(l + ": "); const b = document.createElement("b"); b.textContent = v; d.appendChild(b); stats.appendChild(d);
+    });
+    const body = $("su-body"); body.textContent = "";
+    rows.forEach((r) => {
+      const tr = document.createElement("tr");
+      tr.append(td(r.email, "em"), td(r.persona), td(r.scale), td((r.aiTools || []).join(", ")), td((r.remember || []).join("; ")), td(r.heard || "—"), td(fmtDate(r.createdAt), "dt"));
+      const act = document.createElement("td");
+      if (canDelete) {
+        const x = document.createElement("button"); x.className = "su-del"; x.type = "button"; x.textContent = "Remove";
+        x.addEventListener("click", async () => { if (!confirm(`Remove ${r.email} from the waitlist?`)) return; try { await db.doc("waitlist/" + r.id).delete(); } catch { $("su-msg").textContent = "Couldn't remove that sign-up."; } });
+        act.appendChild(x);
+      }
+      tr.appendChild(act); body.appendChild(tr);
+    });
+  }
+  const csvCell = (v) => { let s = Array.isArray(v) ? v.join("; ") : String(v ?? ""); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
+  $("su-csv").addEventListener("click", async () => {
+    const cols = ["email", "persona", "scale", "remember", "aiTools", "notes", "computers", "devices", "heard", "note", "createdAt"];
+    const csv = [cols.join(","), ...rows.map((r) => cols.map((c) => csvCell(r[c])).join(","))].join("\n");
+    const dl = window.claude ? await window.claude.use("downloads") : null;
+    try {
+      if (dl) await dl.save({ filename: "orbital-waitlist.csv", data: csv });
+      else { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = "orbital-waitlist.csv"; a.click(); }
+    } catch { /* the viewer declined the download */ }
+  });
+
+  (async () => {
+    if (!window.claude) { gate("Sign-ups are saved through claude.ai. Open this page from its claude.ai link to join."); return; }
+    const [dbNs, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+    db = dbNs; me = user ? await user.id() : null;
+    if (!db || !me) { gate("Signing up needs a claude.ai account with access to this page. Sign in to claude.ai, then reopen this link."); return; }
+    const canWrite = await user.can("data.write");
+    if (canWrite === false) { readOnly = true; gate("You can view this page but not sign up on it. Ask the owner to add you as a Contributor."); }
+    try { const mine = await db.doc("waitlist/" + me).get(); if (mine.exists) { fill(mine.data()); showDone(true); } } catch { /* fresh form */ }
+
+    const [isOwner, canEdit] = await Promise.all([user.isOwner(), user.canEdit()]);
+    if (!isOwner && !canEdit) return;
+    $("signups").style.display = "block";
+    const note = $("su-msg");
+    const timer = setTimeout(() => { note.textContent = "Can't reach the sign-up list yet. It will appear when the connection comes back."; }, 10000);
+    db.collection("waitlist").orderBy("createdAt", "desc").onSnapshot((snap) => {
+      if (!snap.metadata.fromCache) { clearTimeout(timer); note.textContent = ""; }
+      rows = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      renderSignups(isOwner);
+    }, () => { clearTimeout(timer); note.textContent = "The sign-up list stopped updating. Reload the page to reconnect."; });
+  })();
 </script>
