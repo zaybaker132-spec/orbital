@@ -34,6 +34,15 @@ export const config = {
   downloadUrl: process.env.ORBITAL_DOWNLOAD_URL || "",
   automationTickMs: Number(process.env.AUTOMATION_TICK_MS || 60_000),
   /** Accounts that can read the waitlist (comma-separated emails). */
+  meetings: {
+    /** Peer-to-peer mesh: every participant sends to every other, so rooms stay small. */
+    maxParticipants: Number(process.env.MEETING_MAX_PARTICIPANTS || 8),
+    stunUrls: (process.env.STUN_URLS || "stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302").split(",").map((s) => s.trim()).filter(Boolean),
+    /** A TURN relay lets people on strict networks connect. Optional; see docs/MEETINGS.md. */
+    turnUrls: (process.env.TURN_URLS || "").split(",").map((s) => s.trim()).filter(Boolean),
+    turnUsername: process.env.TURN_USERNAME || "",
+    turnCredential: process.env.TURN_CREDENTIAL || "",
+  },
   adminEmails: (process.env.ORBITAL_ADMIN_EMAILS || "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean),
   ai: {
     provider: resolveProvider(),

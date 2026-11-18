@@ -199,3 +199,46 @@ test("waitlist: public signup, validation, spam trap, admin-only export", async 
   assert.match(csv.text, /"'=HYPERLINK/, "formula cells are neutralised");
   assert.equal((await alice.req("GET", "/api/auth/me")).data.serverAdmin, true);
 });
+
+/** Open a meeting stream and read its first event (the welcome), keeping the connection open. */
+async function joinStream(c: Client, code: string) {
+  const ac = new AbortController();
+  const res = await fetch(`${base}/api/meetings/${code}/stream?name=T`, { headers: { cookie: c.cookie }, signal: ac.signal });
+  if (!res.ok) { ac.abort(); return { status: res.status, close: () => {} }; }
+  const reader = res.body!.getReader();
+  const dec = new TextDecoder();
+  let buf = "";
+  while (!buf.includes("\n\n")) buf += dec.decode((await reader.read()).value);
+  const data = JSON.parse(buf.split("\n").find((l) => l.startsWith("data: "))!.slice(6));
+  return { status: res.status, welcome: data, reader, close: () => ac.abort() };
+}
+
+test("meetings: codes, host controls, locked rooms, no spoofed signalling", async () => {
+  const m = await alice.req("POST", "/api/meetings", { title: "Sync" });
+  assert.equal(m.status, 201);
+  assert.match(m.data.code, /^[a-z]{3}-[a-z]{4}-[a-z]{3}$/);
+  const code = m.data.code;
+  assert.equal((await bob.req("GET", `/api/meetings/${code.replace(/-/g, "")}`)).data.code, code, "codes work without dashes");
+  assert.equal((await bob.req("GET", "/api/meetings/not-a-code")).status, 400);
+  assert.equal((await bob.req("GET", "/api/meetings/zzz-zzzz-zzz")).status, 404);
+  const cfg = await bob.req("GET", "/api/meetings/config");
+  assert.ok(cfg.data.iceServers.length >= 1);
+
+  const a = await joinStream(alice, code);
+  const b = await joinStream(bob, code);
+  assert.equal(b.welcome.peers.length, 1, "newcomer is told who is already here");
+  const alicePeer = a.welcome.peerId, bobPeer = b.welcome.peerId;
+  assert.equal((await bob.req("POST", `/api/meetings/${code}/signal`, { from: alicePeer, to: bobPeer, kind: "offer", data: { sdp: "x" } })).status, 404, "can't send as someone else's peer");
+  assert.equal((await bob.req("POST", `/api/meetings/${code}/signal`, { from: bobPeer, to: alicePeer, kind: "offer", data: { type: "offer", sdp: "x" } })).data.ok, true);
+  assert.equal((await bob.req("POST", `/api/meetings/${code}/lock`, { locked: true })).status, 403, "only the host locks");
+  assert.equal((await bob.req("POST", `/api/meetings/${code}/end`)).status, 403, "only the host ends");
+  assert.equal((await alice.req("POST", `/api/meetings/${code}/lock`, { locked: true })).status, 200);
+  b.close();
+  await new Promise((r) => setTimeout(r, 200));
+  assert.equal((await joinStream(bob, code)).status, 423, "locked rooms turn newcomers away");
+  assert.ok((await bob.req("GET", "/api/meetings")).data.some((x: any) => x.code === code), "joined meetings appear in recent");
+  assert.equal((await alice.req("POST", `/api/meetings/${code}/end`)).status, 200);
+  a.close();
+  assert.equal((await bob.req("GET", `/api/meetings/${code}`)).data.ended, true);
+  assert.equal((await joinStream(alice, code)).status, 410, "ended meetings can't be rejoined");
+});

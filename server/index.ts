@@ -14,6 +14,7 @@ import { workspace } from "./routes/workspace.js";
 import { business } from "./routes/business.js";
 import { v1 } from "./routes/v1.js";
 import { waitlistAdmin, waitlistPublic } from "./routes/waitlist.js";
+import { meetings } from "./routes/meetings.js";
 import { startAutomations } from "./engines/automation.js";
 
 export async function createApp(opts: { jobs?: boolean } = {}) {
@@ -41,6 +42,7 @@ export async function createApp(opts: { jobs?: boolean } = {}) {
   app.use("/api", workspace);
   app.use("/api", business);
   app.use("/api", waitlistAdmin);
+  app.use("/api", meetings);
   app.use("/api", (_req, _res, next) => next(new HttpError(404, "Not found", "not_found")));
 
   const dist = config.staticDir;

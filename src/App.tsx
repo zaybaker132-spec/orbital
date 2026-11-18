@@ -19,19 +19,30 @@ const OpportunitiesPage = lazy(() => import("./pages/Opportunities").then((m) =>
 const OperationsPage = lazy(() => import("./pages/Operations").then((m) => ({ default: m.OperationsPage })));
 const TeamPage = lazy(() => import("./pages/Team").then((m) => ({ default: m.TeamPage })));
 const WaitlistPage = lazy(() => import("./pages/Waitlist").then((m) => ({ default: m.WaitlistPage })));
+const MeetingsPage = lazy(() => import("./pages/Meetings").then((m) => ({ default: m.MeetingsPage })));
+const MeetingRoomPage = lazy(() => import("./pages/MeetingRoom").then((m) => ({ default: m.MeetingRoomPage })));
 const SettingsPage = lazy(() => import("./pages/Settings").then((m) => ({ default: m.SettingsPage })));
 
 /** Invite links (/invite/<token>) survive sign-in: the token is held for this tab until accepted. */
 const INVITE_KEY = "orbital.invite";
+const NEXT_KEY = "orbital.next";
 const inviteMatch = location.pathname.match(/^\/invite\/([A-Za-z0-9_-]{10,200})$/);
 if (inviteMatch) { try { sessionStorage.setItem(INVITE_KEY, inviteMatch[1]); } catch { /* ignore */ } history.replaceState(null, "", "/"); }
 
 export function App() {
-  const { loaded, user, load, workspace, refreshWorkspaces, switchWorkspace } = useApp();
+  const { loaded, user, load, workspace, refreshWorkspaces, switchWorkspace, desktop } = useApp();
   const loc = useLocation();
   const navigate = useNavigate();
   useEffect(() => { load().catch(() => useApp.setState({ loaded: true })); }, [load]);
   useLiveEvents(!!user, workspace?.id);
+
+  // After signing in, continue to the link that brought you here.
+  useEffect(() => {
+    if (!user) return;
+    let next: string | null = null;
+    try { next = sessionStorage.getItem(NEXT_KEY); sessionStorage.removeItem(NEXT_KEY); } catch { /* ignore */ }
+    if (next && next.startsWith("/") && !next.startsWith("//")) navigate(next, { replace: true });
+  }, [user, navigate]);
 
   useEffect(() => {
     if (!user) return;
@@ -46,7 +57,14 @@ export function App() {
   // The waitlist is public: no account, no app shell.
   if (loc.pathname === "/waitlist") return <Suspense fallback={<div className="h-full bg-black" />}><WaitlistPage /></Suspense>;
   if (!loaded) return <div className="flex h-full items-center justify-center bg-black"><Pulse /></div>;
-  if (!user) return <AuthPage />;
+  if (!user) {
+    // Signed out: the waitlist is the front door (the desktop app goes straight to sign-in).
+    if (loc.pathname === "/" && !desktop) return <Suspense fallback={<div className="h-full bg-black" />}><WaitlistPage /></Suspense>;
+    // Any other link (a meeting, a project) continues there after signing in.
+    if (loc.pathname !== "/" && loc.pathname !== "/login") { try { sessionStorage.setItem(NEXT_KEY, loc.pathname + loc.search); } catch { /* ignore */ } }
+    return <AuthPage />;
+  }
+  if (loc.pathname === "/login") return <Navigate to="/" replace />;
 
   // Top-level section key: transitions between sections, not between items inside one.
   const section = loc.pathname === "/" || loc.pathname.startsWith("/c/") ? "chat" : loc.pathname.split("/")[1];
@@ -69,6 +87,8 @@ export function App() {
               <Route path="/opportunities" element={<OpportunitiesPage />} />
               <Route path="/operations" element={<OperationsPage />} />
               <Route path="/team" element={<TeamPage />} />
+              <Route path="/meetings" element={<MeetingsPage />} />
+              <Route path="/m/:code" element={<MeetingRoomPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

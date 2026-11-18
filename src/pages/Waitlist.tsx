@@ -80,6 +80,7 @@ export function WaitlistPage() {
       {/* The orbiting graph */}
       <div className="relative h-[42vh] shrink-0 lg:sticky lg:top-0 lg:h-full lg:w-[48%]">
         <NeuralCore framing="head" holdGraph={!joined} className="absolute inset-0" label="Orbital's Neural Core: a knowledge graph that pulls into an orb when you join" />
+        <a href="/login" className="absolute right-6 top-5 z-10 rounded-full border border-white/20 px-4 py-1.5 text-[0.75rem] uppercase tracking-[0.16em] text-white/85 transition-colors hover:border-white hover:text-white lg:hidden">Sign in</a>
         <div className="pointer-events-none absolute left-6 top-6 flex items-center gap-2.5 lg:left-10 lg:top-9">
           <OrbitalMark size={20} />
           <span className="text-[0.8rem] tracking-[0.32em] text-white">ORBITAL</span>
@@ -99,7 +100,10 @@ export function WaitlistPage() {
 
       {/* The form */}
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-[600px] px-6 pb-20 pt-10 lg:px-10 lg:pt-16">
+        <div className="sticky top-0 z-10 hidden justify-end bg-gradient-to-b from-black via-black/90 to-transparent px-10 pb-6 pt-6 lg:flex">
+          <a href="/login" className="rounded-full border border-white/20 px-4 py-1.5 text-[0.72rem] uppercase tracking-[0.16em] text-white/85 transition-colors hover:border-white hover:text-white">Already have access? Sign in</a>
+        </div>
+        <div className="mx-auto max-w-[600px] px-6 pb-20 pt-10 lg:px-10 lg:pt-4">
           <AnimatePresence mode="wait">
             {joined ? (
               <motion.div key="done" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }} className="pt-[12vh]">

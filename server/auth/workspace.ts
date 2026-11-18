@@ -33,6 +33,7 @@ const VIEWER_WRITES = [
   /^\/preferences$/,
   /^\/invites\/accept$/,
   /^\/workspaces$/,
+  /^\/meetings(\/[^/]+(\/(signal|state|chat|lock|remove|end))?)?$/, // meetings are personal, not workspace knowledge
 ];
 
 /** Resolve the active workspace from the X-Orbital-Workspace header (default: personal) and check membership. */

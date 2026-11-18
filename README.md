@@ -79,6 +79,10 @@ Orbital is usable with no AI provider: notes, PDF/text import, folders, tags, co
 
 ---
 
+## Front door, waitlist and meetings
+
+Signed-out visitors land on the **waitlist** (`/`), where the Neural Core orbits as a knowledge graph until they join; members sign in at `/login`. Server admins (`ORBITAL_ADMIN_EMAILS`) see and export signups in Settings. Signed in, **Meetings** gives video rooms joined by code, with screen sharing, chat, raise hand and host controls; media flows peer-to-peer. See [Meetings](docs/MEETINGS.md).
+
 ## Orbital for business
 
 Every account has a private **personal workspace**; anyone can create **business workspaces** and invite their team by link with a role (owner, admin, member, viewer). Knowledge, memory, research, projects and opportunities are shared within a workspace; each person's conversations stay private. On top of the five engines, a business workspace adds:
@@ -160,3 +164,4 @@ The full guide — how it runs a business, who decides what, integration recipes
 - [Architecture](docs/ARCHITECTURE.md): read before changing the server, engines, data model or AI provider layer.
 - [Orbital for business](docs/BUSINESS.md): read when deploying Orbital for a company or integrating it with other tools.
 - [Desktop app](docs/DESKTOP.md): read when building, signing or distributing the macOS, Windows and Linux apps.
+- [Meetings](docs/MEETINGS.md): read before running video meetings for others, especially on strict networks (TURN relay).

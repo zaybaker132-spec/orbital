@@ -51,7 +51,7 @@ authRouter.post("/logout", ah(async (req, res) => {
 }));
 
 authRouter.get("/me", ah(async (req, res) => {
-  if (!req.user) return res.json({ user: null, signupAllowed: config.allowSignup, ai: aiStatus() });
+  if (!req.user) return res.json({ user: null, signupAllowed: config.allowSignup, ai: aiStatus(), desktop: config.desktop });
   const prefs = (await db().query<{ settings: any }>("SELECT settings FROM user_preferences WHERE user_id=$1", [req.user.id])).rows[0]?.settings ?? {};
   const workspaces = (await db().query(
     `SELECT w.id, w.name, w.kind, m.role FROM workspaces w JOIN workspace_members m ON m.workspace_id=w.id

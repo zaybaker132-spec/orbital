@@ -1,7 +1,7 @@
 // Orbital desktop shell (Electron).
 // Runs the real Orbital server in a Node utility process (embedded PostgreSQL in the user's
 // app-data folder, bound to 127.0.0.1) and shows it in a hardened window.
-const { app, BrowserWindow, Menu, dialog, ipcMain, nativeTheme, safeStorage, shell, utilityProcess } = require("electron");
+const { app, BrowserWindow, Menu, desktopCapturer, dialog, ipcMain, nativeTheme, safeStorage, shell, utilityProcess } = require("electron");
 const fs = require("node:fs");
 const net = require("node:net");
 const path = require("node:path");
@@ -151,7 +151,16 @@ function createWindow() {
       if (/^https?:\/\//.test(url)) shell.openExternal(url);
     }
   });
-  win.webContents.session.setPermissionRequestHandler((_wc, permission, cb) => cb(permission === "clipboard-sanitized-write"));
+  // Only Orbital's own pages get camera, microphone and screen access (for Meetings); everything else is denied.
+  const ses = win.webContents.session;
+  const fromOrbital = (url) => typeof url === "string" && url.startsWith(origin());
+  const ALLOWED = new Set(["clipboard-sanitized-write", "media", "display-capture", "mediaKeySystem"]);
+  ses.setPermissionRequestHandler((wc, permission, cb) => cb(ALLOWED.has(permission) && fromOrbital(wc.getURL())));
+  ses.setPermissionCheckHandler((_wc, permission, requestingOrigin) => ALLOWED.has(permission) && fromOrbital(requestingOrigin + "/"));
+  // Screen sharing: the system picker where available (macOS 15+), otherwise the primary screen.
+  ses.setDisplayMediaRequestHandler((_req, cb) => {
+    desktopCapturer.getSources({ types: ["screen", "window"] }).then((sources) => cb(sources[0] ? { video: sources[0] } : {})).catch(() => cb({}));
+  }, { useSystemPicker: true });
   win.loadURL(origin());
 }
 

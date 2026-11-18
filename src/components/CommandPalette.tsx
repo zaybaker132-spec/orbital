@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Brain, Compass, FileText, FolderKanban, Lightbulb, MessageSquare, MessageSquarePlus, Network, PanelLeft, PanelRight, Search, Settings, StickyNote, Sparkles, BookOpen, Upload } from "lucide-react";
+import { Video, Brain, Compass, FileText, FolderKanban, Lightbulb, MessageSquare, MessageSquarePlus, Network, PanelLeft, PanelRight, Search, Settings, StickyNote, Sparkles, BookOpen, Upload } from "lucide-react";
 import { useApp } from "@/state/app";
 import { api } from "@/lib/api";
 import { invalidate } from "@/lib/resource";
@@ -60,6 +60,10 @@ export function CommandPalette() {
       } },
     { id: "import", label: "Import PDF or text file", group: "Actions", icon: Upload, keywords: "upload pdf import", run: go("/knowledge?import=1") },
     { id: "project", label: "New project", group: "Actions", icon: FolderKanban, keywords: "create project", run: go("/projects?new=1") },
+    { id: "meeting-new", label: "Start a meeting", group: "Actions", icon: Video, keywords: "call video zoom meet",
+      run: async () => { try { const r = await api.post("/meetings", {}); navigate(`/m/${r.code}`); } catch (e) { toastError(e); } close(); } },
+    { id: "meeting-join", label: q.trim().match(/[a-z]{3}-?[a-z]{4}-?[a-z]{3}/i) ? `Join meeting ${q.trim()}` : "Join a meeting…", group: "Actions", icon: Video, keywords: "call video join code",
+      run: () => { const m = q.trim().toLowerCase().match(/([a-z]{3})-?([a-z]{4})-?([a-z]{3})/); navigate(m ? `/m/${m[1]}-${m[2]}-${m[3]}` : "/meetings"); close(); } },
     { id: "discover", label: "Discover opportunities", group: "Actions", icon: Sparkles, keywords: "opportunity engine business", run: go("/opportunities?discover=1") },
     { id: "nav-core", label: "Neural Core", hint: "g n", group: "Go to", icon: Brain, run: go("/core") },
     { id: "nav-research", label: "Research", hint: "g r", group: "Go to", icon: Compass, run: go("/research") },

@@ -30,6 +30,12 @@ mac:
   # Signing + notarization run automatically when CSC_LINK/CSC_KEY_PASSWORD and
   # APPLE_ID/APPLE_APP_SPECIFIC_PASSWORD/APPLE_TEAM_ID are set (see docs/DESKTOP.md).
   notarize: false
+  # Shown when macOS asks for camera and microphone access (Meetings).
+  extendInfo:
+    NSCameraUsageDescription: Orbital uses your camera for video meetings.
+    NSMicrophoneUsageDescription: Orbital uses your microphone for video meetings.
+  entitlementsInherit: build-resources/entitlements.mac.plist
+  entitlements: build-resources/entitlements.mac.plist
 dmg:
   title: Orbital
 win:
