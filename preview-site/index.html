@@ -161,11 +161,11 @@
       ORBITAL
     </a>
     <nav class="links" aria-label="Sections">
-      <a href="#waitlist">Waitlist</a>
       <a href="#tour">Tour</a>
       <a href="#business">For business</a>
       <a href="#desktop">Desktop</a>
       <a href="#run">Run it</a>
+      <a href="#waitlist">Waitlist</a>
     </nav>
   </div>
 </header>
@@ -196,58 +196,6 @@
     </div>
   </div>
 </div>
-
-<section id="waitlist">
-  <div class="wrap wl">
-    <div class="wl-side">
-      <div class="label">Early access</div>
-      <h2>Enter the orbit.</h2>
-      <p>An intelligence that compounds with everything you learn. Tell us how you think and work, and we'll bring you in.</p>
-      <div class="wl-gate" id="wl-gate" hidden></div>
-    </div>
-    <div>
-      <form class="wl-form" id="wl-form" novalidate>
-        <div class="wl-row">
-          <label class="wl-q"><span class="label">Email</span><input class="wl-input" id="wl-email" type="email" autocomplete="email" placeholder="you@domain.com" required></label>
-          <label class="wl-q"><span class="label">You are</span><select class="wl-select" id="wl-persona" required><option value="">Choose one</option></select></label>
-        </div>
-        <div class="wl-q" data-q="remember" data-mode="multi"><span class="label">What should Orbital compound for you?<small>pick at least one</small></span><div class="wl-chips"></div></div>
-        <div class="wl-q" data-q="scale" data-mode="single"><span class="label">Who is it for?</span><div class="wl-chips"></div></div>
-        <div class="wl-q" data-q="aiTools" data-mode="ranked"><span class="label">Which AI tools do you use most?<small>main one first, up to 3</small></span><div class="wl-chips"></div></div>
-        <div class="wl-q" data-q="notes" data-mode="multi"><span class="label">Where do your notes live?</span><div class="wl-chips"></div></div>
-        <div class="wl-row">
-          <div class="wl-q" data-q="computers" data-mode="multi"><span class="label">Computers</span><div class="wl-chips"></div></div>
-          <div class="wl-q" data-q="devices" data-mode="multi"><span class="label">Phones and tablets</span><div class="wl-chips"></div></div>
-        </div>
-        <div class="wl-q" data-q="heard" data-mode="single"><span class="label">How did you hear about Orbital?</span><div class="wl-chips"></div></div>
-        <label class="wl-q"><span class="label">Anything else?<small>optional</small></span><input class="wl-input" id="wl-note" maxlength="500" placeholder="What would make Orbital indispensable for you"></label>
-        <button class="wl-submit" id="wl-submit" type="submit">Enter orbit</button>
-        <p class="wl-msg" id="wl-msg" role="status"></p>
-      </form>
-      <div class="wl-done" id="wl-done" hidden>
-        <div class="label">You're on the list</div>
-        <h3>You're in orbit.</h3>
-        <p id="wl-done-sub">We'll be in touch at your email when your spot opens.</p>
-        <button class="chip" id="wl-edit" type="button">Edit my answers</button>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="signups">
-  <div class="wrap">
-    <div class="su-head">
-      <div>
-        <div class="label">Sign-ups&nbsp;&middot; only you and editors see this</div>
-        <div class="su-count" id="su-count">0</div>
-      </div>
-      <button class="chip" id="su-csv" type="button" hidden>Download CSV</button>
-    </div>
-    <div class="su-stats" id="su-stats"></div>
-    <p class="wl-msg" id="su-msg"></p>
-    <div class="su-table-wrap"><table class="su"><thead><tr><th>Email</th><th>You are</th><th>For</th><th>AI tools</th><th>Compound</th><th>Heard from</th><th>Joined</th><th></th></tr></thead><tbody id="su-body"></tbody></table><div class="su-empty" id="su-empty">No sign-ups yet. They'll appear here the moment someone joins.</div></div>
-  </div>
-</section>
 
 <section id="tour">
   <div class="wrap">
@@ -304,6 +252,58 @@
       <div class="cmd"><code>npm run dev</code><span class="what">web app on :5173</span><button class="copy" type="button">Copy</button></div>
       <div class="cmd"><code>npm run desktop</code><span class="what">or the desktop app</span><button class="copy" type="button">Copy</button></div>
     </div>
+  </div>
+</section>
+
+<section id="waitlist">
+  <div class="wrap wl">
+    <div class="wl-side">
+      <div class="label">Early access</div>
+      <h2>Enter the orbit.</h2>
+      <p>An intelligence that compounds with everything you learn. Tell us how you think and work, and we'll bring you in.</p>
+      <div class="wl-gate" id="wl-gate" hidden></div>
+    </div>
+    <div>
+      <form class="wl-form" id="wl-form" novalidate>
+        <div class="wl-row">
+          <label class="wl-q"><span class="label">Email</span><input class="wl-input" id="wl-email" type="email" autocomplete="email" placeholder="you@domain.com" required></label>
+          <label class="wl-q"><span class="label">You are</span><select class="wl-select" id="wl-persona" required><option value="">Choose one</option></select></label>
+        </div>
+        <div class="wl-q" data-q="remember" data-mode="multi"><span class="label">What should Orbital compound for you?<small>pick at least one</small></span><div class="wl-chips"></div></div>
+        <div class="wl-q" data-q="scale" data-mode="single"><span class="label">Who is it for?</span><div class="wl-chips"></div></div>
+        <div class="wl-q" data-q="aiTools" data-mode="ranked"><span class="label">Which AI tools do you use most?<small>main one first, up to 3</small></span><div class="wl-chips"></div></div>
+        <div class="wl-q" data-q="notes" data-mode="multi"><span class="label">Where do your notes live?</span><div class="wl-chips"></div></div>
+        <div class="wl-row">
+          <div class="wl-q" data-q="computers" data-mode="multi"><span class="label">Computers</span><div class="wl-chips"></div></div>
+          <div class="wl-q" data-q="devices" data-mode="multi"><span class="label">Phones and tablets</span><div class="wl-chips"></div></div>
+        </div>
+        <div class="wl-q" data-q="heard" data-mode="single"><span class="label">How did you hear about Orbital?</span><div class="wl-chips"></div></div>
+        <label class="wl-q"><span class="label">Anything else?<small>optional</small></span><input class="wl-input" id="wl-note" maxlength="500" placeholder="What would make Orbital indispensable for you"></label>
+        <button class="wl-submit" id="wl-submit" type="submit">Enter orbit</button>
+        <p class="wl-msg" id="wl-msg" role="status"></p>
+      </form>
+      <div class="wl-done" id="wl-done" hidden>
+        <div class="label">You're on the list</div>
+        <h3>You're in orbit.</h3>
+        <p id="wl-done-sub">We'll be in touch at your email when your spot opens.</p>
+        <button class="chip" id="wl-edit" type="button">Edit my answers</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="signups">
+  <div class="wrap">
+    <div class="su-head">
+      <div>
+        <div class="label">Sign-ups&nbsp;&middot; only you and editors see this</div>
+        <div class="su-count" id="su-count">0</div>
+      </div>
+      <button class="chip" id="su-csv" type="button" hidden>Download CSV</button>
+    </div>
+    <div class="su-stats" id="su-stats"></div>
+    <p class="wl-msg" id="su-msg"></p>
+    <div class="su-table-wrap"><table class="su"><thead><tr><th>Email</th><th>You are</th><th>For</th><th>AI tools</th><th>Compound</th><th>Heard from</th><th>Joined</th><th></th></tr></thead><tbody id="su-body"></tbody></table><div class="su-empty" id="su-empty">No sign-ups yet. They'll appear here the moment someone joins.</div></div>
   </div>
 </section>
 
