@@ -151,20 +151,6 @@
   .su-empty { padding: 28px; color: var(--mute); font-size: 14px; }
 
 
-  /* Intelligence architecture */
-  .levels { list-style: none; margin: 36px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 8px 32px; }
-  .lvl { display: flex; gap: 18px; padding: 18px 0; border-top: 1px solid var(--line); }
-  .lvl svg { flex: none; }
-  .lvl-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; }
-  .lvl-n { font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em; color: var(--mute); }
-  .lvl h3 { margin: 0; font-weight: 400; font-size: 18px; }
-  .lvl .early { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; border: 1px solid var(--line-strong); border-radius: 999px; padding: 1px 8px; color: var(--mute); }
-  .lvl p { margin: 4px 0 0; color: #d0d0d6; font-size: 14.5px; }
-  .lvl ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 3px; font-size: 13px; color: var(--mute); }
-  .lvl ul li { display: flex; align-items: center; gap: 8px; }
-  .lvl ul i { width: 4px; height: 4px; border-radius: 50%; flex: none; }
-  @media (max-width: 420px) { .levels { grid-template-columns: 1fr; } }
-
   footer { padding-block: 40px 56px; color: var(--soft); font-size: 13px; }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -176,7 +162,6 @@
       ORBITAL
     </a>
     <nav class="links" aria-label="Sections">
-      <a href="#how">How it works</a>
       <a href="#tour">Tour</a>
       <a href="#everyday">Features</a>
       <a href="#business">For business</a>
@@ -213,64 +198,6 @@
     </div>
   </div>
 </div>
-
-<section id="how">
-  <div class="wrap">
-    <div class="label">How Orbital works</div>
-    <h2>Six levels of intelligence, each built on the last</h2>
-    <p class="lede">Orbital starts by understanding you and works outward, until it can act for you, with your approval. Under each level: what powers it in the product today.</p>
-    <ol class="levels">
-      <li class="lvl">
-        <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="5.0" fill="none" stroke="#ff1f2e" stroke-width="1.6"/><circle cx="28" cy="28" r="9.3" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="13.6" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="17.9" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="22.2" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="26.5" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="2" fill="#fff"/><circle cx="31.8" cy="24.8" r="2.2" fill="#ff1f2e"/></svg>
-        <div>
-          <div class="lvl-head"><span class="lvl-n">LEVEL 01</span><h3>Understand</h3></div>
-          <p>Learn your interests, goals, preferences and knowledge.</p>
-          <ul><li><i style="background:#ff1f2e"></i>Memories with evidence you can check</li><li><i style="background:#ff1f2e"></i>Notes, files, web clips and voice conversations</li><li><i style="background:#ff1f2e"></i>Everything you correct takes priority</li></ul>
-        </div>
-      </li>
-      <li class="lvl">
-        <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="5.0" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="9.3" fill="none" stroke="#ff9a1a" stroke-width="1.6"/><circle cx="28" cy="28" r="13.6" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="17.9" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="22.2" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="26.5" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="2" fill="#fff"/><circle cx="35.1" cy="22.0" r="2.2" fill="#ff9a1a"/></svg>
-        <div>
-          <div class="lvl-head"><span class="lvl-n">LEVEL 02</span><h3>Connect</h3></div>
-          <p>Discover relationships between memories, ideas and research.</p>
-          <ul><li><i style="background:#ff9a1a"></i>A living knowledge graph</li><li><i style="background:#ff9a1a"></i>Concepts and timelines extracted from long documents</li><li><i style="background:#ff9a1a"></i>Contradictions found and explained</li></ul>
-        </div>
-      </li>
-      <li class="lvl">
-        <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="5.0" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="9.3" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="13.6" fill="none" stroke="#ffd23a" stroke-width="1.6"/><circle cx="28" cy="28" r="17.9" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="22.2" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="26.5" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="2" fill="#fff"/><circle cx="38.4" cy="19.2" r="2.2" fill="#ffd23a"/></svg>
-        <div>
-          <div class="lvl-head"><span class="lvl-n">LEVEL 03</span><h3>Anticipate</h3></div>
-          <p>Identify upcoming needs, potential problems and opportunities.</p>
-          <ul><li><i style="background:#ffd23a"></i>Nudges about deadlines and slipping work</li><li><i style="background:#ffd23a"></i>Reports that flag their own outdated facts</li><li><i style="background:#ffd23a"></i>Opportunities found in what you know</li></ul>
-        </div>
-      </li>
-      <li class="lvl">
-        <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="5.0" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="9.3" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="13.6" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="17.9" fill="none" stroke="#2cff7a" stroke-width="1.6"/><circle cx="28" cy="28" r="22.2" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="26.5" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="2" fill="#fff"/><circle cx="41.7" cy="16.5" r="2.2" fill="#2cff7a"/></svg>
-        <div>
-          <div class="lvl-head"><span class="lvl-n">LEVEL 04</span><h3>Simulate</h3><span class="early">Early</span></div>
-          <p>Model possible futures and evaluate different decisions.</p>
-          <ul><li><i style="background:#2cff7a"></i>Hypotheses tested for and against</li><li><i style="background:#2cff7a"></i>Competing views weighed in the contradiction lab</li><li><i style="background:#2cff7a"></i>Full scenario modelling is in development</li></ul>
-        </div>
-      </li>
-      <li class="lvl">
-        <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="5.0" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="9.3" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="13.6" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="17.9" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="22.2" fill="none" stroke="#1fd0ff" stroke-width="1.6"/><circle cx="28" cy="28" r="26.5" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="2" fill="#fff"/><circle cx="45.0" cy="13.7" r="2.2" fill="#1fd0ff"/></svg>
-        <div>
-          <div class="lvl-head"><span class="lvl-n">LEVEL 05</span><h3>Strategize</h3></div>
-          <p>Develop long-term plans based on accumulated knowledge.</p>
-          <ul><li><i style="background:#1fd0ff"></i>Projects with goals, milestones and deadlines</li><li><i style="background:#1fd0ff"></i>Execution plans from validated opportunities</li><li><i style="background:#1fd0ff"></i>Briefs that pick up where you left off</li></ul>
-        </div>
-      </li>
-      <li class="lvl">
-        <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="5.0" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="9.3" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="13.6" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="17.9" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="22.2" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/><circle cx="28" cy="28" r="26.5" fill="none" stroke="#b02bff" stroke-width="1.6"/><circle cx="28" cy="28" r="2" fill="#fff"/><circle cx="48.3" cy="10.9" r="2.2" fill="#b02bff"/></svg>
-        <div>
-          <div class="lvl-head"><span class="lvl-n">LEVEL 06</span><h3>Execute</h3></div>
-          <p>Carry out approved tasks, coordinate agents and track real-world outcomes.</p>
-          <ul><li><i style="background:#b02bff"></i>An operations agent working toward your goals</li><li><i style="background:#b02bff"></i>Nothing leaves without a person approving it</li><li><i style="background:#b02bff"></i>Outcomes tracked day by day</li></ul>
-        </div>
-      </li>
-    </ol>
-  </div>
-</section>
 
 <section id="tour">
   <div class="wrap">
