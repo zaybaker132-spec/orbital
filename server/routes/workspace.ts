@@ -495,6 +495,11 @@ workspace.put("/preferences", ah(async (req, res) => {
     particleDensity: z.enum(["auto", "low", "medium", "high"]).optional(),
     defaultMode: z.enum(["standard", "deep_research", "deep_thinking", "opportunity", "learning"]).optional(),
     autoExtractMemories: z.boolean().optional(),
+    speakAnswers: z.boolean().optional(),
+    voiceName: z.string().max(160).optional(),
+    voiceRate: z.number().min(0.7).max(1.5).optional(),
+    focusMinutes: z.union([z.literal(25), z.literal(50), z.literal(90)]).optional(),
+    nudges: z.boolean().optional(),
   }), req.body);
   const r = await db().query("INSERT INTO user_preferences(user_id, settings) VALUES ($1,$2) ON CONFLICT (user_id) DO UPDATE SET settings = user_preferences.settings || $2, updated_at=now() RETURNING settings", [actor(req), JSON.stringify(b)]);
   res.json(r.rows[0].settings);
@@ -521,6 +526,14 @@ workspace.get("/export", ah(async (req, res) => {
     opportunities: await t("SELECT * FROM opportunities WHERE workspace_id=$1"),
     knowledgeGaps: await t("SELECT * FROM knowledge_gaps WHERE workspace_id=$1"),
     feedback: await t("SELECT * FROM feedback WHERE workspace_id=$1"),
+    hypotheses: await t("SELECT * FROM hypotheses WHERE workspace_id=$1"),
+    extractedKnowledge: await t("SELECT id, document_id, kind, title, detail, quote, subtype, date_text, sort_date, part, mentions, verified FROM extracted_items WHERE workspace_id=$1"),
+    maintenance: await t("SELECT id, kind, title, reason, items, status, resolution, created_at, resolved_at FROM maintenance_suggestions WHERE workspace_id=$1"),
+    // Personal to you, even in a shared workspace:
+    reminders: await t("SELECT id, title, note, due_at, item_type, item_id, status, created_at FROM reminders WHERE workspace_id=$1 AND user_id=$2"),
+    focusSessions: await t("SELECT id, objective, project_id, document_id, planned_minutes, focused_seconds, tasks_completed, outcome, started_at, ended_at FROM focus_sessions WHERE workspace_id=$1 AND user_id=$2"),
+    preferences: (await db().query("SELECT settings FROM user_preferences WHERE user_id=$1", [actor(req)])).rows[0]?.settings ?? {},
+    note: "Uploaded images are included as documents (their text); the image files themselves stay on the server.",
   };
   res.setHeader("content-disposition", `attachment; filename="orbital-export-${new Date().toISOString().slice(0, 10)}.json"`);
   res.json(data);

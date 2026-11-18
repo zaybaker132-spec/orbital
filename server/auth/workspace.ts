@@ -3,7 +3,7 @@ import { db, type Queryable } from "../db/client.js";
 import { HttpError } from "../lib/http.js";
 
 /** GET endpoints a browser loads without custom headers (EventSource, <img>) may name the workspace in the query. */
-const QUERY_WORKSPACE_PATHS = /^\/(events|documents\/[^/]+\/file)$/;
+const QUERY_WORKSPACE_PATHS = /^\/(events|export|documents\/[^/]+\/file)$/;
 
 export type Role = "owner" | "admin" | "member" | "viewer";
 const RANK: Record<Role, number> = { viewer: 0, member: 1, admin: 2, owner: 3 };

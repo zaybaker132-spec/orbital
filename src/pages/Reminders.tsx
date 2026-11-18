@@ -6,6 +6,7 @@ import { useResource, invalidate } from "@/lib/resource";
 import { toast, toastError } from "@/state/ui";
 import { Badge, Button, Empty, IconButton, Input, PageHeader, Pulse, cx } from "@/components/ui";
 import { formatWhen, localToday, quickTimes, toLocalInput } from "@/lib/when";
+import { useApp } from "@/state/app";
 
 const NUDGE_LABEL: Record<string, string> = {
   overdue: "Overdue", due_soon: "Due soon", milestone: "Milestone", deadline: "Deadline", stalled_project: "Stalled",
@@ -15,7 +16,8 @@ const NUDGE_LABEL: Record<string, string> = {
 export function RemindersPage() {
   const { data: reminders, loading } = useResource<any[]>("/reminders");
   const today = localToday();
-  const { data: nudges } = useResource<any[]>(`/nudges?today=${today}`);
+  const showNudges = useApp((s) => s.prefs.nudges) !== false;
+  const { data: nudges } = useResource<any[]>(showNudges ? `/nudges?today=${today}` : null);
   const [perm, setPerm] = useState(() => ("Notification" in window ? Notification.permission : "unsupported"));
 
   const due = reminders?.filter((r) => r.status === "fired") ?? [];
@@ -68,6 +70,7 @@ export function RemindersPage() {
             </section>
           )}
 
+          {!showNudges ? <p className="text-[0.8rem] text-mute">Suggestions about overdue work and unfinished ideas are turned off. <Link to="/settings" className="underline decoration-white/20 hover:text-white">Turn them on in Settings</Link>.</p> : (
           <section>
             <h2 className="label mb-3 flex items-center gap-2"><Lightbulb size={12} /> Orbital noticed</h2>
             {!nudges && <Pulse />}
@@ -89,6 +92,8 @@ export function RemindersPage() {
               ))}
             </ul>
           </section>
+
+          )}
 
           <section>
             <h2 className="label mb-3">Upcoming</h2>

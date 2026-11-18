@@ -15,7 +15,10 @@ function resolveProvider(): "anthropic" | "openai" | "none" {
   return "none";
 }
 
+const pkgVersion = (() => { try { return JSON.parse(fs.readFileSync(path.resolve(process.cwd(), "package.json"), "utf8")).version as string; } catch { return ""; } })();
+
 export const config = {
+  version: process.env.ORBITAL_VERSION || pkgVersion || "0.2.0",
   port: Number(process.env.PORT || 8787),
   production: process.env.NODE_ENV === "production",
   databaseUrl: process.env.DATABASE_URL || "",

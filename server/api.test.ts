@@ -363,3 +363,26 @@ test("knowledge maintenance: suggestions, never silent changes; merge, review, c
   assert.ok((await alice.req("GET", "/api/nudges")).data.some((n: any) => n.kind === "maintenance"));
   void me;
 });
+
+test("account: rename, change password signs out other devices, preferences validated", async () => {
+  const other = new Client();
+  await other.req("POST", "/api/auth/login", { email: "alice@example.com", password: "correct horse battery" });
+  assert.equal((await alice.req("GET", "/api/auth/sessions")).data.length >= 2, true);
+  assert.equal((await alice.req("PATCH", "/api/auth/me", { displayName: "Alice B." })).status, 200);
+  assert.equal((await alice.req("GET", "/api/auth/me")).data.user.displayName, "Alice B.");
+  assert.equal((await alice.req("POST", "/api/auth/password", { current: "wrong password", next: "a brand new password" })).status, 401);
+  assert.equal((await alice.req("POST", "/api/auth/password", { current: "correct horse battery", next: "short" })).status, 400);
+  assert.equal((await alice.req("POST", "/api/auth/password", { current: "correct horse battery", next: "a brand new password" })).status, 200);
+  assert.equal((await other.req("GET", "/api/memories")).status, 401, "the other device was signed out");
+  assert.equal((await alice.req("GET", "/api/memories")).status, 200, "this device stays signed in");
+  const sessions = (await alice.req("GET", "/api/auth/sessions")).data;
+  assert.equal(sessions.length, 1);
+  assert.equal(sessions[0].current, true);
+  assert.equal((await alice.req("PUT", "/api/preferences", { focusMinutes: 25, speakAnswers: false, voiceRate: 1.2, nudges: false })).data.focusMinutes, 25);
+  assert.equal((await alice.req("PUT", "/api/preferences", { focusMinutes: 33 })).status, 400);
+  assert.equal((await alice.req("PUT", "/api/preferences", { voiceRate: 4 })).status, 400);
+  const exp = (await alice.req("GET", "/api/export")).data;
+  assert.ok("reminders" in exp && "hypotheses" in exp && "focusSessions" in exp && exp.preferences.focusMinutes === 25);
+  // Put the password back for later tests.
+  assert.equal((await alice.req("POST", "/api/auth/password", { current: "a brand new password", next: "correct horse battery" })).status, 200);
+});

@@ -143,7 +143,7 @@ export function speakable(md: string) {
 export const canSpeak = () => typeof window !== "undefined" && "speechSynthesis" in window;
 
 /** Speak in sentence-sized pieces (long single utterances get cut off in some browsers). */
-export function speak(text: string, opts: { onEnd?: () => void; rate?: number } = {}) {
+export function speak(text: string, opts: { onEnd?: () => void; rate?: number; voiceName?: string } = {}) {
   if (!canSpeak()) { opts.onEnd?.(); return () => {}; }
   const synth = window.speechSynthesis;
   synth.cancel();
@@ -154,7 +154,7 @@ export function speak(text: string, opts: { onEnd?: () => void; rate?: number } 
     else chunks.push(p);
   }
   let cancelled = false;
-  const voice = pickVoice();
+  const voice = pickVoice(opts.voiceName);
   chunks.forEach((c, i) => {
     const u = new SpeechSynthesisUtterance(c);
     if (voice) u.voice = voice;
@@ -167,8 +167,18 @@ export function speak(text: string, opts: { onEnd?: () => void; rate?: number } 
   return () => { cancelled = true; synth.cancel(); };
 }
 
-function pickVoice(): SpeechSynthesisVoice | null {
+/** The system voices for the person's language, best-sounding first (for Settings). */
+export function availableVoices(): SpeechSynthesisVoice[] {
+  if (!canSpeak()) return [];
+  const lang = (navigator.language || "en-US").slice(0, 2).toLowerCase();
+  const all = window.speechSynthesis.getVoices();
+  const same = all.filter((v) => v.lang.toLowerCase().startsWith(lang));
+  return (same.length ? same : all).sort((a, b) => Number(/natural|neural|premium|enhanced|google/i.test(b.name)) - Number(/natural|neural|premium|enhanced|google/i.test(a.name)));
+}
+
+function pickVoice(preferred?: string): SpeechSynthesisVoice | null {
   const voices = window.speechSynthesis.getVoices();
+  if (preferred) { const v = voices.find((x) => x.name === preferred); if (v) return v; }
   const lang = (navigator.language || "en-US").toLowerCase();
   const same = voices.filter((v) => v.lang.toLowerCase().startsWith(lang.slice(0, 2)));
   // Prefer natural-sounding voices where the system has them.

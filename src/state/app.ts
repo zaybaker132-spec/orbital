@@ -7,7 +7,11 @@ export interface User { id: string; email: string; displayName: string }
 export interface AiStatus { provider: "anthropic" | "openai" | "none"; model: string | null; webSearch: boolean; embeddings: string }
 export type Role = "owner" | "admin" | "member" | "viewer";
 export interface Workspace { id: string; name: string; kind: "personal" | "business"; role: Role }
-export interface Preferences { reducedMotion?: "system" | "on" | "off"; particleDensity?: "auto" | "low" | "medium" | "high"; defaultMode?: string; autoExtractMemories?: boolean }
+export interface Preferences {
+  reducedMotion?: "system" | "on" | "off"; particleDensity?: "auto" | "low" | "medium" | "high"; defaultMode?: string; autoExtractMemories?: boolean;
+  speakAnswers?: boolean; voiceName?: string; voiceRate?: number; focusMinutes?: 25 | 50 | 90; nudges?: boolean;
+}
+export interface ServerInfo { version: string; database: "embedded" | "postgres"; transcription: boolean; turn: boolean; maxParticipants: number }
 
 interface AppStore {
   loaded: boolean;
@@ -19,6 +23,8 @@ interface AppStore {
   desktop: boolean;
   downloadUrl: string;
   serverAdmin: boolean;
+  server: ServerInfo | null;
+  setUser(patch: Partial<User>): void;
   switchWorkspace(id: string): void;
   refreshWorkspaces(): Promise<void>;
   signupAllowed: boolean;
@@ -47,6 +53,8 @@ export const useApp = create<AppStore>((set, get) => ({
   desktop: false,
   downloadUrl: "",
   serverAdmin: false,
+  server: null,
+  setUser(patch) { const u = get().user; if (u) set({ user: { ...u, ...patch } }); },
   signupAllowed: true,
   rightPanel: stored("orbital.rightPanel", true),
   sidebarCollapsed: stored("orbital.sidebarCollapsed", false),
@@ -56,7 +64,7 @@ export const useApp = create<AppStore>((set, get) => ({
     const workspaces: Workspace[] = me.workspaces ?? [];
     const current = workspaces.find((w) => w.id === getWorkspaceId()) ?? workspaces[0] ?? null;
     setWorkspaceId(current?.id ?? null);
-    set({ loaded: true, user: me.user, ai: me.ai, prefs: me.preferences ?? {}, signupAllowed: me.signupAllowed, workspaces, workspace: current, desktop: !!me.desktop, downloadUrl: me.downloadUrl ?? "", serverAdmin: !!me.serverAdmin });
+    set({ loaded: true, user: me.user, ai: me.ai, prefs: me.preferences ?? {}, signupAllowed: me.signupAllowed, workspaces, workspace: current, desktop: !!me.desktop, downloadUrl: me.downloadUrl ?? "", serverAdmin: !!me.serverAdmin, server: me.server ?? null });
   },
   async setPrefs(p) {
     set({ prefs: { ...get().prefs, ...p } });

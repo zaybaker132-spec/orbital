@@ -1,86 +1,325 @@
 import { Fragment, useEffect, useState } from "react";
-import { Download, Monitor, FolderOpen } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Download, Monitor, FolderOpen, KeyRound, LogOut, BellRing, Volume2 } from "lucide-react";
 import { useApp } from "@/state/app";
-import { useResource } from "@/lib/resource";
-import { api } from "@/lib/api";
+import { useResource, invalidate } from "@/lib/resource";
+import { api, getWorkspaceId } from "@/lib/api";
+import { availableVoices, canSpeak, speak } from "@/lib/voice";
+import { ClipBookmarklet } from "./Clip";
 import { toast, toastError } from "@/state/ui";
-import { Badge, Button, Dialog, Input, PageHeader, Select } from "@/components/ui";
+import { Badge, Button, Dialog, Input, PageHeader, Select, cx } from "@/components/ui";
 import { modKey } from "@/lib/format";
 import { MODES } from "./Chat";
 
+const SECTIONS = [
+  ["account", "Account"], ["workspace", "Workspace"], ["ai", "AI & research"], ["voice", "Voice"], ["reminders", "Reminders & focus"],
+  ["appearance", "Appearance"], ["meetings", "Meetings"], ["tools", "Desktop & web clipper"], ["keyboard", "Keyboard"], ["data", "Your data"], ["about", "About"],
+] as const;
+
 export function SettingsPage() {
-  const { user, ai, prefs, setPrefs } = useApp();
+  const { ai, prefs, setPrefs, serverAdmin } = useApp();
   const [deleting, setDeleting] = useState(false);
   const save = (p: any) => setPrefs(p).then(() => toast("Saved")).catch(toastError);
   return (
     <div className="h-full overflow-y-auto">
       <PageHeader title="Settings" />
-      <div className="max-w-[760px] space-y-12 px-8 pb-20">
-        <Group title="Account">
-          <Row label="Email">{user?.email}</Row>
-          <Row label="Name">{user?.displayName || <span className="text-mute">Not set</span>}</Row>
-        </Group>
+      <div className="flex gap-10 px-8 pb-20">
+        <nav aria-label="Settings sections" className="sticky top-4 hidden h-fit w-44 shrink-0 lg:block">
+          <ul className="space-y-px">
+            {[...SECTIONS, ...(serverAdmin ? [["waitlist", "Waitlist"] as const] : [])].map(([id, label]) => (
+              <li key={id}><a href={`#${id}`} onClick={(e) => { e.preventDefault(); document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }}
+                className="block rounded-lg px-3 py-1.5 text-[0.84rem] text-mute transition-colors hover:bg-white/[0.04] hover:text-white">{label}</a></li>
+            ))}
+          </ul>
+        </nav>
+        <div className="min-w-0 max-w-[760px] flex-1 space-y-12">
+          <AccountGroup />
+          <WorkspaceGroup />
 
-        <DesktopGroup />
+          <Group id="ai" title="AI & research" description="Orbital's AI runs on your server. API keys live in server environment variables (or the desktop app's keychain) and are never sent to the browser.">
+            <Row label="Provider">{ai?.provider === "none" ? <Badge tone="warn">Not configured</Badge> : <span>{ai?.provider} · <span className="font-mono text-[0.82rem]">{ai?.model}</span></span>}</Row>
+            <Row label="Web search">{ai?.webSearch ? <Badge tone="ok">enabled</Badge> : <span className="text-mute">Not available: research uses Wikipedia and OpenAlex</span>}</Row>
+            <Row label="Embeddings">{ai?.embeddings}</Row>
+            {ai?.provider === "none" && !window.orbitalDesktop && (
+              <div className="rounded-lg border border-line bg-white/[0.02] p-4 text-[0.84rem] leading-relaxed text-mute-bright">
+                To turn on AI, set this on the server and restart:
+                <pre className="mt-2 rounded-md bg-black px-3 py-2 font-mono text-[0.8rem] text-white">ANTHROPIC_API_KEY=…</pre>
+                Or point Orbital at any OpenAI-compatible endpoint with <code className="font-mono">AI_PROVIDER=openai</code>, <code className="font-mono">OPENAI_BASE_URL</code> and <code className="font-mono">OPENAI_MODEL</code>. See README.
+              </div>
+            )}
+            <Row label="Learn from conversations">
+              <Select label="Automatic memory extraction" value={prefs.autoExtractMemories === false ? "off" : "on"} onChange={(v) => save({ autoExtractMemories: v === "on" })} className="w-56"
+                options={[{ value: "on", label: "On: propose memories" }, { value: "off", label: "Off: only when I ask" }]} />
+            </Row>
+            <Row label="Default chat mode">
+              <Select label="Default mode" value={prefs.defaultMode ?? "standard"} onChange={(v) => save({ defaultMode: v })} className="w-56" options={MODES.map((m) => ({ value: m.id, label: m.label }))} />
+            </Row>
+            <AiFeatures />
+          </Group>
 
-        <WaitlistGroup />
+          <VoiceGroup save={save} />
 
-        <Group title="AI" description="Orbital's AI runs on your server. API keys live in server environment variables and are never sent to the browser.">
-          <Row label="Provider">{ai?.provider === "none" ? <Badge tone="warn">Not configured</Badge> : <span>{ai?.provider} · <span className="font-mono text-[0.82rem]">{ai?.model}</span></span>}</Row>
-          <Row label="Web search">{ai?.webSearch ? <Badge tone="ok">enabled</Badge> : <span className="text-mute">Not available — research uses Wikipedia and OpenAlex</span>}</Row>
-          <Row label="Embeddings">{ai?.embeddings}</Row>
-          {ai?.provider === "none" && !(window as any).orbitalDesktop && (
-            <div className="rounded-lg border border-line bg-white/[0.02] p-4 text-[0.84rem] leading-relaxed text-mute-bright">
-              To enable answers, research synthesis, memory extraction and opportunity discovery, set this on the server and restart:
-              <pre className="mt-2 rounded-md bg-black px-3 py-2 font-mono text-[0.8rem] text-white">ANTHROPIC_API_KEY=…</pre>
-              Or point Orbital at any OpenAI-compatible endpoint with <code className="font-mono">AI_PROVIDER=openai</code>, <code className="font-mono">OPENAI_BASE_URL</code> and <code className="font-mono">OPENAI_MODEL</code>. See README.
+          <Group id="reminders" title="Reminders & focus">
+            <NotificationsRow />
+            <Row label="Suggestions">
+              <Select label="Orbital noticed" value={prefs.nudges === false ? "off" : "on"} onChange={(v) => save({ nudges: v === "on" })} className="w-72"
+                options={[{ value: "on", label: "Show what Orbital notices slipping" }, { value: "off", label: "Only reminders I set" }]} />
+              <p className="mt-1.5 text-[0.76rem] text-mute">Overdue tasks, approaching deadlines, stalled projects, unfinished ideas and out-of-date reports, on the Reminders page.</p>
+            </Row>
+            <Row label="Focus session length">
+              <Select label="Default focus length" value={String(prefs.focusMinutes ?? 50)} onChange={(v) => save({ focusMinutes: Number(v) })} className="w-56"
+                options={[{ value: "25", label: "25 minutes" }, { value: "50", label: "50 minutes" }, { value: "90", label: "90 minutes" }]} />
+            </Row>
+            <Row label="Knowledge health"><Link to="/maintenance" className="text-white/85 underline decoration-white/20 hover:text-white">Review cleanup suggestions →</Link><p className="mt-1 text-[0.76rem] text-mute">Orbital checks daily for duplicates, conflicts, outdated and disconnected knowledge. Nothing changes until you choose.</p></Row>
+          </Group>
+
+          <Group id="appearance" title="Appearance" description="Orbital is designed in black, with colour reserved for the Neural Core.">
+            <Row label="Reduced motion">
+              <Select label="Reduced motion" value={prefs.reducedMotion ?? "system"} onChange={(v) => save({ reducedMotion: v })} className="w-56"
+                options={[{ value: "system", label: "Follow system" }, { value: "on", label: "Reduce motion" }, { value: "off", label: "Full motion" }]} />
+            </Row>
+            <Row label="Particle density">
+              <Select label="Particle density" value={prefs.particleDensity ?? "auto"} onChange={(v) => save({ particleDensity: v })} className="w-72"
+                options={[{ value: "auto", label: "Automatic (adapts to frame rate)" }, { value: "low", label: "Low" }, { value: "medium", label: "Medium" }, { value: "high", label: "High" }]} />
+            </Row>
+            <Row label="Intro animation"><Button size="sm" variant="ghost" onClick={() => { try { sessionStorage.removeItem("orbital.intro"); } catch { /* ignore */ } toast("The formation will play next time the Neural Core opens"); }}>Replay it next time</Button></Row>
+          </Group>
+
+          <MeetingsGroup />
+
+          <section id="tools" className="scroll-mt-6 space-y-12">
+            <DesktopGroup />
+            <Group title="Web clipper" description="Save any web page, or the part you select, into Knowledge.">
+              <Row label="Bookmarklet"><ClipBookmarklet /><p className="mt-1.5 text-[0.76rem] text-mute">Drag it to your browser's bookmarks bar, then click it on any page. You can also use Knowledge → Clip a page.</p></Row>
+            </Group>
+          </section>
+
+          <Group id="keyboard" title="Keyboard">
+            <dl className="grid grid-cols-[1fr_auto] gap-y-2 text-[0.86rem]">
+              {[
+                ["Command palette: search, navigate, act", `${modKey} K`], ["New conversation", "⌥ N"], ["Toggle sidebar", `${modKey} \\`], ["Toggle context panel", `${modKey} .`],
+                ["Focus message box", "/"], ["Send · new line", "Enter · Shift Enter"],
+                ["Go to Neural Core · Research · Knowledge · Connections", "g n · g r · g k · g g"],
+                ["Go to Projects · Reminders · Focus · Opportunities", "g p · g t · g f · g o"],
+                ["Go to Meetings · Operations · Chat · Settings", "g m · g w · g c · g s"],
+                ["In a meeting: mute · camera", `${modKey} D · ${modKey} E`],
+                ["Focus mode: pause or resume", "Space"],
+                ["Voice: interrupt Orbital · end", "Space · Esc"],
+              ].map(([a, b]) => (<Fragment key={a}><dt className="text-mute-bright">{a}</dt><dd><span className="kbd">{b}</span></dd></Fragment>))}
+            </dl>
+          </Group>
+
+          <Group id="data" title="Your data" description="Everything in Orbital belongs to you. Export it at any time, or delete it permanently.">
+            <p className="text-[0.82rem] leading-relaxed text-mute">The export is a JSON file of this workspace: conversations, memories, notes and files' text, research with sources, hypotheses, extracted knowledge, projects, opportunities, the knowledge graph, and your own reminders, focus sessions and preferences.</p>
+            <div className="flex flex-wrap gap-2">
+              <a href={`/api/export${getWorkspaceId() ? `?workspace=${getWorkspaceId()}` : ""}`} download><Button icon={<Download size={14} />}>Export this workspace (JSON)</Button></a>
+              <Button variant="danger" onClick={() => setDeleting(true)}>Delete account</Button>
             </div>
-          )}
-          <Row label="Learn from conversations">
-            <Select label="Automatic memory extraction" value={prefs.autoExtractMemories === false ? "off" : "on"} onChange={(v) => save({ autoExtractMemories: v === "on" })} className="w-56"
-              options={[{ value: "on", label: "On — propose memories" }, { value: "off", label: "Off — only when I ask" }]} />
-          </Row>
-          <Row label="Default mode">
-            <Select label="Default mode" value={prefs.defaultMode ?? "standard"} onChange={(v) => save({ defaultMode: v })} className="w-56" options={MODES.map((m) => ({ value: m.id, label: m.label }))} />
-          </Row>
-        </Group>
+          </Group>
 
-        <Group title="Neural Core & motion">
-          <Row label="Reduced motion">
-            <Select label="Reduced motion" value={prefs.reducedMotion ?? "system"} onChange={(v) => save({ reducedMotion: v })} className="w-56"
-              options={[{ value: "system", label: "Follow system" }, { value: "on", label: "Reduce motion" }, { value: "off", label: "Full motion" }]} />
-          </Row>
-          <Row label="Particle density">
-            <Select label="Particle density" value={prefs.particleDensity ?? "auto"} onChange={(v) => save({ particleDensity: v })} className="w-56"
-              options={[{ value: "auto", label: "Automatic (adapts to frame rate)" }, { value: "low", label: "Low" }, { value: "medium", label: "Medium" }, { value: "high", label: "High" }]} />
-          </Row>
-        </Group>
+          <AboutGroup />
 
-        <Group title="Keyboard">
-          <dl className="grid grid-cols-[1fr_auto] gap-y-2 text-[0.86rem]">
-            {[
-              ["Command palette", `${modKey} K`], ["New conversation", "⌥ N"], ["Toggle sidebar", `${modKey} \\`], ["Toggle context panel", `${modKey} .`],
-              ["Focus message box", "/"], ["Send · new line", "Enter · Shift Enter"], ["Go to Neural Core / Research / Knowledge", "g n · g r · g k"],
-              ["Go to Connections / Projects / Opportunities", "g g · g p · g o"], ["Go to Chat / Settings", "g c · g s"],
-            ].map(([a, b]) => (<Fragment key={a}><dt className="text-mute-bright">{a}</dt><dd><span className="kbd">{b}</span></dd></Fragment>))}
-          </dl>
-        </Group>
-
-        <Group title="Your data" description="Everything in Orbital belongs to you. Export it at any time, or delete it permanently.">
-          <div className="flex gap-2">
-            <a href="/api/export" download><Button icon={<Download size={14} />}>Export all data (JSON)</Button></a>
-            <Button variant="danger" onClick={() => setDeleting(true)}>Delete account</Button>
-          </div>
-        </Group>
+          <WaitlistGroup />
+        </div>
       </div>
       <DeleteAccount open={deleting} onClose={() => setDeleting(false)} />
     </div>
   );
 }
 
-function Group({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
+function AccountGroup() {
+  const user = useApp((s) => s.user);
+  const setUser = useApp((s) => s.setUser);
+  const [name, setName] = useState(user?.displayName ?? "");
+  const [pw, setPw] = useState(false);
+  const { data: sessions } = useResource<any[]>("/auth/sessions");
+  const others = sessions?.filter((s) => !s.current).length ?? 0;
+  const saveName = async () => {
+    if (name.trim() === (user?.displayName ?? "")) return;
+    try { await api.patch("/auth/me", { displayName: name.trim() }); setUser({ displayName: name.trim() }); toast("Name saved"); } catch (e) { toastError(e); }
+  };
   return (
-    <section>
+    <Group id="account" title="Account">
+      <Row label="Email">{user?.email}</Row>
+      <Row label="Name">
+        <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); saveName(); }}>
+          <Input value={name} onChange={(e) => setName(e.target.value)} onBlur={saveName} placeholder="How Orbital greets you" aria-label="Name" className="max-w-xs" maxLength={80} />
+        </form>
+      </Row>
+      <Row label="Password"><Button size="sm" icon={<KeyRound size={13} />} onClick={() => setPw(true)}>Change password</Button></Row>
+      <Row label="Signed in">
+        {!sessions ? <span className="text-mute">…</span> : (
+          <div className="space-y-1.5">
+            <ul className="space-y-0.5 text-[0.84rem]">{sessions.map((s, i) => (
+              <li key={i} className="flex items-center gap-2"><span className={s.current ? "text-white" : "text-mute-bright"}>{s.device}</span>{s.current && <Badge tone="ok">this device</Badge>}<span className="text-[0.72rem] text-mute">since {new Date(s.created_at).toLocaleDateString()}</span></li>
+            ))}</ul>
+            <div className="flex gap-2 pt-1">
+              {others > 0 && <Button size="sm" variant="ghost" onClick={async () => { try { const r = await api.post("/auth/sessions/revoke-others"); invalidate("/auth/sessions"); toast(`Signed out ${r.signedOut} other device${r.signedOut === 1 ? "" : "s"}`); } catch (e) { toastError(e); } }}>Sign out other devices</Button>}
+              <Button size="sm" variant="ghost" icon={<LogOut size={13} />} onClick={async () => { await api.post("/auth/logout").catch(() => {}); location.href = "/login"; }}>Sign out</Button>
+            </div>
+          </div>
+        )}
+      </Row>
+      <ChangePassword open={pw} onClose={() => setPw(false)} />
+    </Group>
+  );
+}
+
+function ChangePassword({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [f, setF] = useState({ current: "", next: "", again: "" });
+  const [busy, setBusy] = useState(false);
+  const mismatch = f.again.length > 0 && f.next !== f.again;
+  const submit = async () => {
+    setBusy(true);
+    try { await api.post("/auth/password", { current: f.current, next: f.next }); toast("Password changed: other devices were signed out"); setF({ current: "", next: "", again: "" }); invalidate("/auth/sessions"); onClose(); }
+    catch (e) { toastError(e); } finally { setBusy(false); }
+  };
+  return (
+    <Dialog open={open} onClose={onClose} title="Change password">
+      <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); submit(); }}>
+        <Input type="password" autoComplete="current-password" placeholder="Current password" value={f.current} onChange={(e) => setF({ ...f, current: e.target.value })} aria-label="Current password" />
+        <Input type="password" autoComplete="new-password" placeholder="New password (at least 10 characters)" value={f.next} onChange={(e) => setF({ ...f, next: e.target.value })} aria-label="New password" />
+        <Input type="password" autoComplete="new-password" placeholder="New password again" value={f.again} onChange={(e) => setF({ ...f, again: e.target.value })} aria-label="Repeat new password" />
+        {mismatch && <p className="text-[0.8rem] text-red-300">The new passwords don't match.</p>}
+        <p className="text-[0.76rem] text-mute">Every other device signed in to your account will be signed out.</p>
+        <div className="flex justify-end gap-2"><Button variant="ghost" type="button" onClick={onClose}>Cancel</Button>
+          <Button variant="primary" type="submit" loading={busy} disabled={!f.current || f.next.length < 10 || f.next !== f.again}>Change password</Button></div>
+      </form>
+    </Dialog>
+  );
+}
+
+function WorkspaceGroup() {
+  const { workspace, workspaces } = useApp();
+  if (!workspace) return null;
+  const business = workspace.kind === "business";
+  return (
+    <Group id="workspace" title="Workspace" description={business ? "A shared workspace: knowledge, research and projects are shared with its members; each person's conversations, reminders and focus sessions stay private." : "Your personal workspace is private to you."}>
+      <Row label="Current">{workspace.name} <span className="ml-2 text-[0.76rem] text-mute">{business ? `Business · you are ${workspace.role}` : "Personal"}</span></Row>
+      <Row label="Workspaces">{workspaces.length} · switch from the menu at the top of the sidebar</Row>
+      {business && (
+        <Row label="Team & business">
+          <Link to="/team" className="text-white/85 underline decoration-white/20 hover:text-white">Members, roles, invites, business context, API & integrations, audit log →</Link>
+          <p className="mt-1"><Link to="/operations" className="text-[0.8rem] text-mute underline decoration-white/20 hover:text-white">Automations, approvals and connectors →</Link></p>
+        </Row>
+      )}
+      {!business && <Row label="For a team"><span className="text-mute">Create a business workspace from the workspace menu to share knowledge with a team and run automations.</span></Row>}
+    </Group>
+  );
+}
+
+/** What needs an AI provider, at a glance. */
+function AiFeatures() {
+  const ai = useApp((s) => s.ai);
+  const server = useApp((s) => s.server);
+  const on = ai?.provider !== "none";
+  const browserSpeech = !!((window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition) && !/Electron\//.test(navigator.userAgent);
+  const rows: [string, boolean | string][] = [
+    ["Answers, research synthesis, Learning mode", on],
+    ["Memory extraction, opportunity discovery, operations agent", on],
+    ["Contradiction lab, hypothesis verdicts, refreshing reports", on],
+    ["Reading images and scanned PDFs", on],
+    ["Knowledge extraction", on ? true : "basic (dates, figures, key terms)"],
+    ["Source credibility", on ? true : "from address, dates and keywords"],
+    ["Live web research", ai?.webSearch ?? false],
+    ["Voice input", browserSpeech ? "this browser's speech recognition" : server?.transcription ? "server transcription" : false],
+  ];
+  return (
+    <div className="rounded-lg border border-line px-4 py-3">
+      <div className="label mb-2">What's available</div>
+      <ul className="grid gap-x-6 gap-y-1.5 text-[0.82rem] sm:grid-cols-2">
+        {rows.map(([label, v]) => (
+          <li key={label} className="flex items-start gap-2">
+            <span className={cx("mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full", v === true ? "bg-emerald-300" : v ? "bg-amber-200" : "bg-white/20")} />
+            <span className={v ? "text-white/85" : "text-mute"}>{label}{typeof v === "string" && <span className="text-mute">: {v}</span>}{v === false && <span className="text-mute">: needs {label === "Voice input" ? "Chrome, Edge or Safari, or server transcription" : label === "Live web research" ? "the Anthropic provider" : "an AI provider"}</span>}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function VoiceGroup({ save }: { save: (p: any) => void }) {
+  const prefs = useApp((s) => s.prefs);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>(() => availableVoices());
+  useEffect(() => {
+    if (!canSpeak()) return;
+    const update = () => setVoices(availableVoices());
+    window.speechSynthesis.addEventListener?.("voiceschanged", update);
+    return () => window.speechSynthesis.removeEventListener?.("voiceschanged", update);
+  }, []);
+  const [rate, setRate] = useState(prefs.voiceRate ?? 1.03);
+  return (
+    <Group id="voice" title="Voice" description="Talk to Orbital from the chat box. Spoken answers use your computer's own voices.">
+      <Row label="Speak answers">
+        <Select label="Speak answers aloud" value={prefs.speakAnswers === false ? "off" : "on"} onChange={(v) => save({ speakAnswers: v === "on" })} className="w-56"
+          options={[{ value: "on", label: "Read answers aloud" }, { value: "off", label: "Show answers as text only" }]} />
+      </Row>
+      {canSpeak() ? (
+        <>
+          <Row label="Voice">
+            <Select label="Voice" value={prefs.voiceName ?? ""} onChange={(v) => save({ voiceName: v })} className="w-72"
+              options={[{ value: "", label: "Automatic (best available)" }, ...voices.map((v) => ({ value: v.name, label: `${v.name}${v.localService ? "" : " · online"}` }))]} />
+          </Row>
+          <Row label="Speed">
+            <div className="flex items-center gap-3">
+              <input type="range" min={0.7} max={1.5} step={0.05} value={rate} onChange={(e) => setRate(Number(e.target.value))} onMouseUp={() => save({ voiceRate: rate })} onKeyUp={() => save({ voiceRate: rate })} onTouchEnd={() => save({ voiceRate: rate })} aria-label="Speaking speed" className="w-48 accent-white" />
+              <span className="w-10 font-mono text-[0.8rem] text-mute">{rate.toFixed(2)}×</span>
+              <Button size="sm" variant="ghost" icon={<Volume2 size={13} />} onClick={() => speak("This is how Orbital will sound when it reads your answers.", { rate, voiceName: prefs.voiceName })}>Test</Button>
+            </div>
+          </Row>
+        </>
+      ) : <Row label="Voice"><span className="text-mute">This browser can't speak, so answers appear as text.</span></Row>}
+    </Group>
+  );
+}
+
+function NotificationsRow() {
+  const [perm, setPerm] = useState(() => ("Notification" in window ? Notification.permission : "unsupported"));
+  return (
+    <Row label="Notifications">
+      {perm === "granted" ? <span className="flex items-center gap-2"><Badge tone="ok">on</Badge><span className="text-[0.8rem] text-mute">Reminders notify you when Orbital is in the background (held during focus sessions).</span></span>
+        : perm === "denied" ? <span className="text-[0.84rem] text-mute">Blocked in your browser's site settings: reminders still appear inside Orbital.</span>
+        : perm === "unsupported" ? <span className="text-[0.84rem] text-mute">Not supported here: reminders appear inside Orbital.</span>
+        : <Button size="sm" icon={<BellRing size={13} />} onClick={() => Notification.requestPermission().then(setPerm)}>Turn on notifications</Button>}
+    </Row>
+  );
+}
+
+function MeetingsGroup() {
+  const server = useApp((s) => s.server);
+  const [perm, setPerm] = useState<{ camera?: string; microphone?: string }>({});
+  useEffect(() => {
+    const q = (name: string) => (navigator.permissions?.query({ name: name as PermissionName }).then((r) => r.state).catch(() => undefined) ?? Promise.resolve(undefined));
+    Promise.all([q("camera"), q("microphone")]).then(([camera, microphone]) => setPerm({ camera, microphone }));
+  }, []);
+  const label = (s?: string) => (s === "granted" ? "allowed" : s === "denied" ? "blocked" : "asked when you join");
+  return (
+    <Group id="meetings" title="Meetings" description="Video rooms joined by code. Audio and video go directly between participants.">
+      <Row label="Camera & microphone"><span className="text-[0.84rem]">Camera {label(perm.camera)} · microphone {label(perm.microphone)}</span></Row>
+      <Row label="Room size">Up to {server?.maxParticipants ?? 8} people</Row>
+      <Row label="Strict networks">{server?.turn ? <Badge tone="ok">relay configured</Badge> : <span className="text-[0.84rem] text-mute">No relay server: people on some office or mobile networks may not connect. See docs/MEETINGS.md (TURN).</span>}</Row>
+      <Row label="Start or join"><Link to="/meetings" className="text-white/85 underline decoration-white/20 hover:text-white">Meetings →</Link></Row>
+    </Group>
+  );
+}
+
+function AboutGroup() {
+  const server = useApp((s) => s.server);
+  const [desktopVersion, setDesktopVersion] = useState<string | null>(null);
+  useEffect(() => { window.orbitalDesktop?.status().then((s) => setDesktopVersion(s.version)).catch(() => {}); }, []);
+  return (
+    <Group id="about" title="About">
+      <Row label="Version">Orbital {desktopVersion ?? server?.version ?? ""}{desktopVersion ? " (desktop)" : ""}</Row>
+      <Row label="Database">{server?.database === "postgres" ? "PostgreSQL" : "Built-in (stored on this server)"}</Row>
+      <Row label="Pages"><span className="text-[0.84rem]"><Link to="/maintenance" className="underline decoration-white/20 hover:text-white">Knowledge health</Link> · <Link to="/search" className="underline decoration-white/20 hover:text-white">Search</Link> · <Link to="/hypotheses" className="underline decoration-white/20 hover:text-white">Hypotheses</Link> · <Link to="/reminders" className="underline decoration-white/20 hover:text-white">Reminders</Link></span></Row>
+    </Group>
+  );
+}
+
+function Group({ id, title, description, children }: { id?: string; title: string; description?: string; children: React.ReactNode }) {
+  return (
+    <section id={id} className="scroll-mt-6">
       <h2 className="text-[0.95rem] text-white">{title}</h2>
       {description && <p className="mt-1 text-[0.8rem] text-mute">{description}</p>}
       <div className="mt-4 space-y-3">{children}</div>
@@ -155,7 +394,7 @@ function WaitlistGroup() {
   if (!serverAdmin) return null;
   const tally = (rows: { k: string; n: number }[]) => rows.map((r) => `${r.k || "—"} ${r.n}`).join(" · ") || "—";
   return (
-    <Group title="Waitlist" description="People who joined from the public waitlist page (/waitlist).">
+    <Group id="waitlist" title="Waitlist" description="People who joined from the public waitlist page (/waitlist).">
       {!data ? <p className="text-[0.84rem] text-mute">Loading…</p> : (
         <>
           <Row label="Signups">{data.total} total · {data.last7} in the last 7 days</Row>

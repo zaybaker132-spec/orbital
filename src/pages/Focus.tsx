@@ -4,7 +4,7 @@ import { Check, Minimize2, Pause, Play, Plus, Target } from "lucide-react";
 import { api } from "@/lib/api";
 import { invalidate, useResource } from "@/lib/resource";
 import { toastError, useQuiet } from "@/state/ui";
-import { useCan } from "@/state/app";
+import { useApp, useCan } from "@/state/app";
 import { Button, Empty, Input, PageHeader, Pulse, Select, Textarea, cx } from "@/components/ui";
 import { timeAgo } from "@/lib/format";
 
@@ -30,7 +30,7 @@ function FocusSetup({ week, recent }: { week: { seconds: number; sessions: numbe
   const { data: projects } = useResource<any[]>("/projects");
   const [objective, setObjective] = useState(params.get("objective") ?? "");
   const [projectId, setProjectId] = useState(params.get("project") ?? "");
-  const [planned, setPlanned] = useState(50);
+  const [planned, setPlanned] = useState<number>(useApp.getState().prefs.focusMinutes ?? 50);
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     // Coming from a project: suggest its next open task as the objective.

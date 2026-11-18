@@ -7,6 +7,7 @@ import { createPersonalWorkspace, resolveWorkspace } from "../auth/workspace.js"
 import { isServerAdmin } from "./waitlist.js";
 import { createSession, destroySession, hashPassword, verifyPassword, COOKIE, requireUser } from "../auth/auth.js";
 import { rateLimit } from "../lib/rateLimit.js";
+import { sha256 } from "../lib/crypto.js";
 import { aiStatus, describeAiError } from "../ai/provider.js";
 import { subscribe } from "../lib/events.js";
 import { MODES, respond } from "../engines/chat.js";
@@ -50,13 +51,54 @@ authRouter.post("/logout", ah(async (req, res) => {
   res.json({ ok: true });
 }));
 
+// ── Account ────────────────────────────────────────────────────────────────
+authRouter.patch("/me", requireUser, ah(async (req, res) => {
+  const b = parse(z.object({ displayName: z.string().trim().max(80) }), req.body);
+  await db().query("UPDATE users SET display_name=$2 WHERE id=$1", [req.user!.id, b.displayName]);
+  res.json({ ok: true, displayName: b.displayName });
+}));
+
+/** Change password; every other signed-in device is signed out. */
+authRouter.post("/password", requireUser, authLimit, ah(async (req, res) => {
+  const b = parse(z.object({ current: z.string().min(1).max(200), next: z.string().min(10, "Use at least 10 characters").max(200) }), req.body);
+  const u = (await db().query<{ password_hash: string }>("SELECT password_hash FROM users WHERE id=$1", [req.user!.id])).rows[0];
+  if (!u || !(await verifyPassword(b.current, u.password_hash))) throw new HttpError(401, "Your current password is incorrect", "bad_credentials");
+  await db().query("UPDATE users SET password_hash=$2 WHERE id=$1", [req.user!.id, await hashPassword(b.next)]);
+  const mine = req.cookies?.[COOKIE] ? sha256(req.cookies[COOKIE]) : "";
+  await db().query("DELETE FROM sessions WHERE user_id=$1 AND id<>$2", [req.user!.id, mine]);
+  res.json({ ok: true });
+}));
+
+authRouter.get("/sessions", requireUser, ah(async (req, res) => {
+  const mine = req.cookies?.[COOKIE] ? sha256(req.cookies[COOKIE]) : "";
+  const rows = (await db().query<any>("SELECT id, created_at, expires_at, user_agent FROM sessions WHERE user_id=$1 AND expires_at > now() ORDER BY created_at DESC", [req.user!.id])).rows;
+  res.json(rows.map((s) => ({ current: s.id === mine, created_at: s.created_at, expires_at: s.expires_at, device: describeAgent(s.user_agent) })));
+}));
+
+authRouter.post("/sessions/revoke-others", requireUser, ah(async (req, res) => {
+  const mine = req.cookies?.[COOKIE] ? sha256(req.cookies[COOKIE]) : "";
+  const r = await db().query("DELETE FROM sessions WHERE user_id=$1 AND id<>$2 RETURNING id", [req.user!.id, mine]);
+  res.json({ signedOut: r.rows.length });
+}));
+
+/** "Chrome on macOS", "Orbital desktop on Windows"… from a user-agent string. */
+function describeAgent(ua: string | null) {
+  if (!ua) return "Unknown device";
+  const app = /Electron\//.test(ua) ? "Orbital desktop" : /Edg\//.test(ua) ? "Edge" : /Firefox\//.test(ua) ? "Firefox" : /Chrome\//.test(ua) ? "Chrome" : /Safari\//.test(ua) ? "Safari" : "Browser";
+  const os = /iPhone|iPad/.test(ua) ? "iOS" : /Android/.test(ua) ? "Android" : /Mac OS X|Macintosh/.test(ua) ? "macOS" : /Windows/.test(ua) ? "Windows" : /Linux/.test(ua) ? "Linux" : "";
+  return os ? `${app} on ${os}` : app;
+}
+
 authRouter.get("/me", ah(async (req, res) => {
   if (!req.user) return res.json({ user: null, signupAllowed: config.allowSignup, ai: aiStatus(), desktop: config.desktop });
   const prefs = (await db().query<{ settings: any }>("SELECT settings FROM user_preferences WHERE user_id=$1", [req.user.id])).rows[0]?.settings ?? {};
   const workspaces = (await db().query(
     `SELECT w.id, w.name, w.kind, m.role FROM workspaces w JOIN workspace_members m ON m.workspace_id=w.id
      WHERE m.user_id=$1 ORDER BY (w.kind='personal') DESC, w.name`, [req.user.id])).rows;
-  res.json({ user: req.user, preferences: prefs, workspaces, ai: aiStatus(), signupAllowed: config.allowSignup, desktop: config.desktop, downloadUrl: config.downloadUrl, serverAdmin: isServerAdmin(req.user.email) });
+  res.json({
+    user: req.user, preferences: prefs, workspaces, ai: aiStatus(), signupAllowed: config.allowSignup, desktop: config.desktop, downloadUrl: config.downloadUrl, serverAdmin: isServerAdmin(req.user.email),
+    server: { version: config.version, database: config.databaseUrl ? "postgres" : "embedded", transcription: !!config.transcription.baseUrl, turn: config.meetings.turnUrls.length > 0, maxParticipants: config.meetings.maxParticipants },
+  });
 }));
 
 export const api = Router();

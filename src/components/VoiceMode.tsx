@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { BookmarkPlus, Mic, MicOff, Square, X } from "lucide-react";
 import { NeuralCore } from "@/neural/NeuralCore";
 import { useCore } from "@/state/core";
+import { useApp } from "@/state/app";
 import { canSpeak, speak, speakable, useSpeechInput } from "@/lib/voice";
 import { Button, cx } from "./ui";
 
@@ -15,6 +16,7 @@ interface Msg { id: string; role: "user" | "assistant"; content: string; streami
 export function VoiceMode({ messages, streaming, onSend, onClose, onRemember, canRemember }: {
   messages: Msg[]; streaming: boolean; onSend: (text: string) => void; onClose: () => void; onRemember: () => Promise<void>; canRemember: boolean;
 }) {
+  const prefs = useApp((s) => s.prefs);
   const [phase, setPhase] = useState<Phase>("listening");
   const [interim, setInterim] = useState("");
   const [heard, setHeard] = useState("");
@@ -43,10 +45,10 @@ export function VoiceMode({ messages, streaming, onSend, onClose, onRemember, ca
     wasStreaming.current = false;
     const last = [...messages].reverse().find((m) => m.role === "assistant");
     const text = last?.error ? `Sorry, ${last.error}` : last?.metadata?.kind === "research_started" ? "I've started a research report. I'll let you know when it's ready." : speakable(last?.content ?? "");
-    if (!text || !canSpeak()) { listen(); return; }
+    if (!text || !canSpeak() || prefs.speakAnswers === false) { listen(); return; }
     setPhase("speaking");
     useCore.getState().pulse("learning", 2600);
-    stopSpeaking.current = speak(text, { onEnd: () => { if (phaseRef.current === "speaking") listen(); } });
+    stopSpeaking.current = speak(text, { rate: prefs.voiceRate, voiceName: prefs.voiceName, onEnd: () => { if (phaseRef.current === "speaking") listen(); } });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [streaming]);
 
