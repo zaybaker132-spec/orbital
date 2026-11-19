@@ -57,7 +57,7 @@ jobs:
             export CSC_IDENTITY_AUTO_DISCOVERY=false
             # No certificate: ad-hoc sign Mac builds. Apple Silicon refuses to open unsigned apps ("damaged");
             # ad-hoc signed ones open after right-click → Open.
-            [ "$RUNNER_OS" = "macOS" ] && extra+=("-c.mac.identity=-")
+            [ "$RUNNER_OS" = "macOS" ] && extra+=("-c.mac.identity=-" "-c.mac.hardenedRuntime=false")
           fi
           npx electron-builder --publish never "${extra[@]}"
       - uses: actions/upload-artifact@v4

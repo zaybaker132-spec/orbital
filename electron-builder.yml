@@ -49,6 +49,7 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   shortcutName: Orbital
+  artifactName: Orbital-Setup-${version}.${ext}
 linux:
   target: [AppImage, deb]
   category: Office
