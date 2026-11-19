@@ -159,6 +159,8 @@
 
   footer { padding-block: 40px 56px; color: var(--soft); font-size: 13px; }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } .stop:hover strong { animation: none; } }
+  .film { margin-top: 28px; border-radius: 14px; overflow: hidden; border: 1px solid var(--line, rgba(255,255,255,.12)); background: #000; box-shadow: 0 30px 80px rgba(0,0,0,.55); aspect-ratio: 16 / 9; }
+  .film video { display: block; width: 100%; height: 100%; object-fit: cover; background: #000; }
 </style>
 
 <header class="top">
@@ -172,7 +174,7 @@
       <a href="#everyday">Features</a>
       <a href="#business">For business</a>
       <a href="#desktop">Desktop</a>
-      <a href="#run">Run it</a>
+      <a href="#film">Watch</a>
       <a href="#waitlist">Waitlist</a>
     </nav>
   </div>
@@ -261,22 +263,21 @@
     <p class="lede">The desktop app runs the full Orbital server on your computer with its own private database. Your API key is stored in the system keychain. Installers are built by the project's release workflow on real Mac, Windows and Linux machines.</p>
     <div class="note">
       <div><h3>What runs on this page</h3><p>The Neural Core above is the app's own geometry and shader code, live. Everything else is a screenshot.</p></div>
-      <div><h3>What needs the full app</h3><p>Chat, memory, research and automations run on Orbital's server. Run it locally, install the desktop app, or deploy it to a host.</p></div>
+      <div><h3>What needs the full app</h3><p>Chat, memory, research, Papers and automations run on Orbital's server: install the desktop app, or use Orbital on the web.</p></div>
       <div><h3>AI</h3><p>Answers, research synthesis and the operations agent use Claude with your own API key. Without one, Orbital still works as a knowledge base.</p></div>
     </div>
   </div>
 </section>
 
-<section id="run">
+<section id="film">
   <div class="wrap">
-    <div class="label">Run it</div>
-    <h2>Start Orbital on your computer</h2>
-    <p class="lede">Requires Node.js 22. No database setup: Orbital embeds PostgreSQL. Add <code style="font-family:var(--mono);font-size:13px">ANTHROPIC_API_KEY</code> to <code style="font-family:var(--mono);font-size:13px">.env</code> to turn on AI.</p>
-    <div class="cmds">
-      <div class="cmd"><code>npm install</code><span class="what">dependencies</span><button class="copy" type="button">Copy</button></div>
-      <div class="cmd"><code>cp .env.example .env</code><span class="what">configuration</span><button class="copy" type="button">Copy</button></div>
-      <div class="cmd"><code>npm run dev</code><span class="what">web app on :5173</span><button class="copy" type="button">Copy</button></div>
-      <div class="cmd"><code>npm run desktop</code><span class="what">or the desktop app</span><button class="copy" type="button">Copy</button></div>
+    <div class="label">Watch</div>
+    <h2>Orbital in 85 seconds</h2>
+    <p class="lede">What Orbital is and what it does, in real footage from the product: the Neural Core, answers grounded in what you know, cited research and more.</p>
+    <div class="film">
+      <video controls playsinline preload="metadata" poster="media/orbital-intro-poster.jpg" aria-label="Orbital introduction film">
+        <source src="media/orbital-intro.mp4" type="video/mp4">
+      </video>
     </div>
   </div>
 </section>
