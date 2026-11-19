@@ -192,7 +192,7 @@ function DocumentEditor({ id }: { id: string }) {
 
   useEffect(() => {
     setMissing(false);
-    api.get(`/documents/${id}`).then((d) => { setDoc(d); setMode(d.kind === "note" && !d.body ? "write" : d.kind === "note" ? "write" : "preview"); }).catch((e) => { if (e?.status === 404 || e?.status === 400) setMissing(true); else navigate("/knowledge", { replace: true }); });
+    api.get(`/documents/${id}`).then((d) => { if (d.kind === "doc") { navigate(`/papers/${id}`, { replace: true }); return; } setDoc(d); setMode(d.kind === "note" && !d.body ? "write" : d.kind === "note" ? "write" : "preview"); }).catch((e) => { if (e?.status === 404 || e?.status === 400) setMissing(true); else navigate("/knowledge", { replace: true }); });
   }, [id, navigate]);
 
   useEffect(() => {

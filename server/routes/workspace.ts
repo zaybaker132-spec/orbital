@@ -68,7 +68,8 @@ workspace.delete("/collections/:id/documents/:docId", ah(async (req, res) => {
 // ── Documents ──────────────────────────────────────────────────────────────
 workspace.get("/documents", ah(async (req, res) => {
   const params: unknown[] = [ws(req)];
-  let where = "d.workspace_id=$1";
+  // Docs have their own page (/docs) and editor; the notes list shows them only when asked.
+  let where = req.query.kind === "doc" ? "d.workspace_id=$1 AND d.kind='doc'" : "d.workspace_id=$1 AND d.kind<>'doc'";
   const add = (cond: string, v: unknown) => { params.push(v); where += ` AND ${cond.replace("?", `$${params.length}`)}`; };
   if (typeof req.query.folder === "string" && req.query.folder) add("d.folder_id=?", req.query.folder);
   if (typeof req.query.tag === "string" && req.query.tag) add("? = ANY(d.tags)", req.query.tag);
@@ -517,7 +518,7 @@ workspace.get("/export", ah(async (req, res) => {
     memories: await t("SELECT id, content, category, confidence, importance, status, origin, reason, source_type, source_id, user_corrected, created_at, updated_at FROM memories WHERE workspace_id=$1"),
     knowledgeNodes: await t("SELECT id, kind, title, summary, category, ref_type, ref_id, created_at FROM knowledge_nodes WHERE workspace_id=$1"),
     knowledgeEdges: await t("SELECT id, source_id, target_id, relation, status, origin, confidence, rationale, created_at FROM knowledge_edges WHERE workspace_id=$1"),
-    documents: await t("SELECT id, title, body, kind, tags, folder_id, project_id, source_url, file_name, created_at, updated_at FROM documents WHERE workspace_id=$1"),
+    documents: await t("SELECT id, title, body, html, kind, tags, folder_id, project_id, source_url, file_name, created_at, updated_at FROM documents WHERE workspace_id=$1"),
     folders: await t("SELECT * FROM folders WHERE workspace_id=$1"),
     research: await t("SELECT * FROM research_sessions WHERE workspace_id=$1"),
     researchSources: await t("SELECT * FROM research_sources WHERE workspace_id=$1"),

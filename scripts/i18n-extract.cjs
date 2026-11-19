@@ -27,6 +27,8 @@ for (const file of files) {
     if (ts.isVariableDeclaration(n) && /^[A-Z][A-Z_]+$/.test(n.name.getText(src)) && n.initializer && ts.isObjectLiteralExpression(n.initializer)) {
       for (const p of n.initializer.properties) if (ts.isPropertyAssignment(p)) { const s = str(p.initializer); if (s && isText(s) && /^[A-Z]/.test(s)) keys.add(s); }
     }
+    // Components that translate their own label prop: <Btn label="Bold" />
+    if (ts.isJsxAttribute(n) && ["label", "shortcutLabel"].includes(n.name.getText(src)) && n.initializer && ts.isStringLiteral(n.initializer) && isText(n.initializer.text)) keys.add(n.initializer.text);
     // Tabs and sections written as [id, label] pairs: ["account", "Account"]
     if (ts.isArrayLiteralExpression(n) && n.elements.length === 2) {
       const [a, b] = n.elements.map(str);

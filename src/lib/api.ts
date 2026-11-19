@@ -20,7 +20,7 @@ const wsHeader = (): Record<string, string> => (workspaceId ? { "x-orbital-works
 const mutationListeners = new Set<() => void>();
 export const onMutation = (fn: () => void) => { mutationListeners.add(fn); return () => mutationListeners.delete(fn); };
 
-async function request<T>(method: string, url: string, body?: unknown): Promise<T> {
+async function request<T>(method: string, url: string, body?: unknown, quiet = false): Promise<T> {
   const isForm = body instanceof FormData;
   const res = await fetch(`/api${url}`, {
     method,
@@ -37,7 +37,7 @@ async function request<T>(method: string, url: string, body?: unknown): Promise<
     } catch { /* not json */ }
     throw new ApiError(res.status, msg, code);
   }
-  if (method !== "GET") mutationListeners.forEach((fn) => fn());
+  if (method !== "GET" && !quiet) mutationListeners.forEach((fn) => fn());
   const ct = res.headers.get("content-type") ?? "";
   return (ct.includes("json") ? res.json() : res.text()) as Promise<T>;
 }
@@ -49,6 +49,9 @@ export const api = {
   put: <T = any>(url: string, body?: unknown) => request<T>("PUT", url, body ?? {}),
   del: <T = any>(url: string) => request<T>("DELETE", url),
   upload: <T = any>(url: string, form: FormData) => request<T>("POST", url, form),
+  /** For high-frequency background writes (live doc edits) that shouldn't refresh activity views. */
+  postQuiet: <T = any>(url: string, body?: unknown) => request<T>("POST", url, body ?? {}, true),
+  putQuiet: <T = any>(url: string, body?: unknown) => request<T>("PUT", url, body ?? {}, true),
 };
 
 /** POST that streams Server-Sent Events back (chat responses). */

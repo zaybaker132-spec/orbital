@@ -1380,3 +1380,222 @@
 3010|autorisé
 3011|demandé à l'entrée
 3012|bloqué
+4000|Actions à mener
+4001|Ajouter un commentaire
+4002|Ajouter une colonne à droite
+4003|Ajouter une ligne en dessous
+4004|Ordre du jour
+4005|Toutes les modifications sont enregistrées
+4006|Tous les documents
+4007|Appliquer
+4008|=
+4009|Demander à Orbital
+4010|Demander à Orbital d'écrire ou de modifier
+4011|Participants
+4012|Retour aux Documents
+4013|Revenir à la version actuelle
+4014|Contexte
+4015|Document vierge
+4016|Gras
+4017|Remue-méninges
+4018|Budget et ressources
+4019|Caractères
+4020|Liste de contrôle
+4021|Effacer la mise en forme
+4022|Bloc de code
+4023|Commenter
+4024|Commentaires
+4025|Continuer la rédaction
+4026|Copie de {title}
+4027|Impossible de lire cette image.
+4028|=
+4029|Créés par moi
+4030|Créés par d'autres
+4031|Version actuelle
+4032|Page sombre
+4033|Bonjour {name},
+4034|Décisions
+4035|Supprimer la colonne
+4036|Supprimer le commentaire
+4037|Supprimer la ligne
+4038|Supprimer le tableau
+4039|Supprimer « {title} » ? Cette action est irréversible.
+4040|Ignorer
+4041|Documents
+4042|Document supprimé
+4043|Nom du document
+4044|Plan du document
+4045|Texte du document
+4046|Télécharger en Markdown (.md)
+4047|Télécharger en PDF
+4048|Télécharger en Word (.doc)
+4049|Télécharger en texte brut (.txt)
+4050|Télécharger en page web (.html)
+4051|Modifié {when}
+4052|Document vide
+4053|Chaque modification est enregistrée automatiquement.
+4054|Tout le monde dans {name} peut ouvrir ce document
+4055|Fichier
+4056|Rechercher et remplacer
+4057|Rechercher dans le document
+4058|Constats
+4059|Corriger l'orthographe et la grammaire
+4060|Police
+4061|Taille de police
+4062|Format
+4063|Mise en forme
+4064|=
+4065|Vue en grille
+4066|Titre 1
+4067|Titre 2
+4068|Titre 3
+4069|Titre 4
+4070|Les titres que vous ajoutez au document apparaîtront ici.
+4071|Masquer les résolus
+4072|Ligne horizontale
+4073|Idées
+4074|Image
+4075|Améliorer le texte
+4076|Insérer
+4077|Insérer en dessous
+4078|=
+4079|Italique
+4080|=
+4081|Dernière modification
+4082|Lettre
+4083|Interligne
+4084|Adresse du lien
+4085|À l'écoute… parlez, puis appuyez à nouveau sur le micro pour insérer.
+4086|Créer une copie
+4087|Allonger
+4088|Raccourcir
+4089|Respecter la casse
+4090|Compte rendu de réunion
+4091|Plus d'actions
+4092|Plus chaleureux
+4093|Plus professionnel
+4094|Le plus prometteur
+4095|Mettre à la corbeille
+4096|Nommer la version actuelle
+4097|Nouveau document
+4098|Occurrence suivante
+4099|Prochaines étapes
+4100|Aucun document ne correspond
+4101|Aucun document pour l'instant
+4102|Aucune version enregistrée pour l'instant.
+4103|Aucun document suivi
+4104|Texte normal
+4105|Hors ligne : les modifications seront synchronisées à la reconnexion
+4106|Vous seul pouvez ouvrir ce document
+4107|Ouverture du document
+4108|Orbital peut se tromper. Vérifiez les faits avant de partager.
+4109|Orbital enregistre automatiquement une version toutes les dix minutes pendant la rédaction. Nommez-en une pour la retrouver facilement.
+4110|Plan
+4111|Présentation
+4112|Propriétaire
+4113|Saut de page
+4114|Page papier
+4115|Collez ou saisissez un lien
+4116|Personnes dans ce document
+4117|Occurrence précédente
+4118|Imprimer
+4119|Proposition de projet
+4120|Question
+4121|Questions à résoudre
+4122|Temps de lecture
+4123|Documents récents
+4124|Adresse du destinataire
+4125|Nom du destinataire
+4126|Recommandations
+4127|Rétablir
+4128|Supprimer le lien
+4129|Ne plus suivre
+4130|Rouvrir
+4131|Remplacer
+4132|Remplacer la sélection
+4133|Remplacer par
+4134|{n} occurrences remplacées
+4135|Remplacer…
+4136|Répondre
+4137|Réinitialiser
+4138|Résoudre
+4139|Restaurer cette version
+4140|Résultats
+4141|Périmètre
+4142|Rechercher des documents
+4143|Tout sélectionner
+4144|Sélectionnez d'abord du texte.
+4145|Sélectionnez du texte et appuyez sur le bouton de commentaire pour en discuter.
+4146|Sélectionnez du texte pour le réécrire, ou placez le curseur là où le nouveau texte doit aller.
+4147|Sélectionnez le texte à commenter.
+4148|Mots sélectionnés
+4149|Envoyer la réponse
+4150|Afficher les commentaires
+4151|Afficher le plan
+4152|Afficher les résolus ({n})
+4153|Simplifier
+4154|Cordialement,
+4155|Quelqu'un
+4156|Suivre
+4157|Suivis
+4158|Commencer un document
+4159|Barré
+4160|Styles
+4161|Proposer un plan
+4162|Résumer
+4163|Tableau
+4164|Texte
+4165|Cette image est trop lourde (20 Mo max).
+4166|Les points essentiels en quelques phrases.
+4167|=
+4168|Date du jour
+4169|Outils
+4170|Écrivez ici, ou demandez à Orbital d'écrire…
+4171|Souligné
+4172|Document sans titre
+4173|Utiliser ce que sait Orbital
+4174|=
+4175|Historique des versions
+4176|Nom de la version
+4177|Version restaurée. Annuler ramène le contenu précédent.
+4178|Version enregistrée
+4179|Lecture seule
+4180|Version enregistrée du {when}
+4181|Saisie vocale
+4182|La saisie vocale n'est pas disponible dans ce navigateur. Essayez Chrome, Edge ou Safari.
+4183|Quel est ce projet, et pourquoi est-il important maintenant ?
+4184|Que doit écrire Orbital ?
+4185|Que doit écrire Orbital ? par ex. Une introduction de deux paragraphes pour des investisseurs
+4186|Ce qui est inclus, et ce qui ne l'est pas.
+4187|Nombre de mots
+4188|Mots
+4189|Écrire
+4190|Écrivez ce que vous voulez : plans, rapports, lettres, notes. Tout ce que vous écrivez rejoint ce que sait Orbital, et ses réponses peuvent s'en servir.
+4191|L'aide à la rédaction nécessite un fournisseur d'IA. Configurez-en un dans Réglages → IA et recherche.
+4192|Votre adresse
+4193|Zoom
+4194|document
+4195|par ex. Envoyé au client
+4196|moi
+4197|{i} sur {n}
+4198|{n} min
+4199|{n} mots
+4200|{sel} sur {n} mots
+4300|Ajouter un commentaire
+4301|Liste à puces
+4302|Centrer
+4303|Réduire la taille de police
+4304|Diminuer le retrait
+4305|Couleur de surlignage
+4306|Augmenter la taille de police
+4307|Augmenter le retrait
+4308|Code en ligne
+4309|Insérer une image
+4310|Insérer un lien
+4311|Insérer un tableau
+4312|Justifier
+4313|Aligner à gauche
+4314|Liste numérotée
+4315|Citation
+4316|Aligner à droite
+4317|Couleur du texte

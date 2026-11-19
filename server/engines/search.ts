@@ -7,7 +7,7 @@ import { db } from "../db/client.js";
  * highlighted snippets.
  */
 
-export const SEARCH_TYPES = ["conversation", "note", "file", "clip", "research", "extracted", "hypothesis", "memory", "project", "task", "opportunity"] as const;
+export const SEARCH_TYPES = ["conversation", "doc", "note", "file", "clip", "research", "extracted", "hypothesis", "memory", "project", "task", "opportunity"] as const;
 export type SearchType = (typeof SEARCH_TYPES)[number];
 
 export interface SearchHit {
@@ -29,7 +29,7 @@ const NOTE_KINDS = ["note", "saved_response"];
 
 const KIND_LABEL: Record<string, string> = {
   pdf: "PDF", docx: "Word document", xlsx: "Spreadsheet", pptx: "Presentation", image: "Image", text: "Text file",
-  note: "Note", saved_response: "Saved answer", web_clip: "Web clip", research_report: "Research report",
+  note: "Note", doc: "Paper", saved_response: "Saved answer", web_clip: "Web clip", research_report: "Research report",
 };
 
 export async function searchAll(workspaceId: string, userId: string, q: string, types: SearchType[], limit = 40): Promise<SearchHit[]> {
@@ -40,6 +40,7 @@ export async function searchAll(workspaceId: string, userId: string, q: string, 
   const jobs: Promise<SearchHit[]>[] = [];
 
   const docKinds = [
+    ...(want("doc") ? ["doc"] : []),
     ...(want("note") ? NOTE_KINDS : []),
     ...(want("file") ? FILE_KINDS : []),
     ...(want("clip") ? ["web_clip"] : []),
@@ -54,8 +55,8 @@ export async function searchAll(workspaceId: string, userId: string, q: string, 
        WHERE d.workspace_id=$1 AND d.kind = ANY($6::text[]) AND (d.tsv @@ q OR d.title ILIKE $3)
        ORDER BY rank DESC, d.updated_at DESC LIMIT $4`,
       [workspaceId, q, like, per, OPTS, docKinds]).then((rows) => rows.map((d) => ({
-        type: (FILE_KINDS.includes(d.kind) ? "file" : d.kind === "web_clip" ? "clip" : d.kind === "research_report" ? "research" : "note") as SearchType,
-        id: d.id, title: d.title, snippet: d.snippet, link: `/knowledge/${d.id}`, at: d.at, rank: Number(d.rank),
+        type: (FILE_KINDS.includes(d.kind) ? "file" : d.kind === "web_clip" ? "clip" : d.kind === "research_report" ? "research" : d.kind === "doc" ? "doc" : "note") as SearchType,
+        id: d.id, title: d.title, snippet: d.snippet, link: d.kind === "doc" ? `/papers/${d.id}` : `/knowledge/${d.id}`, at: d.at, rank: Number(d.rank),
         meta: d.kind === "web_clip" && d.source_url ? `Web clip · ${hostOf(d.source_url)}` : d.file_name ? `${KIND_LABEL[d.kind] ?? "File"} · ${d.file_name}` : KIND_LABEL[d.kind] ?? d.kind,
       }))));
   }

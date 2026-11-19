@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Brain, CheckSquare, Compass, FileText, FolderKanban, Globe, Lightbulb, MessageSquare, Paperclip, Search as SearchIcon, Layers, FlaskConical } from "lucide-react";
+import { StickyNote, Brain, CheckSquare, Compass, FileText, FolderKanban, Globe, Lightbulb, MessageSquare, Paperclip, Search as SearchIcon, Layers, FlaskConical } from "lucide-react";
 import { api } from "@/lib/api";
 import { PageHeader, Pulse, cx } from "@/components/ui";
 import { timeAgo } from "@/lib/format";
@@ -8,7 +8,8 @@ import { tx } from "@/i18n";
 
 const TYPES = [
   { value: "conversation", label: "Conversations", icon: MessageSquare },
-  { value: "note", label: "Notes", icon: FileText },
+  { value: "doc", label: "Papers", icon: FileText },
+  { value: "note", label: "Notes", icon: StickyNote },
   { value: "file", label: "Files", icon: Paperclip },
   { value: "clip", label: "Web clips", icon: Globe },
   { value: "research", label: "Research", icon: Compass },

@@ -1380,3 +1380,222 @@
 3010|permitido
 3011|se pregunta al unirte
 3012|bloqueado
+4000|Tareas pendientes
+4001|Añadir un comentario
+4002|Añadir columna a la derecha
+4003|Añadir fila debajo
+4004|Orden del día
+4005|Todos los cambios guardados
+4006|Todos los documentos
+4007|Aplicar
+4008|=
+4009|Preguntar a Orbital
+4010|Pide a Orbital que escriba o edite
+4011|Asistentes
+4012|Volver a Documentos
+4013|Volver a la versión actual
+4014|Antecedentes
+4015|Documento en blanco
+4016|Negrita
+4017|Lluvia de ideas
+4018|Presupuesto y recursos
+4019|Caracteres
+4020|Lista de verificación
+4021|Borrar formato
+4022|Bloque de código
+4023|Comentar
+4024|Comentarios
+4025|Seguir escribiendo
+4026|Copia de {title}
+4027|No se pudo leer esa imagen.
+4028|=
+4029|Creados por mí
+4030|Creados por otros
+4031|Versión actual
+4032|Página oscura
+4033|Estimado/a {name}:
+4034|Decisiones
+4035|Eliminar columna
+4036|Eliminar comentario
+4037|Eliminar fila
+4038|Eliminar tabla
+4039|¿Eliminar “{title}”? No se puede deshacer.
+4040|Descartar
+4041|Documentos
+4042|Documento eliminado
+4043|Nombre del documento
+4044|Esquema del documento
+4045|Texto del documento
+4046|Descargar como Markdown (.md)
+4047|Descargar como PDF
+4048|Descargar como Word (.doc)
+4049|Descargar como texto sin formato (.txt)
+4050|Descargar como página web (.html)
+4051|Editado {when}
+4052|Documento vacío
+4053|Todos los cambios se guardan automáticamente.
+4054|Todos en {name} pueden abrir este documento
+4055|Archivo
+4056|Buscar y reemplazar
+4057|Buscar en el documento
+4058|Conclusiones
+4059|Corregir ortografía y gramática
+4060|Fuente
+4061|Tamaño de fuente
+4062|Formato
+4063|Formato
+4064|=
+4065|Vista de cuadrícula
+4066|Título 1
+4067|Título 2
+4068|Título 3
+4069|Título 4
+4070|Los títulos que añadas al documento aparecerán aquí.
+4071|Ocultar resueltos
+4072|Línea horizontal
+4073|Ideas
+4074|Imagen
+4075|Mejorar la redacción
+4076|Insertar
+4077|Insertar debajo
+4078|=
+4079|Cursiva
+4080|=
+4081|Última edición
+4082|Carta
+4083|Interlineado
+4084|Dirección del enlace
+4085|Escuchando… habla y vuelve a pulsar el micrófono para insertar.
+4086|Hacer una copia
+4087|Hacer más largo
+4088|Hacer más corto
+4089|Coincidir mayúsculas
+4090|Notas de reunión
+4091|Más acciones
+4092|Más cercano
+4093|Más profesional
+4094|Lo más prometedor
+4095|Mover a la papelera
+4096|Nombrar la versión actual
+4097|Nuevo documento
+4098|Siguiente coincidencia
+4099|Próximos pasos
+4100|Ningún documento coincide
+4101|Todavía no hay documentos
+4102|Todavía no hay versiones guardadas.
+4103|No hay documentos destacados
+4104|Texto normal
+4105|Sin conexión: los cambios se sincronizarán al reconectar
+4106|Solo tú puedes abrir este documento
+4107|Abriendo el documento
+4108|Orbital puede equivocarse. Comprueba los datos antes de compartir.
+4109|Orbital guarda una versión automáticamente cada diez minutos mientras se escribe. Ponle nombre a una para encontrarla fácilmente.
+4110|Esquema
+4111|Resumen
+4112|Propietario
+4113|Salto de página
+4114|Página de papel
+4115|Pega o escribe un enlace
+4116|Personas en este documento
+4117|Coincidencia anterior
+4118|Imprimir
+4119|Propuesta de proyecto
+4120|Pregunta
+4121|Preguntas por responder
+4122|Tiempo de lectura
+4123|Documentos recientes
+4124|Dirección del destinatario
+4125|Nombre del destinatario
+4126|Recomendaciones
+4127|Rehacer
+4128|Quitar enlace
+4129|Quitar destacado
+4130|Reabrir
+4131|Reemplazar
+4132|Reemplazar selección
+4133|Reemplazar con
+4134|{n} coincidencias reemplazadas
+4135|Reemplazar…
+4136|Responder
+4137|Restablecer
+4138|Resolver
+4139|Restaurar esta versión
+4140|Resultados
+4141|Alcance
+4142|Buscar documentos
+4143|Seleccionar todo
+4144|Selecciona algo de texto primero.
+4145|Selecciona texto y pulsa el botón de comentario para abrir una conversación sobre él.
+4146|Selecciona texto para reescribirlo, o coloca el cursor donde debe ir el texto nuevo.
+4147|Selecciona el texto que quieres comentar.
+4148|Palabras seleccionadas
+4149|Enviar respuesta
+4150|Mostrar comentarios
+4151|Mostrar esquema
+4152|Mostrar resueltos ({n})
+4153|Simplificar
+4154|Atentamente,
+4155|Alguien
+4156|Destacar
+4157|Destacados
+4158|Crear un documento
+4159|Tachado
+4160|Estilos
+4161|Proponer un esquema
+4162|Resumir
+4163|Tabla
+4164|Texto
+4165|Esa imagen es demasiado grande (máx. 20 MB).
+4166|Los puntos principales en pocas frases.
+4167|=
+4168|Fecha de hoy
+4169|Herramientas
+4170|Escribe aquí o pide a Orbital que escriba…
+4171|Subrayado
+4172|Documento sin título
+4173|Usar lo que Orbital sabe
+4174|=
+4175|Historial de versiones
+4176|Nombre de la versión
+4177|Versión restaurada. Deshacer recupera lo que había.
+4178|Versión guardada
+4179|Solo lectura
+4180|Viendo una versión guardada del {when}
+4181|Escritura por voz
+4182|La escritura por voz no está disponible en este navegador. Prueba Chrome, Edge o Safari.
+4183|¿Qué es este proyecto y por qué importa ahora?
+4184|¿Qué debería escribir Orbital?
+4185|¿Qué debería escribir Orbital? p. ej. Una introducción de dos párrafos para inversores
+4186|Qué incluye y qué no.
+4187|Recuento de palabras
+4188|Palabras
+4189|Escribir
+4190|Escribe aquí cualquier cosa: planes, informes, cartas, notas. Todo lo que escribes pasa a formar parte de lo que Orbital sabe, así que sus respuestas pueden basarse en ello.
+4191|La ayuda para escribir necesita un proveedor de IA. Configúralo en Ajustes → IA e investigación.
+4192|Tu dirección
+4193|Zoom
+4194|documento
+4195|p. ej. Enviado al cliente
+4196|yo
+4197|{i} de {n}
+4198|{n} min
+4199|{n} palabras
+4200|{sel} de {n} palabras
+4300|Añadir comentario
+4301|Lista con viñetas
+4302|Centrar
+4303|Reducir tamaño de fuente
+4304|Reducir sangría
+4305|Color de resaltado
+4306|Aumentar tamaño de fuente
+4307|Aumentar sangría
+4308|Código en línea
+4309|Insertar imagen
+4310|Insertar enlace
+4311|Insertar tabla
+4312|Justificar
+4313|Alinear a la izquierda
+4314|Lista numerada
+4315|Cita
+4316|Alinear a la derecha
+4317|Color del texto

@@ -1,7 +1,7 @@
 // Orbital desktop shell (Electron).
 // Runs the real Orbital server in a Node utility process (embedded PostgreSQL in the user's
 // app-data folder, bound to 127.0.0.1) and shows it in a hardened window.
-const { app, BrowserWindow, Menu, desktopCapturer, dialog, ipcMain, nativeTheme, safeStorage, shell, utilityProcess } = require("electron");
+const { app, BrowserWindow, Menu, clipboard, desktopCapturer, dialog, ipcMain, nativeTheme, safeStorage, shell, utilityProcess } = require("electron");
 const fs = require("node:fs");
 const net = require("node:net");
 const path = require("node:path");
@@ -151,6 +151,27 @@ function createWindow() {
       if (/^https?:\/\//.test(url)) shell.openExternal(url);
     }
   });
+  // Right-click menu: spelling suggestions, cut/copy/paste, links. (Electron shows none by default.)
+  win.webContents.on("context-menu", (_e, p) => {
+    const items = [];
+    if (p.misspelledWord) {
+      for (const w of p.dictionarySuggestions.slice(0, 6)) items.push({ label: w, click: () => win.webContents.replaceMisspelling(w) });
+      if (!p.dictionarySuggestions.length) items.push({ label: "No spelling suggestions", enabled: false });
+      items.push({ label: "Add to Dictionary", click: () => win.webContents.session.addWordToSpellCheckerDictionary(p.misspelledWord) }, { type: "separator" });
+    }
+    if (p.linkURL && /^https?:\/\//.test(p.linkURL)) {
+      items.push({ label: "Open Link in Browser", click: () => shell.openExternal(p.linkURL) }, { label: "Copy Link", click: () => clipboard.writeText(p.linkURL) }, { type: "separator" });
+    }
+    if (p.isEditable) {
+      items.push({ role: "undo", enabled: p.editFlags.canUndo }, { role: "redo", enabled: p.editFlags.canRedo }, { type: "separator" },
+        { role: "cut", enabled: p.editFlags.canCut }, { role: "copy", enabled: p.editFlags.canCopy }, { role: "paste", enabled: p.editFlags.canPaste },
+        { role: "pasteAndMatchStyle", enabled: p.editFlags.canPaste }, { type: "separator" }, { role: "selectAll" });
+    } else if (p.selectionText.trim()) {
+      items.push({ role: "copy" }, { type: "separator" }, { role: "selectAll" });
+    }
+    if (items.length) Menu.buildFromTemplate(items).popup({ window: win });
+  });
+
   // Only Orbital's own pages get camera, microphone and screen access (for Meetings); everything else is denied.
   const ses = win.webContents.session;
   const fromOrbital = (url) => typeof url === "string" && url.startsWith(origin());

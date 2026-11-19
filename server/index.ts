@@ -24,6 +24,7 @@ import { startMaintenance } from "./engines/maintenance.js";
 import "./engines/extraction.js";
 import { isAppRoute } from "../shared/routes.js";
 import { languageFromRequest } from "./lib/language.js";
+import { docs } from "./routes/docs.js";
 
 export async function createApp(opts: { jobs?: boolean } = {}) {
   const database = await getDb();
@@ -53,6 +54,7 @@ export async function createApp(opts: { jobs?: boolean } = {}) {
   app.use("/api", meetings);
   app.use("/api", productivity);
   app.use("/api", researchIntel);
+  app.use("/api", docs);
   app.use("/api", (_req, _res, next) => next(new HttpError(404, "Not found", "not_found")));
 
   const dist = config.staticDir;

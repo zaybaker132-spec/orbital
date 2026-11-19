@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Brain, Compass, FolderKanban, Lightbulb, LogOut, MessageSquarePlus, Network, PanelLeft, PanelRight, Search, Settings, BookOpen, Workflow, Video, Bell, Target, X,
+  Brain, Compass, FileText, FolderKanban, Lightbulb, LogOut, MessageSquarePlus, Network, PanelLeft, PanelRight, Search, Settings, BookOpen, Workflow, Video, Bell, Target, X,
 } from "lucide-react";
 import { useApp } from "@/state/app";
 import { useCore } from "@/state/core";
@@ -19,6 +19,7 @@ import { tx } from "@/i18n";
 export const NAV = [
   { to: "/core", label: "Neural Core", icon: Brain, key: "n" },
   { to: "/research", label: "Research", icon: Compass, key: "r" },
+  { to: "/papers", label: "Papers", icon: FileText, key: "d" },
   { to: "/knowledge", label: "Knowledge", icon: BookOpen, key: "k" },
   { to: "/connections", label: "Connections", icon: Network, key: "g" },
   { to: "/projects", label: "Projects", icon: FolderKanban, key: "p" },

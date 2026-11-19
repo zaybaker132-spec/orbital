@@ -14,6 +14,11 @@ export type OrbitalEvent =
   | { type: "actions" }
   | { type: "maintenance"; added: number }
   | { type: "extraction"; id: string; documentId: string; status: string; done: number; total: number }
+  /** Docs: live edits (Yjs updates), cursors and comment changes, for everyone with the doc open. */
+  | { type: "doc.update"; docId: string; update: string; client: string }
+  | { type: "doc.awareness"; docId: string; update: string; client: string }
+  | { type: "doc.comments"; docId: string }
+  | { type: "doc.meta"; docId: string }
   /** Personal: delivered only to the windows of `userId`. */
   | { type: "reminder"; userId: string; id: string; title: string; note: string; link: string | null };
 

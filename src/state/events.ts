@@ -7,6 +7,11 @@ import { t, tn } from "@/i18n";
 
 const runningResearch = new Set<string>();
 
+/** Live doc traffic (edits, cursors, comments) for whichever doc editors are open, plus "reconnected" so they resync. */
+type DocListener = (e: { type: string; docId?: string; [k: string]: any }) => void;
+const docListeners = new Set<DocListener>();
+export const onDocEvent = (fn: DocListener) => { docListeners.add(fn); return () => { docListeners.delete(fn); }; };
+
 /** Subscribe to the server's live event stream. Every Neural Core state here reflects real work. */
 export function useLiveEvents(enabled: boolean, workspaceId?: string) {
   useEffect(() => {
@@ -19,6 +24,8 @@ export function useLiveEvents(enabled: boolean, workspaceId?: string) {
       // EventSource can't send headers: the workspace goes in the query string and is checked server-side.
       es = new EventSource(`/api/events${workspaceId ? `?workspace=${workspaceId}` : ""}`, { withCredentials: true });
       es.onmessage = (m) => handle(JSON.parse(m.data));
+      // After a reconnect, open docs fetch whatever they missed while the stream was down.
+      es.onopen = () => docListeners.forEach((fn) => fn({ type: "doc.reconnected" }));
       es.onerror = () => { es?.close(); retry = setTimeout(connect, 4000); };
     };
     connect();
@@ -27,6 +34,7 @@ export function useLiveEvents(enabled: boolean, workspaceId?: string) {
 }
 
 function handle(e: any) {
+  if (typeof e.type === "string" && e.type.startsWith("doc.")) { docListeners.forEach((fn) => fn(e)); if (e.type === "doc.meta") invalidate("/docs"); return; }
   const core = useCore.getState();
   switch (e.type) {
     case "core":

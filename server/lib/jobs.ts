@@ -23,6 +23,13 @@ export async function enqueue(workspaceId: string, type: string, payload: Record
   return r.rows[0].id;
 }
 
+/** Queue a job unless the same one (type + key field) is already waiting: for work triggered by every keystroke save. */
+export async function enqueueOnce(workspaceId: string, type: string, key: string, payload: Record<string, unknown>) {
+  const waiting = await db().query("SELECT 1 FROM jobs WHERE workspace_id=$1 AND type=$2 AND status='queued' AND payload->>$3 = $4 LIMIT 1", [workspaceId, type, key, String(payload[key])]);
+  if (waiting.rows.length) return null;
+  return enqueue(workspaceId, type, payload);
+}
+
 async function tick() {
   while (running < MAX_CONCURRENCY) {
     const r = await db().query<{ id: string; workspace_id: string; type: string; payload: any; attempts: number }>(

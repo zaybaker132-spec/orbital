@@ -39,6 +39,7 @@ const VIEWER_WRITES = [
   /^\/(reminders|focus)(\/[^/]+(\/end)?)?$/, // personal: reminders and focus sessions
   /^\/nudges\/dismiss$/,
   /^\/voice\/transcribe$/,
+  /^\/docs\/[^/]+\/(awareness|sync)$/, // viewers see live edits and show their cursor; sync only reads for them
   /^\/meetings(\/[^/]+(\/(signal|state|chat|lock|remove|end))?)?$/, // meetings are personal, not workspace knowledge
 ];
 

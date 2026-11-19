@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from "react";
-import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { useApp } from "./state/app";
 import { api } from "./lib/api";
@@ -29,6 +29,10 @@ const HypothesesPage = lazy(() => import("./pages/Hypotheses").then((m) => ({ de
 const MaintenancePage = lazy(() => import("./pages/Maintenance").then((m) => ({ default: m.MaintenancePage })));
 const SearchPage = lazy(() => import("./pages/Search").then((m) => ({ default: m.SearchPage })));
 const ClipPage = lazy(() => import("./pages/Clip").then((m) => ({ default: m.ClipPage })));
+const DocsHome = lazy(() => import("./pages/docs/DocsHome").then((m) => ({ default: m.DocsHome })));
+const DocEditorPage = lazy(() => import("./pages/docs/DocEditor").then((m) => ({ default: m.DocEditorPage })));
+/** Papers used to be called Docs: old links still open. */
+function LegacyDocRedirect() { const { id } = useParams(); return <Navigate to={`/papers/${id}`} replace />; }
 const SettingsPage = lazy(() => import("./pages/Settings").then((m) => ({ default: m.SettingsPage })));
 
 /** Invite links (/invite/<token>) survive sign-in: the token is held for this tab until accepted. */
@@ -91,6 +95,10 @@ export function App() {
               <Route path="/core" element={<CorePage />} />
               <Route path="/research" element={<ResearchPage />} />
               <Route path="/research/:id" element={<ResearchPage />} />
+              <Route path="/papers" element={<DocsHome />} />
+              <Route path="/papers/:id" element={<DocEditorPage />} />
+              <Route path="/docs" element={<Navigate to="/papers" replace />} />
+              <Route path="/docs/:id" element={<LegacyDocRedirect />} />
               <Route path="/knowledge" element={<KnowledgePage />} />
               <Route path="/knowledge/:id" element={<KnowledgePage />} />
               <Route path="/connections" element={<ConnectionsPage />} />
