@@ -7,18 +7,21 @@ import { createPersonalWorkspace, resolveWorkspace } from "../auth/workspace.js"
 import { isServerAdmin, maySignUp } from "./waitlist.js";
 import { createSession, destroySession, hashPassword, verifyPassword, COOKIE, requireUser } from "../auth/auth.js";
 import { rateLimit } from "../lib/rateLimit.js";
-import { sha256 } from "../lib/crypto.js";
+import { randomToken, sha256 } from "../lib/crypto.js";
+import { assertNotLockedOut, authEvent, linkBase } from "../lib/authEvents.js";
+import { emailConfigured, layout, sendEmail } from "../lib/email.js";
 import { aiStatus, describeAiError } from "../ai/provider.js";
 import { subscribe } from "../lib/events.js";
 import { MODES, respond } from "../engines/chat.js";
 import { createMemory, deleteMemory, listMemories, MEMORY_CATEGORIES, strip, updateMemory } from "../engines/memory.js";
 import { createEdge, getGraph, getNodeDetail, RELATIONS, setEdgeStatus, suggestConnections, upsertNode } from "../engines/graph.js";
 import { logActivity } from "../lib/activity.js";
+import { log } from "../lib/log.js";
 
 export const authRouter = Router();
 const authLimit = rateLimit({ windowMs: 15 * 60_000, max: 20, key: "ip", name: "auth" });
 
-const Credentials = z.object({ email: z.email().max(200).transform((e) => e.toLowerCase().trim()), password: z.string().min(10, "Use at least 10 characters").max(200) });
+const Credentials = z.object({ email: z.string().trim().toLowerCase().max(200).pipe(z.email()), password: z.string().min(10, "Use at least 10 characters").max(200) });
 
 authRouter.post("/signup", authLimit, ah(async (req, res) => {
   const body = parse(Credentials.extend({ displayName: z.string().max(80).optional() }), req.body);
@@ -33,16 +36,22 @@ authRouter.post("/signup", authLimit, ah(async (req, res) => {
     return r.rows[0].id;
   });
   await createSession(res, userId, req.get("user-agent"));
+  await authEvent("signup", { req, userId, email: body.email });
   res.status(201).json({ ok: true });
 }));
 
 authRouter.post("/login", authLimit, ah(async (req, res) => {
   const body = parse(Credentials, req.body);
+  await assertNotLockedOut(body.email);
   const u = (await db().query<{ id: string; password_hash: string }>("SELECT id, password_hash FROM users WHERE email=$1", [body.email])).rows[0];
   // Always run a hash comparison so response timing doesn't reveal whether the email exists.
   const ok = await verifyPassword(body.password, u?.password_hash ?? "scrypt$AAAAAAAAAAAAAAAAAAAAAA==$" + "A".repeat(86) + "==");
-  if (!u || !ok) throw new HttpError(401, "Email or password is incorrect", "bad_credentials");
+  if (!u || !ok) {
+    await authEvent("login_failed", { req, userId: u?.id ?? null, email: body.email });
+    throw new HttpError(401, "Email or password is incorrect", "bad_credentials");
+  }
   await createSession(res, u.id, req.get("user-agent"));
+  await authEvent("login", { req, userId: u.id, email: body.email });
   res.json({ ok: true });
 }));
 
@@ -66,6 +75,59 @@ authRouter.post("/password", requireUser, authLimit, ah(async (req, res) => {
   await db().query("UPDATE users SET password_hash=$2 WHERE id=$1", [req.user!.id, await hashPassword(b.next)]);
   const mine = req.cookies?.[COOKIE] ? sha256(req.cookies[COOKIE]) : "";
   await db().query("DELETE FROM sessions WHERE user_id=$1 AND id<>$2", [req.user!.id, mine]);
+  await db().query("DELETE FROM password_resets WHERE user_id=$1", [req.user!.id]);
+  await authEvent("password_changed", { req, userId: req.user!.id });
+  res.json({ ok: true });
+}));
+
+// ── Password reset by email ─────────────────────────────────────────────────
+const RESET_TTL_MIN = 60;
+const resetLimit = rateLimit({ windowMs: 60 * 60_000, max: 6, key: "ip", name: "password-reset" });
+
+/** A one-time reset link for a user (also used by the server-side `npm run reset-link` tool). */
+export async function createResetLink(userId: string, base: string) {
+  const token = randomToken();
+  await db().query("INSERT INTO password_resets(token_hash, user_id, expires_at) VALUES ($1,$2,$3)", [sha256(token), userId, new Date(Date.now() + RESET_TTL_MIN * 60_000)]);
+  return `${base.replace(/\/$/, "")}/reset-password?token=${token}`;
+}
+
+/**
+ * Ask for a reset link. The answer is the same whether or not an account exists (no account discovery),
+ * except that a failure to send is reported honestly rather than claimed as sent.
+ */
+authRouter.post("/password/forgot", resetLimit, ah(async (req, res) => {
+  const { email } = parse(z.object({ email: z.string().trim().toLowerCase().max(200).pipe(z.email()) }), req.body);
+  if (!emailConfigured()) throw new HttpError(503, "Password reset by email isn't set up on this server. Ask the person who runs it to reset your password.", "email_unavailable");
+  const base = linkBase(req);
+  if (!base) throw new HttpError(503, "Password reset links need ORBITAL_PUBLIC_URL to be set on the server.", "email_unavailable");
+  const u = (await db().query<{ id: string }>("SELECT id FROM users WHERE email=$1", [email])).rows[0];
+  await authEvent("password_reset_requested", { req, userId: u?.id ?? null, email });
+  if (u) {
+    const link = await createResetLink(u.id, base);
+    const r = await sendEmail("password_reset", email, {
+      subject: "Reset your Orbital password",
+      ...layout({ heading: "Reset your password", paragraphs: [`Someone (hopefully you) asked to reset the password for this Orbital account. The link works once and expires in ${RESET_TTL_MIN} minutes.`, "If you didn't ask for this, ignore this email: your password stays the same."], button: { label: "Choose a new password", url: link } }),
+    });
+    if (r.status !== "sent") throw new HttpError(502, "We couldn't send the email right now. Please try again in a few minutes.", "email_failed");
+  }
+  res.json({ ok: true, message: "If an account exists for that address, a reset link is on its way. It expires in an hour." });
+}));
+
+authRouter.post("/password/reset", resetLimit, ah(async (req, res) => {
+  const b = parse(z.object({ token: z.string().min(20).max(200), password: z.string().min(10, "Use at least 10 characters").max(200) }), req.body);
+  const userId = await db().tx(async (q) => {
+    const r = await q.query<{ user_id: string }>("UPDATE password_resets SET used_at=now() WHERE token_hash=$1 AND used_at IS NULL AND expires_at > now() RETURNING user_id", [sha256(b.token)]);
+    const id = r.rows[0]?.user_id;
+    if (!id) return null;
+    await q.query("UPDATE users SET password_hash=$2 WHERE id=$1", [id, await hashPassword(b.password)]);
+    // Every device is signed out, and any other outstanding links stop working.
+    await q.query("DELETE FROM sessions WHERE user_id=$1", [id]);
+    await q.query("DELETE FROM password_resets WHERE user_id=$1 AND used_at IS NULL", [id]);
+    return id;
+  });
+  if (!userId) throw new HttpError(400, "This reset link has expired or was already used. Ask for a new one.", "invalid_token");
+  await authEvent("password_reset", { req, userId });
+  await createSession(res, userId, req.get("user-agent"));
   res.json({ ok: true });
 }));
 
@@ -90,7 +152,7 @@ function describeAgent(ua: string | null) {
 }
 
 authRouter.get("/me", ah(async (req, res) => {
-  if (!req.user) return res.json({ user: null, signupAllowed: config.allowSignup, ai: aiStatus(), desktop: config.desktop });
+  if (!req.user) return res.json({ user: null, signupAllowed: config.allowSignup, passwordReset: emailConfigured(), ai: aiStatus(), desktop: config.desktop });
   const prefs = (await db().query<{ settings: any }>("SELECT settings FROM user_preferences WHERE user_id=$1", [req.user.id])).rows[0]?.settings ?? {};
   const workspaces = (await db().query(
     `SELECT w.id, w.name, w.kind, m.role FROM workspaces w JOIN workspace_members m ON m.workspace_id=w.id
@@ -172,7 +234,7 @@ api.post("/conversations/:id/messages", chatLimit, ah(async (req, res) => {
   try {
     await respond(workspaceId, id, b.content, b.mode, write, ac.signal, b.attachments, actor(req));
   } catch (e: any) {
-    console.error("[chat]", e);
+    log.error("chat failed", { err: e });
     write("error", { message: ac.signal.aborted ? "Stopped." : friendlyAiError(e) });
   }
   res.end();
@@ -283,6 +345,19 @@ api.post("/feedback", ah(async (req, res) => {
   await logActivity(ws(req), "feedback.given", `${b.rating > 0 ? "Helpful" : "Not helpful"}: ${b.targetType}`);
   res.json({ ok: true });
 }));
+
+/** A milestone that belongs to this workspace (and, when given, to this project). */
+export async function ownMilestone(workspaceId: string, milestoneId: string, projectId?: string) {
+  const r = await db().query("SELECT 1 FROM milestones WHERE id=$1 AND workspace_id=$2" + (projectId ? " AND project_id=$3" : ""), projectId ? [milestoneId, workspaceId, projectId] : [milestoneId, workspaceId]);
+  if (!r.rows.length) throw notFound("Milestone");
+}
+
+/** A folder that belongs to this workspace. */
+export async function ownFolder(workspaceId: string, folderId: string) {
+  if (!isUuid(folderId)) throw new HttpError(400, "Invalid folder", "invalid_input");
+  const r = await db().query("SELECT 1 FROM folders WHERE id=$1 AND workspace_id=$2", [folderId, workspaceId]);
+  if (!r.rows.length) throw notFound("Folder");
+}
 
 export async function ownProject(workspaceId: string, projectId: string) {
   if (!isUuid(projectId)) throw new HttpError(400, "Invalid project");

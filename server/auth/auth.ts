@@ -4,6 +4,7 @@ import type { RequestHandler, Response } from "express";
 import { db } from "../db/client.js";
 import { config } from "../config.js";
 import { HttpError } from "../lib/http.js";
+import { annotateContext } from "../lib/context.js";
 
 const scrypt = promisify(crypto.scrypt) as (pw: string, salt: Buffer, len: number, opts: crypto.ScryptOptions) => Promise<Buffer>;
 const SCRYPT = { N: 16384, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
@@ -48,7 +49,7 @@ export const loadUser: RequestHandler = async (req, _res, next) => {
         [sha256(token)],
       );
       const u = r.rows[0];
-      if (u) req.user = { id: u.id, email: u.email, displayName: u.display_name };
+      if (u) { req.user = { id: u.id, email: u.email, displayName: u.display_name }; annotateContext({ userId: u.id }); }
     }
     next();
   } catch (e) {
@@ -67,6 +68,8 @@ export const requireUser: RequestHandler = (req, _res, next) => {
  */
 export const requireCsrfHeader: RequestHandler = (req, _res, next) => {
   if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return next();
+  // Mail apps' one-click unsubscribe (RFC 8058) can't send custom headers; the link's token is the authority.
+  if (req.method === "POST" && req.path === "/public/waitlist/unsubscribe") return next();
   if (req.get("x-orbital-request") !== "1") return next(new HttpError(403, "Missing request header", "csrf"));
   next();
 };

@@ -7,8 +7,9 @@ import http from "node:http";
  */
 export interface MockCall { body: any; headers: http.IncomingHttpHeaders }
 
+let currentModel = "mock";
 const msg = (content: any[], stop = "end_turn") => ({
-  id: `msg_${Math.random().toString(36).slice(2)}`, type: "message", role: "assistant", model: "mock",
+  id: `msg_${Math.random().toString(36).slice(2)}`, type: "message", role: "assistant", model: currentModel,
   content, stop_reason: stop, stop_sequence: null, usage: { input_tokens: 10, output_tokens: 10 },
 });
 
@@ -125,6 +126,7 @@ export function startMockAnthropic(): Promise<{ url: string; calls: MockCall[]; 
     req.on("data", (c) => (raw += c));
     req.on("end", () => {
       const body = JSON.parse(raw || "{}");
+      currentModel = body.model || "mock";
       calls.push({ body, headers: req.headers });
       if (body.tools?.some((t: any) => t.name === "web_search")) {
         res.writeHead(200, { "content-type": "application/json" });

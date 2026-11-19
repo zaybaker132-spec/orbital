@@ -1605,3 +1605,50 @@
 4503|L'inscription est sur invitation. Donnez accès aux personnes ci-dessous ; elles créent leur compte avec l'e-mail utilisé pour s'inscrire, depuis la page de connexion. Définissez ORBITAL_ALLOW_SIGNUP=true pour ouvrir l'inscription à tous.
 4504|Retirer l'invitation
 4505|{email} peut maintenant créer un compte
+
+4600|IA
+4601|Utilisation de l'IA ce mois-ci
+4602|Tous les espaces de travail
+4603|Tâches en arrière-plan
+4604|Consultez votre boîte de réception : nous vous avons envoyé un lien pour confirmer votre adresse.
+4605|Choisissez un nouveau mot de passe
+4606|L'e-mail n'est pas configuré sur ce serveur, aucun e-mail n'a donc été envoyé : prévenez la personne vous-même.
+4607|M'envoyer des e-mails sur mon accès à Orbital et les nouveautés du produit. Je peux me désinscrire à tout moment.
+4608|Tous les appareils connectés à votre compte seront déconnectés.
+4609|Tâches en échec
+4610|Mot de passe oublié ?
+4611|HTTPS imposé
+4612|HTTPS non imposé
+4613|Si un compte existe pour cette adresse, un lien de réinitialisation est en route. Il expire dans une heure.
+4614|Non configuré : les e-mails de réinitialisation et de liste d'attente ne sont pas envoyés
+4615|Seuls les administrateurs du serveur voient ceci.
+4616|Processus
+4617|Remise en file pour être relancée
+4618|Resend configuré
+4619|Réinitialisez votre mot de passe
+4620|Enregistrer et se connecter
+4621|Sécurité
+4622|Envoyer le lien
+4623|État du serveur
+4624|L'e-mail n'a pas pu être envoyé : prévenez la personne vous-même.
+4625|Elle s'est désinscrite, aucun e-mail n'a donc été envoyé : prévenez-la vous-même.
+4626|Nous lui avons écrit pour lui dire qu'elle a accès.
+4627|Nous vous enverrons un lien par e-mail pour choisir un nouveau mot de passe.
+4628|Vous êtes sur la liste, mais nous n'avons pas pu envoyer l'e-mail de confirmation pour l'instant. Nous vous préviendrons quand même dès que vous aurez accès.
+4629|Votre mot de passe
+4630|alertes activées
+4631|plafond de {n} tokens par espace de travail et par mois
+4632|estimé au prix catalogue
+4633|sur invitation
+4634|à surveiller
+4635|pas de webhook d'alerte
+4636|non confirmé
+4637|sur {cap} autorisés
+4638|ok
+4639|requêtes
+4640|inscription ouverte
+4641|tokens
+4642|désinscrit
+4643|actif depuis {h} h · {mb} Mo de mémoire
+4644|{n} en échec
+4645|{q} en attente · {r} en cours · {f} en échec sur 24 h

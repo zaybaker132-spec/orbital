@@ -8,7 +8,7 @@ import { AI_TOOLS, COMPUTERS, DEVICES, HEARD_FROM, NOTES_APPS, PERSONAS, REMEMBE
 
 // Invite-only launch: sign-up closed, admins can always join, waitlist people join once let in.
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), "orbital-invite-test-"));
-Object.assign(process.env, { ORBITAL_DATA_DIR: dir, AI_PROVIDER: "none", DATABASE_URL: "", ORBITAL_ALLOW_SIGNUP: "false", ORBITAL_ADMIN_EMAILS: "boss@orbital.test", RESEARCH_WIKIPEDIA: "false", RESEARCH_OPENALEX: "false" });
+Object.assign(process.env, { ORBITAL_DATA_DIR: dir, AI_PROVIDER: "none", DATABASE_URL: process.env.TEST_DATABASE_URL || "", ORBITAL_ALLOW_SIGNUP: "false", ORBITAL_ADMIN_EMAILS: "boss@orbital.test", RESEARCH_WIKIPEDIA: "false", RESEARCH_OPENALEX: "false" });
 let server: Server;
 let base = "";
 class Client {
@@ -41,7 +41,7 @@ test("invite-only: admin joins, strangers wait, admitted waitlist people join", 
   const refused = await ana.req("POST", "/api/auth/signup", { email: "ana@example.test", password: "long enough password" });
   assert.equal(refused.status, 403);
   assert.match(refused.data.error, /invite-only/);
-  const joined = await ana.req("POST", "/api/public/waitlist", { email: "ana@example.test", persona: PERSONAS[0], remember: [REMEMBER[0]], scale: SCALE[0], aiTools: [AI_TOOLS[0]], notesApps: [NOTES_APPS[0]], computers: [COMPUTERS[0]], devices: [DEVICES[0]], heardFrom: HEARD_FROM[0] });
+  const joined = await ana.req("POST", "/api/public/waitlist", { email: "ana@example.test", persona: PERSONAS[0], remember: [REMEMBER[0]], scale: SCALE[0], aiTools: [AI_TOOLS[0]], notesApps: [NOTES_APPS[0]], computers: [COMPUTERS[0]], devices: [DEVICES[0]], heardFrom: HEARD_FROM[0], consent: true });
   assert.ok(joined.status < 300, JSON.stringify(joined.data));
   const list = await boss.req("GET", "/api/admin/waitlist");
   assert.equal(list.data.signupOpen, false);

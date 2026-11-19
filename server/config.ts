@@ -71,6 +71,31 @@ export const config = {
     model: process.env.EMBEDDINGS_MODEL || "text-embedding-3-small",
     baseUrl: (process.env.EMBEDDINGS_BASE_URL || process.env.OPENAI_BASE_URL || "https://api.openai.com/v1").replace(/\/$/, ""),
   },
+  /**
+   * Hosting. `trustProxy`: how many proxies sit in front of Orbital (Render, Fly, a load balancer = 1),
+   * so client IPs (rate limits) and https detection are right. `forceHttps`: redirect http to https and
+   * send HSTS; on by default in production when the public URL is https.
+   */
+  trustProxy: process.env.ORBITAL_TRUST_PROXY ?? "loopback",
+  /** Run background jobs and schedules in this process (turn off on extra web instances). */
+  runJobs: bool(process.env.ORBITAL_RUN_JOBS, true),
+  forceHttps: bool(process.env.ORBITAL_FORCE_HTTPS, process.env.NODE_ENV === "production" && /^https:/.test(process.env.ORBITAL_PUBLIC_URL || "")),
+  /** Structured JSON logs (one line per event) in production; readable lines in development. */
+  logFormat: (process.env.LOG_FORMAT || (process.env.NODE_ENV === "production" ? "json" : "pretty")) as "json" | "pretty",
+  /** Optional Slack-compatible webhook for operational alerts (server errors, failing background jobs). */
+  alertWebhook: process.env.ORBITAL_ALERT_WEBHOOK || "",
+  /** Transactional email (password reset, waitlist). Resend; without a key, nothing is sent and the app says so. */
+  email: {
+    resendApiKey: process.env.RESEND_API_KEY || "",
+    apiUrl: (process.env.RESEND_API_URL || "https://api.resend.com").replace(/\/$/, ""),
+    from: process.env.ORBITAL_EMAIL_FROM || "",
+  },
+  /** AI spend control. Monthly token cap per workspace (input + output; 0 = no cap) and request limits. */
+  aiLimits: {
+    monthlyTokensPerWorkspace: Number(process.env.ORBITAL_AI_MONTHLY_TOKENS || 0),
+    timeoutMs: Number(process.env.ANTHROPIC_TIMEOUT_MS || 10 * 60_000),
+    maxRetries: Number(process.env.ANTHROPIC_MAX_RETRIES || 2),
+  },
   research: {
     webSearch: bool(process.env.RESEARCH_WEB_SEARCH, true),
     wikipedia: bool(process.env.RESEARCH_WIKIPEDIA, true),

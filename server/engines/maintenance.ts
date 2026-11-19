@@ -6,6 +6,7 @@ import { emit } from "../lib/events.js";
 import { createDocument, deleteDocument, updateDocument } from "./knowledge.js";
 import { updateMemory } from "./memory.js";
 import { upsertNode } from "./graph.js";
+import { log } from "../lib/log.js";
 
 /**
  * Automatic knowledge maintenance.
@@ -157,7 +158,7 @@ export async function scan(workspaceId: string, opts: { ai?: boolean } = {}) {
         else found.push({ kind: "conflicting_memories", fingerprint: fp("conflicting_memories", c.a.id, c.b.id), title: "", reason: r.explanation, items: [], proposal: {}, ai: true, status: "ignored" });
       }
     } catch (e: any) {
-      console.warn("[maintenance] AI review unavailable:", e.message);
+      log.warn("maintenance AI review unavailable", { err: e });
     }
   } else {
     for (const c of fresh.filter((x) => x.signal)) {
@@ -385,14 +386,14 @@ export async function scheduledScans() {
      WHERE (r.scanned_at IS NULL OR r.scanned_at < now() - interval '22 hours')
        AND (EXISTS (SELECT 1 FROM documents d WHERE d.workspace_id=w.id) OR EXISTS (SELECT 1 FROM memories m WHERE m.workspace_id=w.id))
      LIMIT 50`)).rows;
-  for (const w of due) await scan(w.id).catch((e) => console.warn("[maintenance]", e.message));
+  for (const w of due) await scan(w.id).catch((e) => log.warn("maintenance failed", { err: e }));
   return due.length;
 }
 export function startMaintenance(intervalMs = 3 * 60 * 60_000) {
   if (timer) return;
   kick = setTimeout(() => scheduledScans().catch(() => {}), 60_000);
   kick.unref?.();
-  timer = setInterval(() => scheduledScans().catch((e) => console.error("[maintenance]", e.message)), intervalMs);
+  timer = setInterval(() => scheduledScans().catch((e) => log.error("maintenance failed", { err: e })), intervalMs);
   timer.unref?.();
 }
 export function stopMaintenance() { if (timer) clearInterval(timer); if (kick) clearTimeout(kick); timer = kick = null; }

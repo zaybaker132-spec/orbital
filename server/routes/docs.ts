@@ -8,7 +8,7 @@ import { requireLLM } from "../ai/provider.js";
 import { retrieveContext, formatContext } from "../engines/retrieval.js";
 import { claimSeed, createDoc, DocError, relayAwareness, renameDoc, saveSnapshot, sync } from "../engines/docs.js";
 import { deleteDocument } from "../engines/knowledge.js";
-import { ownProject } from "./core.js";
+import { ownFolder, ownProject } from "./core.js";
 
 /** Docs: full documents, written together in real time (see engines/docs.ts). */
 export const docs = Router();
@@ -51,6 +51,7 @@ const Create = z.object({
 docs.post("/docs", ah(async (req, res) => {
   const b = parse(Create, req.body ?? {});
   if (b.projectId) await ownProject(ws(req), b.projectId);
+  if (b.folderId) await ownFolder(ws(req), b.folderId);
   res.status(201).json(await createDoc(ws(req), actor(req), b));
 }));
 

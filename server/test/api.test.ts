@@ -11,7 +11,7 @@ process.env.ORBITAL_DATA_DIR = dir;
 process.env.AI_PROVIDER = "none";
 process.env.RESEARCH_WIKIPEDIA = "false";
 process.env.RESEARCH_OPENALEX = "false";
-process.env.DATABASE_URL = "";
+process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || "";
 process.env.ORBITAL_ADMIN_EMAILS = "alice@example.com";
 
 let server: Server;
@@ -176,8 +176,9 @@ test("waitlist: public signup, validation, spam trap, admin-only export", async 
   const entry = {
     email: "Founder@Startup.io", persona: "Founder or operator", remember: ["Projects I'm building"], scale: "Me and a small team",
     aiTools: ["Claude", "Cursor"], notesApps: ["Obsidian"], computers: ["macOS", "Windows"], devices: ["iPhone or iPad"],
-    heardFrom: "A friend", instagram: "@founder.io", compound: "=HYPERLINK(\"x\")",
+    heardFrom: "A friend", instagram: "@founder.io", compound: "=HYPERLINK(\"x\")", consent: true,
   };
+  assert.equal((await anon.req("POST", "/api/public/waitlist", { ...entry, consent: undefined })).status, 400, "consent is required");
   const a = await anon.req("POST", "/api/public/waitlist", entry);
   assert.equal(a.status, 201);
   assert.equal(a.data.position, 1);

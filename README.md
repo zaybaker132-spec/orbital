@@ -204,6 +204,8 @@ The full guide — how it runs a business, who decides what, integration recipes
 - [Architecture](docs/ARCHITECTURE.md): read before changing the server, engines, data model or AI provider layer.
 - [Orbital for business](docs/BUSINESS.md): read when deploying Orbital for a company or integrating it with other tools.
 - [Desktop app](docs/DESKTOP.md): read when building, signing or distributing the macOS, Windows and Linux apps.
+- [Backend architecture](docs/BACKEND_ARCHITECTURE.md), [API](docs/API_DOCUMENTATION.md), [Database](docs/DATABASE_DOCUMENTATION.md): read before changing routes, the schema or background work.
+- [Security audit](docs/SECURITY_AUDIT.md), [Test results](docs/TEST_RESULTS.md), [Production readiness](docs/PRODUCTION_READINESS.md), [Environment setup](docs/ENVIRONMENT_SETUP.md): read before deploying or changing anything security-related.
 - [Research intelligence](docs/RESEARCH.md): read to understand source scores, the contradiction lab, lineage, hypothesis tests, living reports and knowledge extraction.
 - [Everyday tools](docs/EVERYDAY.md): read to learn what voice, search, file import, reminders, the web clipper, learning and focus mode do and what each needs.
 - [Meetings](docs/MEETINGS.md): read before running video meetings for others, especially on strict networks (TURN relay).

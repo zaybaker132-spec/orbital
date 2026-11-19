@@ -30,6 +30,9 @@ talking to Supabase.
    - `ORBITAL_PUBLIC_URL`: your site's address, e.g. `https://orbital.yourdomain.com` (until the domain is set up,
      use the `https://orbital-xxxx.onrender.com` address Render shows, and change it later)
    - `ORBITAL_ADMIN_EMAILS`: your email address
+   - `RESEND_API_KEY` and `ORBITAL_EMAIL_FROM`: email for password resets and waitlist confirmations (see step 5).
+     You can leave them empty at first; the app then tells people email isn't set up instead of pretending.
+   - `ORBITAL_ALERT_WEBHOOK` (optional): a Slack incoming-webhook address that receives server errors
 3. Click **Apply**. The first build takes a few minutes. When it says **Live**, open the address.
 4. Click **Create an account** with your admin email. You're in.
 
@@ -53,11 +56,18 @@ addresses and tokens.
 
 ## 5. Before you announce it
 
+- **Email:** at resend.com, add and verify your domain, create a *sending* API key, and set `RESEND_API_KEY` and
+  `ORBITAL_EMAIL_FROM` (e.g. `Orbital <hello@yourdomain.com>`) in Render. Check with "Forgot your password?" on
+  your own account. Settings → Server status shows whether email, AI and HTTPS are set up.
+- **AI allowance:** `ORBITAL_AI_MONTHLY_TOKENS` (2,000,000 by default in the blueprint) caps each workspace per month.
+  Settings → AI & research shows usage and estimated cost.
+
 - **AI cost:** everyone's questions use your Anthropic key. Set a monthly spending limit at console.anthropic.com, and let
   people in gradually.
 - **Privacy policy and terms:** you're storing people's personal data. Add both before opening to the public.
-- **Backups:** Supabase backs up daily on paid plans; on the free plan, export regularly (Settings → Your data →
-  Export, per workspace) or upgrade.
+- **Backups:** check what your Supabase plan includes (*Database → Backups*) and keep your own nightly `pg_dump`;
+  test one restore. Details in [DATABASE_DOCUMENTATION.md](DATABASE_DOCUMENTATION.md).
+- **Full checklist:** [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md). Every setting: [ENVIRONMENT_SETUP.md](ENVIRONMENT_SETUP.md).
 - **Meetings on strict networks** need a TURN relay (see `docs/MEETINGS.md`). Optional.
 
 ## Updating

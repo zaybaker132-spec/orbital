@@ -8,6 +8,7 @@ import { createDocument } from "../engines/knowledge.js";
 import { createMemory, MEMORY_CATEGORIES } from "../engines/memory.js";
 import { answerOnce } from "../engines/chat.js";
 import { friendlyAiError } from "./core.js";
+import { annotateContext } from "../lib/context.js";
 
 /**
  * Public API for a workspace's own systems (CRM, help desk, internal tools, Zapier/Make/n8n).
@@ -28,6 +29,7 @@ const tokenAuth: RequestHandler = async (req, _res, next) => {
     if (!t) throw new HttpError(401, "Invalid or revoked token", "unauthenticated");
     req.apiToken = { id: t.id, scopes: t.scopes };
     req.workspace = { id: t.workspace_id, name: t.name, kind: t.kind as any, role: "member" };
+    annotateContext({ workspaceId: t.workspace_id, feature: `v1:${req.method} ${req.path}` });
     db().query("UPDATE api_tokens SET last_used_at=now() WHERE id=$1", [t.id]).catch(() => {});
     next();
   } catch (e) {

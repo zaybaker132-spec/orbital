@@ -1605,3 +1605,50 @@
 4503|Die Registrierung ist nur auf Einladung. Lass Personen unten zu; sie erstellen ihr Konto auf der Anmeldeseite mit der E-Mail, mit der sie sich eingetragen haben. Setze ORBITAL_ALLOW_SIGNUP=true, um die Registrierung für alle zu öffnen.
 4504|Einladung zurückziehen
 4505|{email} kann jetzt ein Konto erstellen
+
+4600|KI
+4601|KI-Nutzung diesen Monat
+4602|Alle Arbeitsbereiche
+4603|Hintergrundaufgaben
+4604|Sieh in deinem Posteingang nach: Wir haben dir einen Link zur Bestätigung deiner Adresse geschickt.
+4605|Neues Passwort wählen
+4606|E-Mail ist auf diesem Server nicht eingerichtet, daher wurde keine E-Mail gesendet: Sag der Person selbst Bescheid.
+4607|Schickt mir E-Mails zu meinem Orbital-Zugang und Produktneuigkeiten. Ich kann mich jederzeit abmelden.
+4608|Alle Geräte, die bei deinem Konto angemeldet sind, werden abgemeldet.
+4609|Fehlgeschlagene Aufgaben
+4610|Passwort vergessen?
+4611|HTTPS erzwungen
+4612|HTTPS nicht erzwungen
+4613|Falls es ein Konto mit dieser Adresse gibt, ist ein Link zum Zurücksetzen unterwegs. Er läuft in einer Stunde ab.
+4614|Nicht eingerichtet: E-Mails zum Zurücksetzen des Passworts und zur Warteliste werden nicht gesendet
+4615|Nur Server-Admins sehen das.
+4616|Prozess
+4617|Zur erneuten Ausführung eingereiht
+4618|Resend eingerichtet
+4619|Passwort zurücksetzen
+4620|Speichern und anmelden
+4621|Sicherheit
+4622|Link senden
+4623|Serverstatus
+4624|Die E-Mail konnte nicht gesendet werden: Sag der Person selbst Bescheid.
+4625|Die Person hat sich abgemeldet, daher wurde keine E-Mail gesendet: Sag ihr selbst Bescheid.
+4626|Wir haben der Person geschrieben, dass sie dabei ist.
+4627|Wir schicken dir per E-Mail einen Link, um ein neues Passwort zu wählen.
+4628|Du stehst auf der Liste, aber wir konnten die Bestätigungs-E-Mail gerade nicht senden. Wir sagen dir trotzdem Bescheid, sobald du dabei bist.
+4629|Dein Passwort
+4630|Warnungen an
+4631|Obergrenze {n} Tokens pro Arbeitsbereich und Monat
+4632|geschätzt zum Listenpreis
+4633|nur mit Einladung
+4634|braucht Aufmerksamkeit
+4635|kein Warnungs-Webhook
+4636|nicht bestätigt
+4637|von {cap} erlaubt
+4638|ok
+4639|Anfragen
+4640|Registrierung offen
+4641|Tokens
+4642|abgemeldet
+4643|läuft seit {h} h · {mb} MB Speicher
+4644|{n} fehlgeschlagen
+4645|{q} wartend · {r} laufend · {f} fehlgeschlagen in 24 h

@@ -11,6 +11,7 @@ import { createMemory } from "./memory.js";
 import { assessSources } from "./sourceIntel.js";
 import { computeFreshness } from "./freshness.js";
 import { recordHypothesisResult } from "./hypotheses.js";
+import { log } from "../lib/log.js";
 
 /** ENGINE 03 — RESEARCH INTELLIGENCE: a real multi-step workflow with traceable citations. */
 
@@ -448,14 +449,14 @@ async function runResearch({ workspaceId, payload }: { workspaceId: string; payl
 
     // Source intelligence: score every source on authority, recency, methodology, independence and corroboration.
     await step(workspaceId, id, "Assessing source credibility");
-    await assessSources(workspaceId, id, report, llm).catch((e) => console.warn("[research] source assessment failed", e.message));
+    await assessSources(workspaceId, id, report, llm).catch((e) => log.warn("research source assessment failed", { err: e }));
 
     const completedAt = new Date().toISOString();
     const sourcesNow = (await db().query<any>("SELECT ref_number, published, retrieved_at FROM research_sources WHERE research_id=$1", [id])).rows;
     await setStatus(workspaceId, id, "completed", { report, completed_at: completedAt, freshness: computeFreshness(report, sourcesNow, completedAt), freshness_checked_at: completedAt });
     await step(workspaceId, id, "Report ready");
     if (rs.hypothesis_id) await recordHypothesisResult(workspaceId, rs.hypothesis_id, id, report);
-    for (const hook of researchCompleteHooks) await hook(workspaceId, id).catch((e) => console.warn("[research] hook failed", e.message));
+    for (const hook of researchCompleteHooks) await hook(workspaceId, id).catch((e) => log.warn("research hook failed", { err: e }));
     await logActivity(workspaceId, "research.completed", rs.question.slice(0, 200), { type: "research", id }, { sources: stored.length, findings: report.findings.length });
     if (rs.conversation_id) {
       await db().query(

@@ -79,7 +79,7 @@ before(async () => {
   siteUrl = `http://127.0.0.1:${typeof sa === "object" && sa ? sa.port : 0}`;
   Object.assign(process.env, {
     ORBITAL_DATA_DIR: dir, AI_PROVIDER: "anthropic", ANTHROPIC_API_KEY: "test-key-not-real", ANTHROPIC_BASE_URL: mock.url,
-    RESEARCH_WIKIPEDIA: "false", RESEARCH_OPENALEX: "false", DATABASE_URL: "",
+    RESEARCH_WIKIPEDIA: "false", RESEARCH_OPENALEX: "false", DATABASE_URL: process.env.TEST_DATABASE_URL || "",
     TRANSCRIPTION_BASE_URL: `http://127.0.0.1:${typeof ta === "object" && ta ? ta.port : 0}/v1`, TRANSCRIPTION_API_KEY: "stt-test-key",
   });
   const { createApp } = await import("../index.js");

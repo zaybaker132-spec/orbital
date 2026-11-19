@@ -1,5 +1,6 @@
 import { db } from "../db/client.js";
 import { emit } from "../lib/events.js";
+import { log } from "../lib/log.js";
 
 /**
  * Smart reminders.
@@ -68,7 +69,7 @@ export async function tickReminders() {
 let timer: ReturnType<typeof setInterval> | null = null;
 export function startReminders(intervalMs = 30_000) {
   if (timer) return;
-  timer = setInterval(() => tickReminders().catch((e) => console.error("[reminders]", e.message)), intervalMs);
+  timer = setInterval(() => tickReminders().catch((e) => log.error("reminders failed", { err: e })), intervalMs);
   timer.unref?.();
 }
 export function stopReminders() { if (timer) clearInterval(timer); timer = null; }

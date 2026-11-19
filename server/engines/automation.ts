@@ -13,6 +13,7 @@ import { createDocument } from "./knowledge.js";
 import { researchCompleteHooks, startResearch } from "./research.js";
 import { formatContext, retrieveContext } from "./retrieval.js";
 import { workspaceFrame } from "./chat.js";
+import { log } from "../lib/log.js";
 
 /**
  * OPERATIONS — Orbital working for a business on a schedule.
@@ -333,6 +334,6 @@ export async function tickAutomations(now = new Date()) {
 }
 
 export function startAutomations() {
-  timer = setInterval(() => tickAutomations().catch((e) => console.error("[automations]", e.message)), config.automationTickMs);
+  timer = setInterval(() => tickAutomations().catch((e) => log.error("automations failed", { err: e })), config.automationTickMs);
   timer.unref();
 }

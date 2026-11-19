@@ -1605,3 +1605,50 @@
 4503|El registro es solo con invitación. Da acceso a las personas aquí abajo; crean su cuenta con el correo con el que se apuntaron, en la página de inicio de sesión. Configura ORBITAL_ALLOW_SIGNUP=true para abrir el registro a todo el mundo.
 4504|Retirar la invitación
 4505|{email} ya puede crear una cuenta
+
+4600|IA
+4601|Uso de IA este mes
+4602|Todos los espacios de trabajo
+4603|Tareas en segundo plano
+4604|Revisa tu bandeja de entrada: te enviamos un enlace para confirmar tu dirección.
+4605|Elige una contraseña nueva
+4606|El correo no está configurado en este servidor, así que no se envió ningún correo: avísale tú.
+4607|Envíame correos sobre mi acceso a Orbital y novedades del producto. Puedo darme de baja cuando quiera.
+4608|Se cerrará la sesión en todos los dispositivos conectados a tu cuenta.
+4609|Tareas fallidas
+4610|¿Olvidaste tu contraseña?
+4611|HTTPS obligatorio
+4612|HTTPS no obligatorio
+4613|Si existe una cuenta con esa dirección, le llegará un enlace para restablecer la contraseña. Caduca en una hora.
+4614|Sin configurar: no se envían los correos de restablecimiento de contraseña ni de la lista de espera
+4615|Solo lo ven los administradores del servidor.
+4616|Proceso
+4617|En cola para ejecutarse de nuevo
+4618|Resend configurado
+4619|Restablece tu contraseña
+4620|Guardar e iniciar sesión
+4621|Seguridad
+4622|Enviar enlace
+4623|Estado del servidor
+4624|No se pudo enviar el correo: avísale tú.
+4625|Se dio de baja, así que no se envió ningún correo: avísale tú.
+4626|Le enviamos un correo para decirle que ya tiene acceso.
+4627|Te enviaremos un enlace por correo para elegir una contraseña nueva.
+4628|Estás en la lista, pero ahora mismo no pudimos enviar el correo de confirmación. Igualmente te avisaremos cuando tengas acceso.
+4629|Tu contraseña
+4630|alertas activadas
+4631|límite de {n} tokens por espacio de trabajo al mes
+4632|estimado a precio de lista
+4633|solo con invitación
+4634|requiere atención
+4635|sin webhook de alertas
+4636|sin confirmar
+4637|de {cap} permitidos
+4638|bien
+4639|solicitudes
+4640|registro abierto
+4641|tokens
+4642|dado de baja
+4643|activo {h} h · {mb} MB de memoria
+4644|{n} fallidas
+4645|{q} en espera · {r} en curso · {f} fallidas en 24 h

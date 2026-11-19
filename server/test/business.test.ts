@@ -55,7 +55,7 @@ before(async () => {
   hookUrl = `http://127.0.0.1:${typeof ha === "object" && ha ? ha.port : 0}/hook`;
   Object.assign(process.env, {
     ORBITAL_DATA_DIR: dir, AI_PROVIDER: "anthropic", ANTHROPIC_API_KEY: "test-key-not-real", ANTHROPIC_BASE_URL: mock.url,
-    RESEARCH_WIKIPEDIA: "false", RESEARCH_OPENALEX: "false", DATABASE_URL: "", ORBITAL_ALLOW_PRIVATE_WEBHOOKS: "true",
+    RESEARCH_WIKIPEDIA: "false", RESEARCH_OPENALEX: "false", DATABASE_URL: process.env.TEST_DATABASE_URL || "", ORBITAL_ALLOW_PRIVATE_WEBHOOKS: "true",
     ORBITAL_SECRET_KEY: "a-test-secret-key-that-is-long-enough-123",
   });
   const { createApp } = await import("../index.js");

@@ -7,6 +7,7 @@ import { logActivity } from "../lib/activity.js";
 import { gatherSources } from "../research/sources.js";
 import { sourceYear } from "./sourceIntel.js";
 import type { ResearchReport, Sensitivity } from "./research.js";
+import { log } from "../lib/log.js";
 
 /**
  * Living research documents. Every finding and statistic carries a time sensitivity (set during
@@ -75,7 +76,7 @@ export async function checkFreshness(now = new Date()) {
 let timer: ReturnType<typeof setInterval> | null = null;
 export function startFreshnessChecks(intervalMs = 60 * 60_000) {
   if (timer) return;
-  const run = () => checkFreshness().catch((e) => console.error("[freshness]", e.message));
+  const run = () => checkFreshness().catch((e) => log.error("freshness failed", { err: e }));
   setTimeout(run, 30_000).unref?.();
   timer = setInterval(run, intervalMs);
   timer.unref?.();

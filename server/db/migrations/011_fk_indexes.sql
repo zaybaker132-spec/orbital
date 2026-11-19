@@ -1,0 +1,52 @@
+-- Index every foreign-key column that had none. Without them, deleting a user, project, document or
+-- workspace scans each referencing table (ON DELETE CASCADE / SET NULL), and joins on these columns are slow.
+-- Additive only: no data is changed. Found with a pg_constraint / pg_index audit (see DATABASE_DOCUMENTATION.md).
+
+CREATE INDEX IF NOT EXISTS actions_automation_id_fk_idx ON actions(automation_id);
+CREATE INDEX IF NOT EXISTS actions_decided_by_fk_idx ON actions(decided_by);
+CREATE INDEX IF NOT EXISTS activity_events_actor_id_fk_idx ON activity_events(actor_id);
+CREATE INDEX IF NOT EXISTS ai_usage_user_id_fk_idx ON ai_usage(user_id);
+CREATE INDEX IF NOT EXISTS api_tokens_created_by_fk_idx ON api_tokens(created_by);
+CREATE INDEX IF NOT EXISTS audit_log_actor_id_fk_idx ON audit_log(actor_id);
+CREATE INDEX IF NOT EXISTS automations_created_by_fk_idx ON automations(created_by);
+CREATE INDEX IF NOT EXISTS collection_documents_document_id_fk_idx ON collection_documents(document_id);
+CREATE INDEX IF NOT EXISTS connectors_created_by_fk_idx ON connectors(created_by);
+CREATE INDEX IF NOT EXISTS conversations_created_by_fk_idx ON conversations(created_by);
+CREATE INDEX IF NOT EXISTS conversations_project_id_fk_idx ON conversations(project_id);
+CREATE INDEX IF NOT EXISTS conversations_saved_document_id_fk_idx ON conversations(saved_document_id);
+CREATE INDEX IF NOT EXISTS doc_comments_author_fk_idx ON doc_comments(author);
+CREATE INDEX IF NOT EXISTS doc_comments_workspace_id_fk_idx ON doc_comments(workspace_id);
+CREATE INDEX IF NOT EXISTS doc_versions_created_by_fk_idx ON doc_versions(created_by);
+CREATE INDEX IF NOT EXISTS doc_versions_workspace_id_fk_idx ON doc_versions(workspace_id);
+CREATE INDEX IF NOT EXISTS document_files_workspace_id_fk_idx ON document_files(workspace_id);
+CREATE INDEX IF NOT EXISTS documents_created_by_fk_idx ON documents(created_by);
+CREATE INDEX IF NOT EXISTS documents_folder_id_fk_idx ON documents(folder_id);
+CREATE INDEX IF NOT EXISTS documents_project_id_fk_idx ON documents(project_id);
+CREATE INDEX IF NOT EXISTS documents_updated_by_fk_idx ON documents(updated_by);
+CREATE INDEX IF NOT EXISTS extracted_items_extraction_id_fk_idx ON extracted_items(extraction_id);
+CREATE INDEX IF NOT EXISTS extractions_workspace_id_fk_idx ON extractions(workspace_id);
+CREATE INDEX IF NOT EXISTS feedback_created_by_fk_idx ON feedback(created_by);
+CREATE INDEX IF NOT EXISTS focus_sessions_document_id_fk_idx ON focus_sessions(document_id);
+CREATE INDEX IF NOT EXISTS focus_sessions_project_id_fk_idx ON focus_sessions(project_id);
+CREATE INDEX IF NOT EXISTS focus_sessions_user_id_fk_idx ON focus_sessions(user_id);
+CREATE INDEX IF NOT EXISTS folders_parent_id_fk_idx ON folders(parent_id);
+CREATE INDEX IF NOT EXISTS hypotheses_created_by_fk_idx ON hypotheses(created_by);
+CREATE INDEX IF NOT EXISTS hypotheses_last_research_id_fk_idx ON hypotheses(last_research_id);
+CREATE INDEX IF NOT EXISTS hypotheses_project_id_fk_idx ON hypotheses(project_id);
+CREATE INDEX IF NOT EXISTS jobs_workspace_id_fk_idx ON jobs(workspace_id);
+CREATE INDEX IF NOT EXISTS knowledge_edges_source_id_fk_idx ON knowledge_edges(source_id);
+CREATE INDEX IF NOT EXISTS maintenance_suggestions_resolved_by_fk_idx ON maintenance_suggestions(resolved_by);
+CREATE INDEX IF NOT EXISTS memories_created_by_fk_idx ON memories(created_by);
+CREATE INDEX IF NOT EXISTS milestones_workspace_id_fk_idx ON milestones(workspace_id);
+CREATE INDEX IF NOT EXISTS nudge_dismissals_user_id_fk_idx ON nudge_dismissals(user_id);
+CREATE INDEX IF NOT EXISTS opportunities_project_id_fk_idx ON opportunities(project_id);
+CREATE INDEX IF NOT EXISTS opportunities_research_id_fk_idx ON opportunities(research_id);
+CREATE INDEX IF NOT EXISTS project_links_workspace_id_fk_idx ON project_links(workspace_id);
+CREATE INDEX IF NOT EXISTS reminders_user_id_fk_idx ON reminders(user_id);
+CREATE INDEX IF NOT EXISTS research_sessions_conversation_id_fk_idx ON research_sessions(conversation_id);
+CREATE INDEX IF NOT EXISTS research_sessions_hypothesis_id_fk_idx ON research_sessions(hypothesis_id);
+CREATE INDEX IF NOT EXISTS research_sessions_project_id_fk_idx ON research_sessions(project_id);
+CREATE INDEX IF NOT EXISTS research_sources_workspace_id_fk_idx ON research_sources(workspace_id);
+CREATE INDEX IF NOT EXISTS tasks_milestone_id_fk_idx ON tasks(milestone_id);
+CREATE INDEX IF NOT EXISTS workspace_invites_invited_by_fk_idx ON workspace_invites(invited_by);
+CREATE INDEX IF NOT EXISTS workspaces_created_by_fk_idx ON workspaces(created_by);

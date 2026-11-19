@@ -1,6 +1,7 @@
 import type * as z from "zod/v4";
 import { config } from "../config.js";
 import { languageInstruction } from "../lib/language.js";
+import { checkBudget } from "../lib/usage.js";
 
 export type ChatMsg = { role: "user" | "assistant"; content: string };
 export type Effort = "low" | "medium" | "high" | "xhigh";
@@ -61,13 +62,14 @@ export async function getLLM(): Promise<LLMProvider | null> {
  * File reading is left alone: a document is transcribed in its own language.
  */
 function inLanguage(p: LLMProvider): LLMProvider {
+  // Every call first checks the workspace's monthly AI allowance (ORBITAL_AI_MONTHLY_TOKENS), if one is set.
   return {
     id: p.id,
     get model() { return p.model; },
-    stream: (o) => p.stream({ ...o, system: o.system + languageInstruction() }),
-    json: (o) => p.json({ ...o, system: o.system + languageInstruction() }),
-    webSearch: p.webSearch && ((o) => p.webSearch!({ ...o, instructions: o.instructions + languageInstruction() })),
-    readFile: p.readFile && ((o) => p.readFile!(o)),
+    stream: async (o) => { await checkBudget(); return p.stream({ ...o, system: o.system + languageInstruction() }); },
+    json: async (o) => { await checkBudget(); return p.json({ ...o, system: o.system + languageInstruction() }); },
+    webSearch: p.webSearch && (async (o) => { await checkBudget(); return p.webSearch!({ ...o, instructions: o.instructions + languageInstruction() }); }),
+    readFile: p.readFile && (async (o) => { await checkBudget(); return p.readFile!(o); }),
   };
 }
 
@@ -96,6 +98,7 @@ export function describeAiError(e: any): string {
   const type: string = body?.type ?? "";
   const detail: string = typeof body?.message === "string" ? body.message : "";
   const text = `${detail} ${e?.message ?? ""}`;
+  if (e?.name === "AiBudgetError" || e instanceof Error && /AI allowance for this month/.test(e.message)) return e.message;
   if (/credit balance is too low|billing/i.test(text)) return "Your Anthropic account has no API credit. Add credit at console.anthropic.com under Plans & Billing, then try again.";
   if (status === 401 || type === "authentication_error") return "The AI provider rejected the API key. Check the key in Settings (desktop app) or the server's ANTHROPIC_API_KEY.";
   if (status === 403 || type === "permission_error") return "This API key isn't allowed to use that model or feature.";

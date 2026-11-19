@@ -8,7 +8,7 @@ services:
     plan: starter
     buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
-    healthCheckPath: /api/health
+    healthCheckPath: /api/health/ready
     autoDeploy: true
     envVars:
       - key: NODE_VERSION
@@ -32,3 +32,18 @@ services:
       # Start invite-only: people join the waitlist; set to true to open sign-ups to everyone.
       - key: ORBITAL_ALLOW_SIGNUP
         value: "false"
+      # Render terminates TLS in one proxy in front of the app: trust it for client IPs and https.
+      - key: ORBITAL_TRUST_PROXY
+        value: "1"
+      # Email for password reset and waitlist confirmations (resend.com). Without it, no email is sent.
+      - key: RESEND_API_KEY
+        sync: false
+      # A sender on your verified domain, e.g. Orbital <hello@yourdomain.com>
+      - key: ORBITAL_EMAIL_FROM
+        sync: false
+      # Monthly AI token allowance per workspace (0 = unlimited). Protects your Anthropic bill.
+      - key: ORBITAL_AI_MONTHLY_TOKENS
+        value: "2000000"
+      # Optional Slack-compatible webhook for server error alerts.
+      - key: ORBITAL_ALERT_WEBHOOK
+        sync: false

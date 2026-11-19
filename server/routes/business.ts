@@ -100,7 +100,7 @@ business.get("/workspace/invites", requireRole("admin"), ah(async (req, res) => 
 
 business.post("/workspace/invites", requireRole("admin"), rateLimit({ windowMs: 60 * 60_000, max: 50, key: "user", name: "invite" }), ah(async (req, res) => {
   business_only(req);
-  const b = parse(z.object({ email: z.email().transform((e) => e.toLowerCase().trim()), role: z.enum(["admin", "member", "viewer"]) }), req.body);
+  const b = parse(z.object({ email: z.string().trim().toLowerCase().max(200).pipe(z.email()), role: z.enum(["admin", "member", "viewer"]) }), req.body);
   if (b.role === "admin" && req.workspace!.role !== "owner" && req.workspace!.role !== "admin") throw new HttpError(403, "Not allowed");
   const token = randomToken(24);
   await db().query(

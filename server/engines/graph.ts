@@ -5,6 +5,7 @@ import { getLLM } from "../ai/provider.js";
 import { emit } from "../lib/events.js";
 import { logActivity } from "../lib/activity.js";
 import { notFound } from "../lib/http.js";
+import { log } from "../lib/log.js";
 
 /** ENGINE 02 — CONNECTION INTELLIGENCE */
 
@@ -59,7 +60,7 @@ export async function upsertNode(workspaceId: string, n: NodeInput, opts: { sugg
     // Notes, memories, research, projects and opportunities log their own, more specific events.
     if (n.kind === "concept" || n.kind === "finding") await logActivity(workspaceId, "node.created", `${n.kind}: ${title}`, { type: "node", id });
   }
-  if (opts.suggest !== false) await suggestConnections(workspaceId, id).catch((e) => console.warn("[graph] suggest failed", e.message));
+  if (opts.suggest !== false) await suggestConnections(workspaceId, id).catch((e) => log.warn("graph suggest failed", { err: e }));
   return id;
 }
 
@@ -109,7 +110,7 @@ export async function suggestConnections(workspaceId: string, nodeId: string, li
       });
       classified = out.links;
     } catch (e: any) {
-      console.warn("[graph] relation classification failed:", e.message);
+      log.warn("graph relation classification failed", { err: e });
     }
   }
 

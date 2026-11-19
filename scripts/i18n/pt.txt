@@ -1605,3 +1605,50 @@
 4503|O cadastro é só por convite. Libere o acesso das pessoas abaixo; elas criam a conta com o e-mail que usaram para entrar, na página de login. Defina ORBITAL_ALLOW_SIGNUP=true para abrir o cadastro para todos.
 4504|Retirar o convite
 4505|{email} já pode criar uma conta
+
+4600|IA
+4601|Uso de IA este mês
+4602|Todos os espaços de trabalho
+4603|Tarefas em segundo plano
+4604|Verifique sua caixa de entrada: enviamos um link para confirmar seu endereço.
+4605|Escolha uma nova senha
+4606|O e-mail não está configurado neste servidor, então nenhum e-mail foi enviado: avise a pessoa você mesmo.
+4607|Quero receber e-mails sobre meu acesso ao Orbital e novidades do produto. Posso cancelar a inscrição quando quiser.
+4608|Todos os dispositivos conectados à sua conta serão desconectados.
+4609|Tarefas com falha
+4610|Esqueceu sua senha?
+4611|HTTPS obrigatório
+4612|HTTPS não obrigatório
+4613|Se existir uma conta com esse endereço, um link de redefinição está a caminho. Ele expira em uma hora.
+4614|Não configurado: e-mails de redefinição de senha e da lista de espera não são enviados
+4615|Só administradores do servidor veem isto.
+4616|Processo
+4617|Na fila para rodar de novo
+4618|Resend configurado
+4619|Redefina sua senha
+4620|Salvar e entrar
+4621|Segurança
+4622|Enviar link
+4623|Status do servidor
+4624|Não foi possível enviar o e-mail: avise a pessoa você mesmo.
+4625|A pessoa cancelou a inscrição, então nenhum e-mail foi enviado: avise-a você mesmo.
+4626|Enviamos um e-mail dizendo que a pessoa já tem acesso.
+4627|Enviaremos por e-mail um link para escolher uma nova senha.
+4628|Você está na lista, mas não conseguimos enviar o e-mail de confirmação agora. Mesmo assim avisaremos quando você tiver acesso.
+4629|Sua senha
+4630|alertas ativados
+4631|limite de {n} tokens por espaço de trabalho por mês
+4632|estimado pelo preço de tabela
+4633|somente por convite
+4634|precisa de atenção
+4635|sem webhook de alertas
+4636|não confirmado
+4637|de {cap} permitidos
+4638|ok
+4639|solicitações
+4640|cadastro aberto
+4641|tokens
+4642|inscrição cancelada
+4643|ativo há {h} h · {mb} MB de memória
+4644|{n} com falha
+4645|{q} aguardando · {r} em execução · {f} com falha em 24 h

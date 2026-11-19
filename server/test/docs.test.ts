@@ -72,7 +72,7 @@ before(async () => {
   mock = await startMockAnthropic();
   Object.assign(process.env, {
     ORBITAL_DATA_DIR: dir, AI_PROVIDER: "anthropic", ANTHROPIC_API_KEY: "test-key-not-real", ANTHROPIC_BASE_URL: mock.url,
-    RESEARCH_WIKIPEDIA: "false", RESEARCH_OPENALEX: "false", DATABASE_URL: "",
+    RESEARCH_WIKIPEDIA: "false", RESEARCH_OPENALEX: "false", DATABASE_URL: process.env.TEST_DATABASE_URL || "",
   });
   const { createApp } = await import("../index.js");
   const app = await createApp();

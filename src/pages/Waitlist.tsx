@@ -16,9 +16,9 @@ import { LanguagePicker } from "@/components/LanguagePicker";
 interface Form {
   email: string; persona: string; remember: string[]; rememberOther: string; scale: string;
   aiTools: string[]; notesApps: string[]; computers: string[]; devices: string[]; heardFrom: string;
-  discord: string; instagram: string; tiktok: string; compound: string; website: string;
+  discord: string; instagram: string; tiktok: string; compound: string; website: string; consent: boolean;
 }
-const EMPTY: Form = { email: "", persona: "", remember: [], rememberOther: "", scale: "", aiTools: [], notesApps: [], computers: [], devices: [], heardFrom: "", discord: "", instagram: "", tiktok: "", compound: "", website: "" };
+const EMPTY: Form = { email: "", persona: "", remember: [], rememberOther: "", scale: "", aiTools: [], notesApps: [], computers: [], devices: [], heardFrom: "", discord: "", instagram: "", tiktok: "", compound: "", website: "", consent: false };
 
 function validate(f: Form): Partial<Record<keyof Form, string>> {
   const e: Partial<Record<keyof Form, string>> = {};
@@ -31,6 +31,7 @@ function validate(f: Form): Partial<Record<keyof Form, string>> {
   if (!f.computers.length) e.computers = "Pick at least one";
   if (!f.devices.length) e.devices = "Pick at least one";
   if (!f.heardFrom) e.heardFrom = "Pick one";
+  if (!f.consent) e.consent = "Tick this to join: it's how we'll tell you when you're in";
   for (const k of ["discord", "instagram", "tiktok"] as const) if (f[k] && !/^@?[A-Za-z0-9_.]+$/.test(f[k].trim())) e[k] = "Letters, numbers, dots and underscores only";
   return e;
 }
@@ -40,7 +41,7 @@ export function WaitlistPage() {
   const [errors, setErrors] = useState<Partial<Record<keyof Form, string>>>({});
   const [busy, setBusy] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
-  const [joined, setJoined] = useState<{ position: number | null } | null>(null);
+  const [joined, setJoined] = useState<{ position: number | null; confirmation?: string } | null>(null);
   const pulse = () => useCore.getState().pulse("learning", 900);
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) => { setF((x) => ({ ...x, [k]: v })); setErrors((e) => ({ ...e, [k]: undefined })); };
@@ -68,7 +69,7 @@ export function WaitlistPage() {
     setBusy(true);
     try {
       const r = await api.post("/public/waitlist", { ...f, email: f.email.trim() });
-      setJoined({ position: r.position });
+      setJoined({ position: r.position, confirmation: r.confirmation });
       useCore.getState().pulse("opportunity", 5000);
     } catch (err: any) {
       setServerError(err.message ?? "Something went wrong. Please try again.");
@@ -122,6 +123,8 @@ export function WaitlistPage() {
                 <p className="mt-6 max-w-md text-[0.95rem] leading-relaxed text-mute-bright">
                   {tx("We'll write to")} <span className="text-white">{f.email.trim()}</span> {tx("when your Orbital is ready. Until then, every idea you have is one it'll remember.")}
                 </p>
+                {joined.confirmation === "sent" && <p className="mt-4 max-w-md text-[0.88rem] leading-relaxed text-emerald-200/90">{tx("Check your inbox: we sent a link to confirm your address.")}</p>}
+                {joined.confirmation === "failed" && <p className="mt-4 max-w-md text-[0.88rem] leading-relaxed text-amber-200/90">{tx("You're on the list, but we couldn't send the confirmation email just now. We'll still let you know when you're in.")}</p>}
                 <button type="button" onClick={() => { setJoined(null); }} className="mt-10 text-[0.8rem] text-mute underline decoration-white/20 underline-offset-4 hover:text-white">{tx("Change my answers")}</button>
               </motion.div>
             ) : (
@@ -193,7 +196,12 @@ export function WaitlistPage() {
                 {/* Spam trap: hidden from people and assistive tech */}
                 <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" value={f.website} onChange={(e) => set("website", e.target.value)} className="absolute -left-[9999px] h-px w-px opacity-0" />
 
-                {serverError && <p role="alert" className="mt-8 text-[0.85rem] text-red-300">{serverError}</p>}
+                <label id="wl-consent" className="mt-10 flex max-w-xl cursor-pointer items-start gap-3 text-[0.85rem] leading-relaxed text-mute-bright">
+                  <input type="checkbox" checked={f.consent} onChange={(e) => set("consent", e.target.checked)} className="mt-1 h-4 w-4 accent-white" aria-describedby={errors.consent ? "wl-consent-err" : undefined} />
+                  <span>{tx("Email me about my Orbital access and product updates. I can unsubscribe any time.")}</span>
+                </label>
+                {errors.consent && <p id="wl-consent-err" className="mt-2 text-[0.78rem] text-red-300">{tx(errors.consent)}</p>}
+                {serverError && <p role="alert" className="mt-8 text-[0.85rem] text-red-300">{tx(serverError)}</p>}
                 <div className="mt-10 flex flex-wrap items-center gap-5">
                   <button type="submit" disabled={busy} className="group relative h-12 overflow-hidden bg-white px-8 text-[0.75rem] font-medium uppercase tracking-[0.24em] text-black transition-opacity disabled:opacity-60">
                     <span className="relative z-10">{busy ? tx("Entering…") : tx("Enter orbit")}</span>

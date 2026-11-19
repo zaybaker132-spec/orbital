@@ -69,6 +69,8 @@ export function App() {
   // The waitlist is public: no account, no app shell.
   if (loc.pathname === "/waitlist") return <Suspense fallback={<div className="h-full bg-black" />}><WaitlistPage /></Suspense>;
   if (!loaded) return <div className="flex h-full items-center justify-center bg-black"><Pulse /></div>;
+  // A password reset link works whether or not this browser is signed in.
+  if (loc.pathname === "/reset-password") return <AuthPage />;
   if (!user) {
     // Signed out: the waitlist is the front door (the desktop app goes straight to sign-in).
     if (loc.pathname === "/" && !desktop) return <Suspense fallback={<div className="h-full bg-black" />}><WaitlistPage /></Suspense>;

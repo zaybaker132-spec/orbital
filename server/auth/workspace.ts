@@ -1,6 +1,7 @@
 import type { RequestHandler } from "express";
 import { db, type Queryable } from "../db/client.js";
 import { HttpError } from "../lib/http.js";
+import { annotateContext } from "../lib/context.js";
 
 /** GET endpoints a browser loads without custom headers (EventSource, <img>) may name the workspace in the query. */
 const QUERY_WORKSPACE_PATHS = /^\/(events|export|documents\/[^/]+\/file)$/;
@@ -53,6 +54,7 @@ export const resolveWorkspace: RequestHandler = async (req, _res, next) => {
     const m = await membership(req.user.id, id);
     if (!m) return next(new HttpError(404, "Workspace not found", "workspace_not_found"));
     req.workspace = m;
+    annotateContext({ workspaceId: m.id });
     if (m.role === "viewer" && !["GET", "HEAD", "OPTIONS"].includes(req.method) && !VIEWER_WRITES.some((r) => r.test(req.path))) {
       return next(new HttpError(403, "Viewers can read and ask questions, but not change workspace knowledge.", "forbidden"));
     }

@@ -2,6 +2,7 @@ import * as z from "zod/v4";
 import { db } from "../db/client.js";
 import type { LLMProvider } from "../ai/provider.js";
 import type { ResearchReport } from "./research.js";
+import { log } from "../lib/log.js";
 
 /**
  * Source intelligence: a transparent credibility assessment for every source in a report.
@@ -145,7 +146,7 @@ export async function assessSources(workspaceId: string, researchId: string, rep
       });
       ai = new Map(out.assessments.map((a) => [a.n, a]));
     } catch (e: any) {
-      console.warn("[sources] AI assessment unavailable:", e.message);
+      log.warn("sources AI assessment unavailable", { err: e });
     }
   }
   const urls = new Map<number, string>(rows.map((s) => [s.ref_number, s.url]));

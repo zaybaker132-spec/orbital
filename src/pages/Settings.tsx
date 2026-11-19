@@ -27,7 +27,7 @@ export function SettingsPage() {
       <div className="flex gap-10 px-8 pb-20">
         <nav aria-label={tx("Settings sections")} className="sticky top-4 hidden h-fit w-44 shrink-0 lg:block">
           <ul className="space-y-px">
-            {[...SECTIONS, ...(serverAdmin ? [["waitlist", "Waitlist"] as const] : [])].map(([id, label]) => (
+            {[...SECTIONS, ...(serverAdmin ? [["waitlist", "Waitlist"] as const, ["server", "Server status"] as const] : [])].map(([id, label]) => (
               <li key={id}><a href={`#${id}`} onClick={(e) => { e.preventDefault(); document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }}
                 className="block rounded-lg px-3 py-1.5 text-[0.84rem] text-mute transition-colors hover:bg-white/[0.04] hover:text-white">{tx(label)}</a></li>
             ))}
@@ -56,6 +56,7 @@ export function SettingsPage() {
               <Select label={tx("Default mode")} value={prefs.defaultMode ?? "standard"} onChange={(v) => save({ defaultMode: v })} className="w-56" options={MODES.map((m) => ({ value: m.id, label: m.label }))} />
             </Row>
             <AiFeatures />
+            <AiUsage />
           </Group>
 
           <VoiceGroup save={save} />
@@ -130,6 +131,7 @@ export function SettingsPage() {
           <AboutGroup />
 
           <WaitlistGroup />
+          <ServerStatus />
         </div>
       </div>
       <DeleteAccount open={deleting} onClose={() => setDeleting(false)} />
@@ -219,6 +221,64 @@ function WorkspaceGroup() {
 }
 
 /** What needs an AI provider, at a glance. */
+/** This workspace's AI use this month (admins); server admins also see every workspace. */
+function AiUsage() {
+  const role = useApp((s) => s.workspace?.role);
+  const serverAdmin = useApp((s) => s.serverAdmin);
+  const canSee = role === "owner" || role === "admin";
+  const { data } = useResource<any>(canSee ? "/workspace/ai-usage" : null);
+  const { data: all } = useResource<any>(serverAdmin ? "/admin/ai-usage" : null);
+  if (!canSee || !data) return null;
+  const n = (v: number) => v.toLocaleString(locale());
+  const usd = (v: number) => v.toLocaleString(locale(), { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: v < 1 ? 3 : 2 });
+  const tokens = data.tokens.input + data.tokens.output + data.tokens.cacheWrite;
+  return (
+    <div className="rounded-lg border border-line px-4 py-3">
+      <div className="label mb-2">{tx("AI usage this month")}</div>
+      <div className="flex flex-wrap gap-x-8 gap-y-1 text-[0.84rem]">
+        <span><b className="font-normal text-white">{n(data.requests)}</b> <span className="text-mute">{tx("requests")}</span></span>
+        <span><b className="font-normal text-white">{n(tokens)}</b> <span className="text-mute">{tx("tokens")}</span>{data.cap ? <span className="text-mute"> {tx("of {cap} allowed", { cap: n(data.cap) })}</span> : null}</span>
+        <span><b className="font-normal text-white">{usd(data.costUsd)}</b> <span className="text-mute">{tx("estimated at list price")}</span></span>
+        {data.failed > 0 && <span className="text-amber-200/80">{tx("{n} failed", { n: data.failed })}</span>}
+      </div>
+      {data.byFeature.length > 0 && <p className="mt-2 text-[0.74rem] text-mute">{data.byFeature.slice(0, 4).map((f: any) => `${f.feature.replace(/^(api|job|v1):/, "")} ${usd(f.costUsd)}`).join(" · ")}</p>}
+      {serverAdmin && all && all.byWorkspace.length > 0 && (
+        <p className="mt-2 text-[0.74rem] text-mute">{tx("All workspaces")}: {usd(all.costUsd)} · {all.byWorkspace.slice(0, 5).map((w: any) => `${w.name} ${usd(w.costUsd)}`).join(" · ")}</p>
+      )}
+    </div>
+  );
+}
+
+/** For server admins: database, background jobs, email and AI at a glance, with failed jobs to retry. */
+function ServerStatus() {
+  const serverAdmin = useApp((s) => s.serverAdmin);
+  const { data: st } = useResource<any>(serverAdmin ? "/admin/status" : null);
+  const { data: failed } = useResource<any[]>(serverAdmin ? "/admin/jobs/failed" : null);
+  if (!serverAdmin || !st) return null;
+  const retry = async (id: string) => { try { await api.post(`/admin/jobs/${id}/retry`); invalidate("/admin/jobs/failed", "/admin/status"); toast(tx("Queued to run again")); } catch (e) { toastError(e); } };
+  const ok = (b: boolean) => <span className={b ? "text-emerald-300/90" : "text-amber-200/90"}>{b ? tx("ok") : tx("needs attention")}</span>;
+  return (
+    <Group id="server" title={tx("Server status")} description={tx("Only server admins see this.")}>
+      <Row label={tx("Database")}>{st.database.kind} · {st.database.pingMs} ms</Row>
+      <Row label={tx("Background jobs")}>{tx("{q} waiting · {r} running · {f} failed in 24 h", { q: st.jobs.queued, r: st.jobs.running, f: st.jobs.failed_24h })} {ok(st.jobs.failed_24h === 0 && (st.jobs.oldest_queued_s ?? 0) < 600)}</Row>
+      <Row label={tx("Email")}>{st.email.configured ? tx("Resend configured") : tx("Not set up: password reset and waitlist emails aren't sent")} {ok(st.email.configured)}</Row>
+      <Row label={tx("AI")}>{st.ai.provider === "none" ? tx("Not configured") : `${st.ai.provider} · ${st.ai.model}`}{st.ai.monthlyTokenCap ? ` · ${tx("cap {n} tokens per workspace a month", { n: st.ai.monthlyTokenCap.toLocaleString(locale()) })}` : ""}</Row>
+      <Row label={tx("Security")}>{st.security.forceHttps ? tx("HTTPS enforced") : tx("HTTPS not enforced")} · {st.security.signupOpen ? tx("sign-up open") : tx("invite-only")} · {st.security.alertsConfigured ? tx("alerts on") : tx("no alert webhook")}</Row>
+      <Row label={tx("Process")}>{tx("up {h} h · {mb} MB memory", { h: Math.floor(st.uptimeS / 3600), mb: st.process.rssMb })}</Row>
+      {failed && failed.length > 0 && (
+        <div className="rounded-lg border border-line px-4 py-3">
+          <div className="label mb-2">{tx("Failed jobs")}</div>
+          <ul className="space-y-1.5 text-[0.8rem]">
+            {failed.slice(0, 10).map((j) => (
+              <li key={j.id} className="flex items-start gap-3"><span className="w-40 shrink-0 font-mono text-[0.74rem] text-mute-bright">{j.type}</span><span className="min-w-0 flex-1 truncate text-mute" title={j.error ?? ""}>{j.error}</span><Button size="sm" variant="ghost" onClick={() => retry(j.id)}>{tx("Retry")}</Button></li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </Group>
+  );
+}
+
 function AiFeatures() {
   const ai = useApp((s) => s.ai);
   const server = useApp((s) => s.server);
@@ -342,13 +402,15 @@ const Row = ({ label, children }: { label: string; children: React.ReactNode }) 
 
 function DeleteAccount({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [text, setText] = useState("");
+  const [password, setPassword] = useState("");
   return (
     <Dialog open={open} onClose={onClose} title={tx("Delete account")}>
       <p className="text-[0.86rem] leading-relaxed text-mute-bright">{tx("This permanently deletes your account and everything in it — conversations, memories, notes, research, projects and opportunities. It cannot be undone.")}</p>
       <Input className="mt-4" placeholder={tx("Type \"DELETE\" to confirm")} value={text} onChange={(e) => setText(e.target.value)} aria-label={tx("Confirmation")} />
+      <Input className="mt-3" type="password" placeholder={tx("Your password")} value={password} onChange={(e) => setPassword(e.target.value)} aria-label={tx("Your password")} autoComplete="current-password" />
       <div className="mt-4 flex justify-end gap-2">
         <Button variant="ghost" onClick={onClose}>{tx("Cancel")}</Button>
-        <Button variant="danger" disabled={text !== "DELETE"} onClick={async () => { try { await api.post("/account/delete", { confirm: "DELETE" }); location.href = "/"; } catch (e) { toastError(e); } }}>{tx("Delete everything")}</Button>
+        <Button variant="danger" disabled={text !== "DELETE" || !password} onClick={async () => { try { await api.post("/account/delete", { confirm: "DELETE", password }); location.href = "/"; } catch (e) { toastError(e); } }}>{tx("Delete everything")}</Button>
       </div>
     </Dialog>
   );
@@ -402,7 +464,17 @@ function WaitlistGroup() {
   const serverAdmin = useApp((s) => s.serverAdmin);
   const { data } = useResource<any>(serverAdmin ? "/admin/waitlist" : null);
   const admit = async (r: any, on: boolean) => {
-    try { await api.post(`/admin/waitlist/${r.id}/admit`, { admit: on }); invalidate("/admin/waitlist"); if (on) toast(tx("{email} can now create an account", { email: r.email })); } catch (e) { toastError(e); }
+    try {
+      const res = await api.post(`/admin/waitlist/${r.id}/admit`, { admit: on });
+      invalidate("/admin/waitlist");
+      if (!on) return;
+      // Say exactly what happened with the "you're in" email.
+      const note = res.notification === "sent" ? tx("We emailed them to say they're in.")
+        : res.notification === "unsubscribed" ? tx("They unsubscribed, so no email was sent: let them know yourself.")
+        : res.notification === "failed" ? tx("The email couldn't be sent: let them know yourself.")
+        : tx("Email isn't set up on this server, so no email was sent: let them know yourself.");
+      toast(`${tx("{email} can now create an account", { email: r.email })} ${note}`, { tone: res.notification === "sent" ? undefined : "error" });
+    } catch (e) { toastError(e); }
   };
   if (!serverAdmin) return null;
   const tally = (rows: { k: string; n: number }[]) => rows.map((r) => `${r.k || "—"} ${r.n}`).join(" · ") || "—";
@@ -419,10 +491,11 @@ function WaitlistGroup() {
           {data.rows.length > 0 && (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-[0.8rem]">
-                <thead className="text-mute"><tr><th className="py-2 pr-4 font-normal">{tx("Email")}</th><th className="py-2 pr-4 font-normal">{tx("Is")}</th><th className="py-2 pr-4 font-normal">{tx("Wants Orbital for")}</th><th className="py-2 pr-4 font-normal">{tx("Joined")}</th><th className="py-2 font-normal" /></tr></thead>
+                <thead className="text-mute"><tr><th className="py-2 pr-4 font-normal">{tx("Email")}</th><th className="py-2 pr-4 font-normal">{tx("Is")}</th><th className="py-2 pr-4 font-normal">{tx("Wants Orbital for")}</th><th className="py-2 pr-4 font-normal">{tx("Joined")}</th><th className="py-2 pr-4 font-normal">{tx("Email")}</th><th className="py-2 font-normal" /></tr></thead>
                 <tbody className="divide-y divide-line">
                   {data.rows.slice(0, 50).map((r: any) => (
                     <tr key={r.email}><td className="py-2 pr-4 text-white">{r.email}</td><td className="py-2 pr-4 text-mute-bright">{r.persona}</td><td className="py-2 pr-4 text-mute-bright">{[...r.remember, r.remember_other].filter(Boolean).join("; ")}</td><td className="whitespace-nowrap py-2 pr-4 text-mute">{new Date(r.created_at).toLocaleDateString(locale())}</td>
+                      <td className="whitespace-nowrap py-2 pr-4 text-[0.74rem]">{r.unsubscribed_at ? <span className="text-amber-200/80">{tx("unsubscribed")}</span> : r.confirmed_at ? <span className="text-emerald-300/80">{tx("confirmed")}</span> : <span className="text-mute">{tx("not confirmed")}</span>}</td>
                       <td className="whitespace-nowrap py-2 text-right">{r.admitted_at
                         ? <button onClick={() => admit(r, false)} title={tx("Take back the invitation")} className="text-[0.76rem] text-emerald-300 hover:text-red-300">{tx("Let in ✓")}</button>
                         : <Button size="sm" onClick={() => admit(r, true)}>{tx("Let in")}</Button>}</td></tr>

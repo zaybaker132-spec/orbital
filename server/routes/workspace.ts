@@ -17,7 +17,9 @@ import { absorbValidation, createExecutionPlan, discoverOpportunities, OPPORTUNI
 import { growingSubjects, growthStats, maintenance, timeline } from "../engines/growth.js";
 import { retrieveContext } from "../engines/retrieval.js";
 import { upsertNode, deleteNodeByRef } from "../engines/graph.js";
-import { ownProject, friendlyAiError } from "./core.js";
+import { ownFolder, ownMilestone, ownProject, friendlyAiError } from "./core.js";
+import { verifyPassword } from "../auth/auth.js";
+import { authEvent } from "../lib/authEvents.js";
 
 export const workspace = Router();
 
@@ -101,6 +103,7 @@ const DocInput = z.object({
 workspace.post("/documents", ah(async (req, res) => {
   const b = parse(DocInput, req.body);
   if (b.projectId) await ownProject(ws(req), b.projectId);
+  if (b.folderId) await ownFolder(ws(req), b.folderId);
   res.status(201).json(await createDocument(ws(req), { ...b, title: b.title || "Untitled" }));
 }));
 
@@ -113,6 +116,7 @@ workspace.get("/documents/:id", ah(async (req, res) => {
 workspace.patch("/documents/:id", ah(async (req, res) => {
   const b = parse(DocInput.partial(), req.body);
   if (b.projectId) await ownProject(ws(req), b.projectId);
+  if (b.folderId) await ownFolder(ws(req), b.folderId);
   const d = await updateDocument(ws(req), idParam(req), b);
   if (!d) throw notFound("Document");
   res.json(d);
@@ -142,10 +146,12 @@ workspace.post("/documents/upload", rateLimit({ windowMs: 60_000, max: 20, key: 
   }
   const projectId = typeof req.body?.projectId === "string" && req.body.projectId ? req.body.projectId : null;
   if (projectId) await ownProject(ws(req), projectId);
+  const folderId = typeof req.body?.folderId === "string" && req.body.folderId ? req.body.folderId : null;
+  if (folderId) await ownFolder(ws(req), folderId);
   const doc = await createDocument(ws(req), {
     title: name.replace(/\.[^.]+$/, ""), body: extracted.body, kind: extracted.kind === "text" ? "text" : extracted.kind, fileName: name,
     mimeType: extracted.kind === "image" ? imageMagic(f.buffer)! : f.mimetype, projectId, aiGenerated: extracted.aiRead,
-    folderId: typeof req.body?.folderId === "string" && req.body.folderId ? req.body.folderId : null,
+    folderId,
   });
   if (extracted.kind === "image") {
     await db().query("INSERT INTO document_files(document_id, workspace_id, mime_type, size, data) VALUES ($1,$2,$3,$4,$5)", [doc.id, ws(req), imageMagic(f.buffer), f.buffer.length, f.buffer]);
@@ -353,6 +359,7 @@ workspace.get("/projects/:id/brief", ah(async (req, res) => {
 workspace.post("/projects/:id/tasks", ah(async (req, res) => {
   const b = parse(z.object({ title: z.string().trim().min(1).max(500), milestoneId: z.uuid().nullish(), dueDate: z.iso.date().nullish() }), req.body);
   await ownProject(ws(req), idParam(req));
+  if (b.milestoneId) await ownMilestone(ws(req), b.milestoneId, idParam(req));
   const r = await db().query("INSERT INTO tasks(workspace_id, project_id, milestone_id, title, due_date, sort) VALUES ($1,$2,$3,$4,$5,(SELECT COALESCE(max(sort),0)+1 FROM tasks WHERE project_id=$2)) RETURNING *",
     [ws(req), idParam(req), b.milestoneId ?? null, b.title, b.dueDate ?? null]);
   await db().query("UPDATE projects SET updated_at=now() WHERE id=$1", [idParam(req)]);
@@ -360,6 +367,11 @@ workspace.post("/projects/:id/tasks", ah(async (req, res) => {
 }));
 workspace.patch("/tasks/:id", ah(async (req, res) => {
   const b = parse(z.object({ title: z.string().trim().min(1).max(500).optional(), done: z.boolean().optional(), milestoneId: z.uuid().nullable().optional(), dueDate: z.iso.date().nullable().optional(), sort: z.number().int().optional() }), req.body);
+  if (b.milestoneId) {
+    const t = (await db().query<{ project_id: string }>("SELECT project_id FROM tasks WHERE id=$1 AND workspace_id=$2", [idParam(req), ws(req)])).rows[0];
+    if (!t) throw notFound("Task");
+    await ownMilestone(ws(req), b.milestoneId, t.project_id);
+  }
   const r = await db().query<any>(
     `UPDATE tasks SET title=COALESCE($3,title), done=COALESCE($4,done), completed_at = CASE WHEN $4 THEN now() WHEN $4 = false THEN NULL ELSE completed_at END,
        milestone_id = CASE WHEN $5 THEN $6::uuid ELSE milestone_id END, due_date = CASE WHEN $7 THEN $8::date ELSE due_date END, sort=COALESCE($9,sort)
@@ -542,16 +554,22 @@ workspace.get("/export", ah(async (req, res) => {
 }));
 
 workspace.post("/account/delete", ah(async (req, res) => {
-  const b = parse(z.object({ confirm: z.literal("DELETE") }), req.body);
-  void b;
+  // Re-enter the password: a borrowed or stolen session alone can't delete an account.
+  const b = parse(z.object({ confirm: z.literal("DELETE"), password: z.string().min(1, "Enter your password").max(200) }), req.body);
   const me = actor(req);
+  const u = (await db().query<{ password_hash: string; email: string }>("SELECT password_hash, email FROM users WHERE id=$1", [me])).rows[0];
+  if (!u || !(await verifyPassword(b.password, u.password_hash))) throw new HttpError(401, "That password isn't right.", "bad_credentials");
   const shared = (await db().query<{ name: string }>(
     `SELECT w.name FROM workspaces w JOIN workspace_members m ON m.workspace_id=w.id AND m.user_id=$1 AND m.role='owner'
      WHERE w.kind='business' AND EXISTS (SELECT 1 FROM workspace_members o WHERE o.workspace_id=w.id AND o.user_id<>$1)`, [me])).rows;
   if (shared.length) throw new HttpError(409, `Transfer ownership of ${shared.map((s) => s.name).join(", ")} before deleting your account.`, "owns_workspaces");
-  await db().query(
-    `DELETE FROM workspaces w WHERE w.id=$1 OR (w.kind='business' AND EXISTS (SELECT 1 FROM workspace_members m WHERE m.workspace_id=w.id AND m.user_id=$1 AND m.role='owner'))`, [me]);
-  await db().query("DELETE FROM users WHERE id=$1", [me]);
+  await authEvent("account_deleted", { req, userId: me });
+  // All or nothing: the personal workspace, business workspaces only this person owns, then the account.
+  await db().tx(async (q) => {
+    await q.query(
+      `DELETE FROM workspaces w WHERE w.id=$1 OR (w.kind='business' AND EXISTS (SELECT 1 FROM workspace_members m WHERE m.workspace_id=w.id AND m.user_id=$1 AND m.role='owner'))`, [me]);
+    await q.query("DELETE FROM users WHERE id=$1", [me]);
+  });
   res.clearCookie("orbital_session", { path: "/" });
   res.json({ ok: true });
 }));
