@@ -4,10 +4,10 @@ Orbital for Mac, Windows and Linux. Everything stays on your computer in Orbital
 
 | Your computer | File |
 |---|---|
-| Mac with Apple chip (M1–M4) | `Orbital-0.3.0-arm64.dmg` |
-| Mac with Intel chip | `Orbital-0.3.0.dmg` |
-| Windows | `Orbital-Setup-0.3.0.exe` |
-| Linux | `Orbital-0.3.0.AppImage` or `orbital_0.3.0_amd64.deb` |
+| Mac with Apple chip (M1–M4) | `Orbital-0.3.1-arm64.dmg` |
+| Mac with Intel chip | `Orbital-0.3.1.dmg` |
+| Windows | `Orbital-Setup-0.3.1.exe` |
+| Linux | `Orbital-0.3.1.AppImage` or `orbital_0.3.1_amd64.deb` |
 
 Not sure which Mac you have? Apple menu → About This Mac → "Chip".
 
@@ -25,8 +25,7 @@ Orbital works without an AI key: notes, Papers, projects, search, reminders, foc
 questions are answered from your own knowledge. For AI chat, research and writing help, add your own key in
 **Settings → AI & research**. It stays on your computer.
 
-## What's new in 0.3.0
+## What's new in 0.3.1
 
-- Electron 45 (security updates)
-- Password reset, account security and many reliability fixes
-- AI usage and cost shown in Settings
+- The Neural Core's colours are now scattered across the whole sphere instead of rainbow bands
+- Includes everything from 0.3.0: Electron 45 security updates, password reset, account security, AI usage in Settings

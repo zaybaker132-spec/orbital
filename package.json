@@ -1,6 +1,6 @@
 {
   "name": "orbital",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Orbital — personal and business intelligence environment",
   "scripts": {
     "dev": "concurrently -k -n api,web -c gray,white \"tsx watch server/main.ts\" \"vite\"",
