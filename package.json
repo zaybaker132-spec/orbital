@@ -1,6 +1,6 @@
 {
   "name": "orbital",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Orbital — personal and business intelligence environment",
   "scripts": {
     "dev": "concurrently -k -n api,web -c gray,white \"tsx watch server/main.ts\" \"vite\"",
@@ -62,8 +62,8 @@
     "autoprefixer": "^10.6.2",
     "concurrently": "^10.0.7",
     "d3-force": "^3.0.1",
-    "electron": "^33.4.11",
-    "electron-builder": "^25.1.8",
+    "electron": "^45.4.1",
+    "electron-builder": "^26.18.0",
     "esbuild": "^0.28.2",
     "framer-motion": "^11.18.2",
     "lucide-react": "^1.74.0",
