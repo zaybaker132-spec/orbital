@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy · Orbital</title>
+<meta name="description" content="How Orbital handles your data: everything stays on your computer.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+  :root { color-scheme: dark; --bg: #000; --fg: #fff; --mute: #9a9aa3; --line: rgba(255,255,255,0.1); }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.7 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+  main { max-width: 720px; margin: 0 auto; padding: 48px 16px 80px; }
+  a { color: var(--fg); }
+  .back { color: var(--mute); text-decoration: none; font-size: 13px; letter-spacing: 0.2em; }
+  h1 { font-weight: 300; font-size: clamp(30px, 6vw, 42px); letter-spacing: -0.02em; margin: 28px 0 4px; }
+  h2 { font-weight: 400; font-size: 18px; margin: 36px 0 6px; padding-top: 20px; border-top: 1px solid var(--line); }
+  p, li { color: var(--mute); }
+  strong { color: var(--fg); font-weight: 500; }
+  .updated { font-size: 13px; color: var(--mute); }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">← ORBITAL</a>
+  <h1>Privacy</h1>
+  <p class="updated">Last updated 19 November 2026</p>
+
+  <p><strong>The short version:</strong> the Orbital app keeps everything you write and save on your own computer.
+  We don't run servers that receive your notes, we don't have accounts on our side, and we don't use analytics or
+  advertising trackers.</p>
+
+  <h2>The Orbital desktop app</h2>
+  <ul>
+    <li><strong>Your data stays on your computer.</strong> Notes, documents, memories, projects and your Orbital account
+    are stored in a private database in your computer's application-data folder. Uninstalling the app and deleting that
+    folder removes them.</li>
+    <li><strong>AI is optional and uses your own key.</strong> If you add an AI provider key (for example Anthropic),
+    the text of your question and the notes Orbital selects as context are sent to that provider to produce an answer,
+    under your own account and that provider's privacy terms. Your key is stored in your computer's secure keychain.
+    Without a key, nothing is sent to any AI provider.</li>
+    <li><strong>Web research</strong>, when you use it, sends your search terms to the sources it searches (such as
+    Wikipedia, OpenAlex, or your AI provider's web search).</li>
+    <li><strong>Update checks.</strong> The app asks GitHub, where Orbital's downloads are published, whether a newer
+    version exists. GitHub sees your IP address when this happens, as with any download.</li>
+    <li><strong>Meetings</strong> connect people directly (peer to peer). To find a route between computers, the app
+    contacts public connection servers (STUN), which see your IP address.</li>
+  </ul>
+
+  <h2>This website</h2>
+  <ul>
+    <li>No cookies, no analytics, no advertising.</li>
+    <li>The site is hosted by GitHub Pages, and the download files by GitHub. GitHub receives standard request
+    information such as your IP address; see GitHub's privacy statement.</li>
+    <li>Fonts are loaded from Google Fonts, which receives your IP address when you load the page.</li>
+    <li>To show the latest version, your browser asks GitHub's public API for the newest release.</li>
+  </ul>
+
+  <h2>Children</h2>
+  <p>Orbital isn't directed at children under 13.</p>
+
+  <h2>Changes</h2>
+  <p>If this policy changes, the new version will be posted on this page with a new date.</p>
+
+  <h2>Contact</h2>
+  <p>Questions about privacy or anything else: <a href="https://github.com/zaybaker132-spec/orbital/issues">open an issue on GitHub</a>.</p>
+</main>
+</body>
+</html>
