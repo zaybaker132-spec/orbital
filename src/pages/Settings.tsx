@@ -401,6 +401,9 @@ function DesktopGroup() {
 function WaitlistGroup() {
   const serverAdmin = useApp((s) => s.serverAdmin);
   const { data } = useResource<any>(serverAdmin ? "/admin/waitlist" : null);
+  const admit = async (r: any, on: boolean) => {
+    try { await api.post(`/admin/waitlist/${r.id}/admit`, { admit: on }); invalidate("/admin/waitlist"); if (on) toast(tx("{email} can now create an account", { email: r.email })); } catch (e) { toastError(e); }
+  };
   if (!serverAdmin) return null;
   const tally = (rows: { k: string; n: number }[]) => rows.map((r) => `${r.k || "—"} ${r.n}`).join(" · ") || "—";
   return (
@@ -411,14 +414,18 @@ function WaitlistGroup() {
           <Row label={tx("Who")}>{tally(data.personas)}</Row>
           <Row label={tx("Main computer")}>{tally(data.computers)}</Row>
           <Row label={tx("Heard from")}>{tally(data.sources)}</Row>
+          {!data.signupOpen && <p className="text-[0.78rem] leading-relaxed text-mute">{tx("Sign-up is invite-only. Let people in below; they create their account with the email they joined with, on the sign-in page. Set ORBITAL_ALLOW_SIGNUP=true to open sign-up to everyone.")}</p>}
           <a href="/api/admin/waitlist.csv"><Button icon={<Download size={14} />}>{tx("Export CSV")}</Button></a>
           {data.rows.length > 0 && (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-[0.8rem]">
-                <thead className="text-mute"><tr><th className="py-2 pr-4 font-normal">{tx("Email")}</th><th className="py-2 pr-4 font-normal">{tx("Is")}</th><th className="py-2 pr-4 font-normal">{tx("Wants Orbital for")}</th><th className="py-2 font-normal">{tx("Joined")}</th></tr></thead>
+                <thead className="text-mute"><tr><th className="py-2 pr-4 font-normal">{tx("Email")}</th><th className="py-2 pr-4 font-normal">{tx("Is")}</th><th className="py-2 pr-4 font-normal">{tx("Wants Orbital for")}</th><th className="py-2 pr-4 font-normal">{tx("Joined")}</th><th className="py-2 font-normal" /></tr></thead>
                 <tbody className="divide-y divide-line">
                   {data.rows.slice(0, 50).map((r: any) => (
-                    <tr key={r.email}><td className="py-2 pr-4 text-white">{r.email}</td><td className="py-2 pr-4 text-mute-bright">{r.persona}</td><td className="py-2 pr-4 text-mute-bright">{[...r.remember, r.remember_other].filter(Boolean).join("; ")}</td><td className="whitespace-nowrap py-2 text-mute">{new Date(r.created_at).toLocaleDateString(locale())}</td></tr>
+                    <tr key={r.email}><td className="py-2 pr-4 text-white">{r.email}</td><td className="py-2 pr-4 text-mute-bright">{r.persona}</td><td className="py-2 pr-4 text-mute-bright">{[...r.remember, r.remember_other].filter(Boolean).join("; ")}</td><td className="whitespace-nowrap py-2 pr-4 text-mute">{new Date(r.created_at).toLocaleDateString(locale())}</td>
+                      <td className="whitespace-nowrap py-2 text-right">{r.admitted_at
+                        ? <button onClick={() => admit(r, false)} title={tx("Take back the invitation")} className="text-[0.76rem] text-emerald-300 hover:text-red-300">{tx("Let in ✓")}</button>
+                        : <Button size="sm" onClick={() => admit(r, true)}>{tx("Let in")}</Button>}</td></tr>
                   ))}
                 </tbody>
               </table>

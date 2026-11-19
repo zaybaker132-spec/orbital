@@ -1599,3 +1599,9 @@
 4315|Citação
 4316|Alinhar à direita
 4317|Cor do texto
+4500|Liberar acesso
+4501|Acesso liberado ✓
+4502|Por enquanto o Orbital é só por convite. Use o e-mail com que você entrou na lista de espera depois que seu acesso for liberado.
+4503|O cadastro é só por convite. Libere o acesso das pessoas abaixo; elas criam a conta com o e-mail que usaram para entrar, na página de login. Defina ORBITAL_ALLOW_SIGNUP=true para abrir o cadastro para todos.
+4504|Retirar o convite
+4505|{email} já pode criar uma conta

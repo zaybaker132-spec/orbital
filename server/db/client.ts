@@ -43,10 +43,27 @@ async function createPglite(): Promise<Database> {
   };
 }
 
+/**
+ * Hosted Postgres (Supabase, Neon, Render…) requires an encrypted connection. Set DATABASE_SSL_CA to
+ * the provider's CA certificate (PEM) to also verify the server; otherwise hosted databases are
+ * encrypted without verification, and localhost connects in plain text. DATABASE_SSL=off|require
+ * overrides the default.
+ */
+export function postgresConnection(url: string) {
+  const u = new URL(url);
+  const local = ["localhost", "127.0.0.1", "::1"].includes(u.hostname) || u.hostname.endsWith(".internal");
+  const mode = (process.env.DATABASE_SSL || u.searchParams.get("sslmode") || (local ? "disable" : "require")).toLowerCase();
+  // sslmode in the URL would override the settings below (and newer drivers read "require" as "verify"), so it's applied here instead.
+  u.searchParams.delete("sslmode");
+  const ca = process.env.DATABASE_SSL_CA?.replace(/\\n/g, "\n");
+  const ssl = ["disable", "off", "false"].includes(mode) ? false : ca ? { ca, rejectUnauthorized: true } : { rejectUnauthorized: false };
+  return { connectionString: u.toString(), ssl };
+}
+
 async function createPostgres(): Promise<Database> {
   const pg = (await import("pg")).default;
   pg.types.setTypeParser(1082, (v: string) => v);
-  const pool = new pg.Pool({ connectionString: config.databaseUrl, max: 10 });
+  const pool = new pg.Pool({ ...postgresConnection(config.databaseUrl), max: 10 });
   return {
     kind: "postgres",
     query: (sql, params) => pool.query(sql, normalize(params)) as any,

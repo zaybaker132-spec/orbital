@@ -60,7 +60,7 @@ const requireServerAdmin = (req: Request) => {
 };
 export const isServerAdmin = (email?: string) => !!email && config.adminEmails.includes(email.toLowerCase());
 
-const COLS = "email, persona, remember, remember_other, scale, ai_tools, notes_apps, computers, devices, heard_from, discord, instagram, tiktok, compound, created_at";
+const COLS = "id, admitted_at, email, persona, remember, remember_other, scale, ai_tools, notes_apps, computers, devices, heard_from, discord, instagram, tiktok, compound, created_at";
 
 waitlistAdmin.get("/admin/waitlist", ah(async (req, res) => {
   requireServerAdmin(req);
@@ -73,8 +73,24 @@ waitlistAdmin.get("/admin/waitlist", ah(async (req, res) => {
     computers: await tally("SELECT computers[1] AS k, count(*)::int AS n FROM waitlist GROUP BY 1 ORDER BY 2 DESC"),
     sources: await tally("SELECT heard_from AS k, count(*)::int AS n FROM waitlist GROUP BY 1 ORDER BY 2 DESC"),
     rows,
+    signupOpen: config.allowSignup,
   });
 }));
+
+/** Let someone in (or take it back): they can then create an account with the email they joined with. */
+waitlistAdmin.post("/admin/waitlist/:id/admit", ah(async (req, res) => {
+  requireServerAdmin(req);
+  const on = req.body?.admit !== false;
+  const r = await db().query("UPDATE waitlist SET admitted_at = $2, updated_at = now() WHERE id = $1 RETURNING email, admitted_at", [String(req.params.id), on ? new Date() : null]);
+  if (!r.rows.length) throw new HttpError(404, "Not on the waitlist", "not_found");
+  res.json(r.rows[0]);
+}));
+
+/** Who may create an account: anyone when sign-up is open; otherwise server admins and people let in from the waitlist. */
+export async function maySignUp(email: string) {
+  if (config.allowSignup || isServerAdmin(email)) return true;
+  return (await db().query("SELECT 1 FROM waitlist WHERE lower(email) = lower($1) AND admitted_at IS NOT NULL", [email])).rows.length > 0;
+}
 
 const csvCell = (v: unknown) => {
   let s = Array.isArray(v) ? v.join("; ") : v instanceof Date ? v.toISOString() : String(v ?? "");

@@ -6,6 +6,10 @@ Orbital is a personal — and team — intelligence environment. Every conversat
 
 ---
 
+## Put it online
+
+Host Orbital as a public website (Supabase database + Render + your domain), invite-only to start: see [docs/DEPLOY.md](docs/DEPLOY.md).
+
 ## Open Orbital
 
 **On a Mac**

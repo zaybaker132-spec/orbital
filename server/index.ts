@@ -4,7 +4,7 @@ import path from "node:path";
 import fs from "node:fs";
 import { config } from "./config.js";
 import { getDb } from "./db/client.js";
-import { migrate } from "./db/migrate.js";
+import { lockDownPublicApi, migrate } from "./db/migrate.js";
 import { loadUser, requireCsrfHeader } from "./auth/auth.js";
 import { HttpError } from "./lib/http.js";
 import { startJobs } from "./lib/jobs.js";
@@ -29,6 +29,7 @@ import { docs } from "./routes/docs.js";
 export async function createApp(opts: { jobs?: boolean } = {}) {
   const database = await getDb();
   await migrate(database);
+  await lockDownPublicApi(database);
 
   const app = express();
   app.disable("x-powered-by");

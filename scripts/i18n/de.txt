@@ -1599,3 +1599,9 @@
 4315|Zitat
 4316|Rechtsbündig
 4317|Textfarbe
+4500|Zulassen
+4501|Zugelassen ✓
+4502|Orbital ist vorerst nur auf Einladung. Nutze die E-Mail, mit der du dich auf die Warteliste gesetzt hast, sobald du zugelassen wurdest.
+4503|Die Registrierung ist nur auf Einladung. Lass Personen unten zu; sie erstellen ihr Konto auf der Anmeldeseite mit der E-Mail, mit der sie sich eingetragen haben. Setze ORBITAL_ALLOW_SIGNUP=true, um die Registrierung für alle zu öffnen.
+4504|Einladung zurückziehen
+4505|{email} kann jetzt ein Konto erstellen

@@ -1599,3 +1599,9 @@
 4315|Cita
 4316|Alinear a la derecha
 4317|Color del texto
+4500|Dar acceso
+4501|Con acceso ✓
+4502|Por ahora Orbital es solo con invitación. Usa el correo con el que te apuntaste a la lista de espera cuando te hayamos dado acceso.
+4503|El registro es solo con invitación. Da acceso a las personas aquí abajo; crean su cuenta con el correo con el que se apuntaron, en la página de inicio de sesión. Configura ORBITAL_ALLOW_SIGNUP=true para abrir el registro a todo el mundo.
+4504|Retirar la invitación
+4505|{email} ya puede crear una cuenta

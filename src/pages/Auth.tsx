@@ -49,7 +49,8 @@ export function AuthPage() {
             <ErrorNote error={error} />
             <Button type="submit" variant="primary" className="w-full" loading={busy}>{mode === "login" ? tx("Sign in") : tx("Create account")}</Button>
           </div>
-          {signupAllowed && (
+          {mode === "signup" && !signupAllowed && <p className="mt-3 text-[0.76rem] leading-relaxed text-mute">{tx("Orbital is invite-only for now. Use the email you joined the waitlist with once you've been let in.")}</p>}
+          {(
             <p className="mt-6 text-center text-[0.82rem] text-mute">
               {mode === "login" ? tx("New to Orbital? ") : tx("Already have an account? ")}
               <button type="button" className="text-white underline decoration-white/30 underline-offset-2 hover:decoration-white" onClick={() => { setMode(mode === "login" ? "signup" : "login"); setError(null); }}>

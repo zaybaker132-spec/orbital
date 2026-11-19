@@ -1599,3 +1599,9 @@
 4315|Citation
 4316|Aligner à droite
 4317|Couleur du texte
+4500|Donner accès
+4501|Accès donné ✓
+4502|Orbital est sur invitation pour l'instant. Utilisez l'e-mail avec lequel vous avez rejoint la liste d'attente, une fois votre accès accordé.
+4503|L'inscription est sur invitation. Donnez accès aux personnes ci-dessous ; elles créent leur compte avec l'e-mail utilisé pour s'inscrire, depuis la page de connexion. Définissez ORBITAL_ALLOW_SIGNUP=true pour ouvrir l'inscription à tous.
+4504|Retirer l'invitation
+4505|{email} peut maintenant créer un compte

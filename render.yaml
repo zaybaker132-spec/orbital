@@ -1,0 +1,34 @@
+# One-click hosting on Render (render.com → New → Blueprint → pick this repository).
+# The database lives elsewhere (Supabase or Neon): paste its connection string as DATABASE_URL when asked.
+# Step-by-step guide: docs/DEPLOY.md
+services:
+  - type: web
+    name: orbital
+    runtime: node
+    plan: starter
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      # Postgres connection string ("Session pooler" on Supabase). Never commit it.
+      - key: DATABASE_URL
+        sync: false
+      # Encrypts stored secrets (webhook URLs, tokens). Generated once by Render; keep it forever.
+      - key: ORBITAL_SECRET_KEY
+        generateValue: true
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # Your site's address, e.g. https://orbital.yourdomain.com (used in invite links).
+      - key: ORBITAL_PUBLIC_URL
+        sync: false
+      # Your email: you can see the waitlist and let people in.
+      - key: ORBITAL_ADMIN_EMAILS
+        sync: false
+      # Start invite-only: people join the waitlist; set to true to open sign-ups to everyone.
+      - key: ORBITAL_ALLOW_SIGNUP
+        value: "false"

@@ -4,7 +4,7 @@ import { db } from "../db/client.js";
 import { config } from "../config.js";
 import { ah, HttpError, idParam, notFound, parse, ws, actor, isUuid } from "../lib/http.js";
 import { createPersonalWorkspace, resolveWorkspace } from "../auth/workspace.js";
-import { isServerAdmin } from "./waitlist.js";
+import { isServerAdmin, maySignUp } from "./waitlist.js";
 import { createSession, destroySession, hashPassword, verifyPassword, COOKIE, requireUser } from "../auth/auth.js";
 import { rateLimit } from "../lib/rateLimit.js";
 import { sha256 } from "../lib/crypto.js";
@@ -21,8 +21,8 @@ const authLimit = rateLimit({ windowMs: 15 * 60_000, max: 20, key: "ip", name: "
 const Credentials = z.object({ email: z.email().max(200).transform((e) => e.toLowerCase().trim()), password: z.string().min(10, "Use at least 10 characters").max(200) });
 
 authRouter.post("/signup", authLimit, ah(async (req, res) => {
-  if (!config.allowSignup) throw new HttpError(403, "Sign-up is disabled on this server", "signup_disabled");
   const body = parse(Credentials.extend({ displayName: z.string().max(80).optional() }), req.body);
+  if (!(await maySignUp(body.email))) throw new HttpError(403, "Orbital is invite-only for now. Join the waitlist, and you can create your account with that email once you're let in.", "signup_disabled");
   const exists = await db().query("SELECT 1 FROM users WHERE email=$1", [body.email]);
   if (exists.rows.length) throw new HttpError(409, "An account with that email already exists", "exists");
   const hash = await hashPassword(body.password);
