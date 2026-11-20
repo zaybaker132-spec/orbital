@@ -21,7 +21,7 @@ export function ContradictionLab({ lab, cite }: { lab: any; cite: (refs: number[
         <h2 className="label mb-3">{tx("Positions")}</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {lab.positions.map((p: any, i: number) => (
-            <div key={i} className="rounded-xl border border-line p-4" style={{ borderTopColor: POSITION_COLORS[i % 4], borderTopWidth: 2 }}>
+            <div key={i} className="glow-card rounded-xl border border-line p-4" style={{ borderTopColor: POSITION_COLORS[i % 4], borderTopWidth: 2 }}>
               <div className="text-[0.92rem] text-white">{tx(p.label)}</div>
               <p className="mt-1.5 text-[0.84rem] leading-relaxed text-mute-bright">{p.summary}{cite(p.source_refs)}</p>
               {!p.source_refs.length && <p className="mt-2 text-[0.72rem] text-amber-200/80">{tx("No retrieved source makes this case directly.")}</p>}
@@ -34,7 +34,7 @@ export function ContradictionLab({ lab, cite }: { lab: any; cite: (refs: number[
         <h2 className="label mb-3">{tx("Where and why they disagree")}</h2>
         <ol className="space-y-4">
           {lab.disagreements.map((d: any, i: number) => (
-            <li key={i} className="rounded-xl border border-line">
+            <li key={i} className="glow-card rounded-xl border border-line">
               <div className="border-b border-line px-5 py-3 text-[0.95rem] text-white">{d.topic}</div>
               <div className="grid gap-px bg-white/[0.06] sm:grid-cols-2">
                 {d.claims.map((c: any, j: number) => (

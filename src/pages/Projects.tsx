@@ -225,7 +225,7 @@ function Brief({ id }: { id: string }) {
     try { setData(await api.get(`/projects/${id}/brief`)); } catch (e) { toastError(e); } finally { setLoading(false); }
   };
   return (
-    <section className="mt-8 rounded-xl border border-line px-5 py-4">
+    <section className="mt-8 glow-card rounded-xl border border-line px-5 py-4">
       <div className="flex items-center gap-3">
         <h2 className="text-[0.9rem]">{tx("Continue where you left off")}</h2>
         {data?.aiGenerated && <Badge tone="ai">{tx("AI-generated")}</Badge>}
@@ -295,7 +295,7 @@ function Progress({ p, onDeadline }: { p: any; onDeadline: (v: string) => void }
   const msDone = p.milestones.filter((m: any) => m.done).length;
   const pct = total ? Math.round((done / total) * 100) : 0;
   const left = p.deadline ? daysUntil(p.deadline) : null;
-  const cell = "rounded-xl border border-line px-4 py-3";
+  const cell = "glow-card rounded-xl border border-line px-4 py-3";
   return (
     <section className="mt-8 grid gap-2 sm:grid-cols-4" aria-label={tx("Progress")}>
       <div className={cell}><div className="text-[1.4rem] font-light">{pct}%</div><div className="text-[0.74rem] text-mute">{done} {tx("of")} {total} {tx("tasks done")}</div></div>

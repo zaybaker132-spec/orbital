@@ -198,7 +198,7 @@ function HypothesisDetail({ id }: { id: string }) {
             <section className="mt-10">
               <h3 className="label mb-3">{tx("What would test it further")}</h3>
               <ol className="space-y-3">{v.next_tests.map((t: any, i: number) => (
-                <li key={i} className="rounded-xl border border-line px-5 py-4">
+                <li key={i} className="glow-card rounded-xl border border-line px-5 py-4">
                   <div className="flex items-start gap-3">
                     <span className="font-mono text-[0.74rem] text-mute">{i + 1}</span>
                     <div className="min-w-0 flex-1">

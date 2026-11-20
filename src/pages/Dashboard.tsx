@@ -79,7 +79,7 @@ export function DashboardPage() {
               const m = meta(w.type), Body = WIDGET_BODIES[w.type], link = WIDGET_LINKS[w.type];
               return (
                 <section key={w.id} aria-label={tx(m.title)}
-                  className={`col-span-12 ${SPAN[w.size]} flex min-w-0 flex-col rounded-xl border bg-ink-1/60 p-4 transition-[border-color,opacity] ${dragging === w.id ? "opacity-40" : ""} ${editing ? "border-dashed border-line-strong" : "border-line"}`}
+                  className={`glow-card col-span-12 ${SPAN[w.size]} flex min-w-0 flex-col rounded-xl border bg-ink-1/60 p-4 transition-[border-color,opacity] ${dragging === w.id ? "opacity-40" : ""} ${editing ? "border-dashed border-line-strong" : "border-line"}`}
                   draggable={editing}
                   onDragStart={(e) => { setDragging(w.id); e.dataTransfer.effectAllowed = "move"; }}
                   onDragEnd={() => setDragging(null)}

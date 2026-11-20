@@ -296,7 +296,7 @@ function ResearchMessage({ m }: { m: Msg }) {
   const failed = data?.status === "failed";
   const lastStep = data?.steps?.[data.steps.length - 1];
   return (
-    <div className="mt-7 rounded-xl border border-line bg-white/[0.015] px-5 py-4">
+    <div className="mt-7 glow-card rounded-xl border border-line bg-white/[0.015] px-5 py-4">
       <div className="flex items-center gap-2.5">
         <Compass size={15} className="text-mute-bright" />
         <span className="text-[0.86rem] text-white">{m.metadata.kind === "research_report" ? tx("Research report") : tx("Deep research")}</span>

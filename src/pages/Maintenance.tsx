@@ -43,7 +43,7 @@ export function MaintenancePage() {
       <PageHeader title={tx("Knowledge health")} subtitle={tx("Orbital looks for duplicates, conflicts, outdated information and disconnected ideas. It suggests; you decide. Every change can be undone.")}
         actions={can.write ? <Button icon={<ScanSearch size={14} />} loading={scanning} onClick={scan}>{tx("Check now")}</Button> : undefined} />
       <div className="mx-auto max-w-[900px] px-8">
-        <section className="flex flex-wrap items-center gap-x-8 gap-y-4 rounded-2xl border border-line px-6 py-5">
+        <section className="flex flex-wrap items-center gap-x-8 gap-y-4 glow-card rounded-2xl border border-line px-6 py-5">
           <div className="flex items-center gap-4">
             <ScoreRing score={h.score} grade={h.score >= 85 ? "high" : h.score >= 60 ? "moderate" : "low"} size={64} />
             <div><div className="text-[1.05rem] text-white">{h.score >= 85 ? tx("In good shape") : h.score >= 60 ? tx("A little tidying to do") : tx("Needs attention")}</div>
@@ -107,7 +107,7 @@ function SuggestionCard({ s, canWrite, onDone }: { s: any; canWrite: boolean; on
   const itemLink = (it: any) => it.type === "document" ? `/knowledge/${it.id}` : it.type === "research" ? `/research/${it.id}` : it.type === "node" ? `/connections?node=${it.id}` : "/knowledge?tab=memory";
 
   return (
-    <article className="rounded-xl border border-line px-5 py-4" style={{ borderLeftColor: k.color, borderLeftWidth: 2 }}>
+    <article className="glow-card rounded-xl border border-line px-5 py-4" style={{ borderLeftColor: k.color, borderLeftWidth: 2 }}>
       <div className="flex items-start gap-3">
         <k.icon size={15} className="mt-0.5 shrink-0" style={{ color: k.color }} />
         <div className="min-w-0 flex-1">

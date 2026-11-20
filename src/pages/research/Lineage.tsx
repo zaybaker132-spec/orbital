@@ -72,7 +72,7 @@ export function Lineage({ researchId, focusFinding }: { researchId: string; focu
             return (
               <li key={i} className="relative">
                 {sel?.kind === "conclusion" && <span aria-hidden className="absolute -left-[25px] top-5 h-2 w-2 rounded-full bg-white/50" />}
-                <div className="rounded-xl border border-line px-5 py-4">
+                <div className="glow-card rounded-xl border border-line px-5 py-4">
                   <div className="flex items-start gap-3">
                     <Badge tone={LEVEL[f.level]} className="mt-0.5 shrink-0">{f.level}</Badge>
                     <div className="min-w-0">

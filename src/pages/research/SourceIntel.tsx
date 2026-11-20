@@ -74,7 +74,7 @@ function SourceCard({ s }: { s: any }) {
   let host = "";
   try { host = new URL(s.url).hostname.replace(/^www\./, ""); } catch { /* ignore */ }
   return (
-    <li id={`source-${s.ref_number}`} className="rounded-xl border border-line p-4">
+    <li id={`source-${s.ref_number}`} className="glow-card rounded-xl border border-line p-4">
       <div className="flex gap-4">
         {a ? <ScoreRing score={a.score} grade={a.grade} /> : <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-dashed border-white/20 font-mono text-[0.72rem] text-mute">{s.ref_number}</span>}
         <div className="min-w-0 flex-1">

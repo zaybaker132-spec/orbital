@@ -104,7 +104,7 @@ export function DocsHome() {
           <ul className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-5">
             {docs.map((d) => (
               <li key={d.id} className="group">
-                <Link to={`/papers/${d.id}`} className="block overflow-hidden rounded-lg border border-line bg-[#f4f4f2] transition-colors group-hover:border-white/40">
+                <Link to={`/papers/${d.id}`} className="glow-card block overflow-hidden rounded-lg border border-line bg-[#f4f4f2] transition-colors group-hover:border-white/40">
                   <Thumb preview={d.preview} />
                 </Link>
                 <div className="mt-2 flex items-start gap-1">

@@ -102,3 +102,22 @@ html[data-background="stars"] #main { background-image:
   radial-gradient(1.2px 1.2px at 91% 77%, rgb(var(--c-fg) / 0.3), transparent 60%), radial-gradient(1px 1px at 47% 88%, rgb(var(--c-accent) / 0.35), transparent 60%),
   radial-gradient(1px 1px at 6% 71%, rgb(var(--c-fg) / 0.25), transparent 60%), radial-gradient(1.3px 1.3px at 74% 61%, rgb(var(--c-fg) / 0.2), transparent 60%);
   background-size: 640px 520px; }
+
+/*
+ * Cards glow when hovered: light catches the top-left edge (a rim fading along the top and left side)
+ * and a soft halo rises behind that corner. White on the dark theme; a faint dark rim and shadow on light.
+ */
+:root { --c-glow: 255 255 255; --glow-rim: 0.95; --glow-halo: 0.3; }
+html.light { --c-glow: 17 17 20; --glow-rim: 0.45; --glow-halo: 0.12; }
+.glow-card { position: relative; transition: box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.45s ease; }
+.glow-card::before {
+  content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; pointer-events: none; z-index: 1;
+  background: linear-gradient(135deg, rgb(var(--c-glow) / var(--glow-rim)) 0%, rgb(var(--c-glow) / calc(var(--glow-rim) * 0.45)) 16%, rgb(var(--c-glow) / 0) 42%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: 0; transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.glow-card:hover { box-shadow: -26px -26px 80px -26px rgb(var(--c-glow) / var(--glow-halo)), -6px -6px 26px -12px rgb(var(--c-glow) / calc(var(--glow-halo) * 0.8)); }
+.glow-card:hover::before { opacity: 1; }
+.glow-card:focus-within::before { opacity: 0.6; }
+@media (prefers-reduced-motion: reduce) { .glow-card, .glow-card::before { transition: none; } }

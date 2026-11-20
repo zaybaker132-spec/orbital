@@ -65,8 +65,8 @@ function FocusSetup({ week, recent }: { week: { seconds: number; sessions: numbe
         </form>
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-xl border border-line px-4 py-3"><div className="text-[1.4rem] font-light">{minutes(week.seconds)}</div><div className="text-[0.74rem] text-mute">{tx("focused this week")}</div></div>
-            <div className="rounded-xl border border-line px-4 py-3"><div className="text-[1.4rem] font-light">{week.sessions}</div><div className="text-[0.74rem] text-mute">{week.sessions === 1 ? tx("session this week") : tx("sessions this week")}</div></div>
+            <div className="glow-card rounded-xl border border-line px-4 py-3"><div className="text-[1.4rem] font-light">{minutes(week.seconds)}</div><div className="text-[0.74rem] text-mute">{tx("focused this week")}</div></div>
+            <div className="glow-card rounded-xl border border-line px-4 py-3"><div className="text-[1.4rem] font-light">{week.sessions}</div><div className="text-[0.74rem] text-mute">{week.sessions === 1 ? tx("session this week") : tx("sessions this week")}</div></div>
           </div>
           <section>
             <h2 className="label mb-2">{tx("Recent sessions")}</h2>

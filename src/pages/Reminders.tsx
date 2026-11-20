@@ -78,7 +78,7 @@ export function RemindersPage() {
             {nudges?.length === 0 && <p className="text-[0.86rem] text-mute">{tx("Nothing slipping. Orbital watches for overdue tasks, approaching deadlines, stalled projects, ideas you haven't returned to (notes tagged #idea or #draft), quiet opportunities and long-open questions.")}</p>}
             <ul className="space-y-1.5">
               {nudges?.map((n) => (
-                <li key={n.key} className="group flex items-start gap-3 rounded-xl border border-line px-4 py-3 hover:border-line-strong">
+                <li key={n.key} className="group flex items-start gap-3 glow-card rounded-xl border border-line px-4 py-3 hover:border-line-strong">
                   <Badge tone={n.kind === "overdue" || n.kind === "deadline" ? "warn" : undefined}>{tx(NUDGE_LABEL[n.kind] ?? n.kind)}</Badge>
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-[0.9rem] text-white/90">{n.link ? <Link to={n.link} className="hover:text-white hover:underline">{n.title}</Link> : n.title}</div>

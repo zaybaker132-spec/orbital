@@ -82,7 +82,7 @@ function PendingAction({ a, canApprove }: { a: any; canApprove: boolean }) {
     } catch (e) { toastError(e); } finally { setBusy(false); }
   };
   return (
-    <li className="rounded-xl border border-line px-5 py-4">
+    <li className="glow-card rounded-xl border border-line px-5 py-4">
       <div className="flex flex-wrap items-center gap-2">
         <Badge tone={a.risk === "external" ? "warn" : "default"}>{a.risk === "external" ? tx("leaves Orbital") : "internal"}</Badge>
         <span className="text-[0.78rem] text-mute">{tx(KIND_LABEL[a.kind])}{a.automation_name ? tx(" · proposed by {automation_name}", { automation_name: a.automation_name }) : ""} · {timeAgo(a.created_at)}</span>
@@ -134,7 +134,7 @@ function Automations() {
       {data?.length === 0 && (
         <div className="grid gap-3 md:grid-cols-3">
           {KINDS.map((k) => (
-            <button key={k.id} disabled={!can.admin} onClick={() => setEditing({ kind: k.id })} className="rounded-xl border border-line p-5 text-left transition-colors hover:border-line-strong disabled:opacity-60">
+            <button key={k.id} disabled={!can.admin} onClick={() => setEditing({ kind: k.id })} className="glow-card rounded-xl border border-line p-5 text-left transition-colors hover:border-line-strong disabled:opacity-60">
               <k.icon size={18} strokeWidth={1.5} className="text-mute-bright" />
               <div className="mt-3 text-[0.92rem] text-white">{tx(k.label)}</div>
               <p className="mt-1 text-[0.8rem] leading-relaxed text-mute">{k.desc}</p>

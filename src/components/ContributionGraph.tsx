@@ -108,7 +108,7 @@ export function ContributionGraph({ projectId, title, compact = false }: { proje
         </div>
       </div>
 
-      <div className="mt-3 rounded-xl border border-line px-4 pb-3 pt-4">
+      <div className="mt-3 glow-card rounded-xl border border-line px-4 pb-3 pt-4">
         <div ref={scroller} className="overflow-x-auto pb-1">
           <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} role="img" aria-label={tx("{total} contributions in the last year, {currentStreak} day current streak", { total: data.total, currentStreak: data.currentStreak })} onMouseLeave={() => setHover(null)} className="block">
             {monthLabels.map((m) => <text key={m.x} x={m.x} y={10} className="fill-[#8a8a93] text-[10px]">{tx(m.label)}</text>)}

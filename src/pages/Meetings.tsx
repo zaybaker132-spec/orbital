@@ -37,7 +37,7 @@ export function MeetingsPage() {
     <div className="h-full overflow-y-auto">
       <PageHeader title={tx("Meetings")} subtitle={tx("Video rooms you join with a code. Audio and video go straight between participants.")} />
       <div className="grid gap-4 px-8 md:grid-cols-2">
-        <section className="rounded-xl border border-line p-5">
+        <section className="glow-card rounded-xl border border-line p-5">
           <div className="flex items-center gap-2 text-[0.95rem] text-white"><Video size={16} strokeWidth={1.6} /> {tx("New meeting")}</div>
           <p className="mt-1 text-[0.82rem] text-mute">{tx("Start a room now and share its code or link.")}</p>
           <div className="mt-4 flex gap-2">
@@ -45,7 +45,7 @@ export function MeetingsPage() {
             <Button variant="primary" loading={busy} onClick={start}>{tx("Start")}</Button>
           </div>
         </section>
-        <section className="rounded-xl border border-line p-5">
+        <section className="glow-card rounded-xl border border-line p-5">
           <div className="flex items-center gap-2 text-[0.95rem] text-white"><LogIn size={16} strokeWidth={1.6} /> {tx("Join with a code")}</div>
           <p className="mt-1 text-[0.82rem] text-mute">{tx("Paste a code like")} <span className="font-mono text-white/80">{tx("abc-defg-hij")}</span> {tx("or a meeting link.")}</p>
           <div className="mt-4 flex gap-2">

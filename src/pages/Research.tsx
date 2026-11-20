@@ -244,7 +244,7 @@ function ResearchDetail({ id }: { id: string }) {
               <h2 className="label mb-3">{tx("Important statistics")}</h2>
               <ul className="grid gap-3 sm:grid-cols-2">
                 {rep.statistics.map((s: any, i: number) => (
-                  <li key={i} className="rounded-xl border border-line p-4">
+                  <li key={i} className="glow-card rounded-xl border border-line p-4">
                     <div className="text-[1.3rem] font-light tracking-tight">{s.value}</div>
                     <div className="mt-1 text-[0.84rem] text-white/80">{s.context}<SourceRef n={s.source_ref} sources={sources} />
                       {r.freshness?.items?.some((x: any) => x.section === "statistic" && x.index === i && x.state === "stale") && <span className="ml-2 inline-flex items-center gap-1 rounded bg-amber-300/15 px-1.5 text-[0.66rem] text-amber-200"><AlertTriangle size={10} />{tx("may be outdated")}</span>}

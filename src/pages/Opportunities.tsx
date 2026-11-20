@@ -74,7 +74,7 @@ function OpportunityCard({ o }: { o: any }) {
   };
   const rate = async (rating: 1 | -1) => { await api.post("/feedback", { targetType: "opportunity", targetId: o.id, rating }).catch(toastError); invalidate("/opportunities"); };
   return (
-    <li className={cx("rounded-xl border border-line transition-colors", open ? "bg-white/[0.02]" : "hover:border-line-strong")}>
+    <li className={cx("glow-card rounded-xl border border-line transition-colors", open ? "bg-white/[0.02]" : "hover:border-line-strong")}>
       <button className="flex w-full items-start gap-4 px-5 py-4 text-left" onClick={() => setOpen(!open)} aria-expanded={open}>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
