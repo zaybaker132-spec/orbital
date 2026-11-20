@@ -4,10 +4,10 @@ Orbital for Mac, Windows and Linux. Everything stays on your computer in Orbital
 
 | Your computer | File |
 |---|---|
-| Mac with Apple chip (M1–M4) | `Orbital-0.3.4-arm64.dmg` |
-| Mac with Intel chip | `Orbital-0.3.4.dmg` |
-| Windows | `Orbital-Setup-0.3.4.exe` |
-| Linux | `Orbital-0.3.4.AppImage` or `orbital_0.3.4_amd64.deb` |
+| Mac with Apple chip (M1–M4) | `Orbital-0.3.5-arm64.dmg` |
+| Mac with Intel chip | `Orbital-0.3.5.dmg` |
+| Windows | `Orbital-Setup-0.3.5.exe` |
+| Linux | `Orbital-0.3.5.AppImage` or `orbital_0.3.5_amd64.deb` |
 
 Not sure which Mac you have? Apple menu → About This Mac → "Chip".
 
@@ -25,7 +25,12 @@ Orbital works without an AI key: notes, Papers, projects, search, reminders, foc
 questions are answered from your own knowledge. For AI chat, research and writing help, add your own key in
 **Settings → AI & research**. It stays on your computer.
 
-## What's new in 0.3.4
+## What's new in 0.3.5
+
+- **Media:** one place for screenshots, screen recordings, voice notes, camera recordings, uploads and meeting playbacks. Record right inside Orbital, watch or listen back, search, rename, download, and turn recordings into text.
+- **Record meetings:** the record button saves everyone's video and sound; everyone in the meeting can see when it's being recorded.
+
+Also new since 0.3.3:
 
 - **Dashboards:** build your own home page from 18 widgets (tasks, projects, reminders, notes, research, focus, activity, growth, recently viewed, favorites and more). Add, resize, rearrange; keep several dashboards; start from templates.
 - **Your environment:** choose what Orbital opens to, reorder or hide sidebar sections, and pick an accent colour, Neural Core colours, a background and text size (Settings → Your environment).
@@ -33,4 +38,4 @@ questions are answered from your own knowledge. For AI chat, research and writin
 - **Recently viewed:** the last 10 things you opened, in the sidebar and the command palette.
 - **Favorites:** star any page, note, paper, conversation or project to pin it in the sidebar.
 - **Cards glow** softly when you hover them.
-- Includes everything from 0.3.3: light and dark themes, the smoother intro, the new wordmark.
+- Plus everything from 0.3.3: light and dark themes, the smoother intro, the new wordmark.
