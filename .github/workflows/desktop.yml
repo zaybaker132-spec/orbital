@@ -81,6 +81,17 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with: { path: artifacts, merge-multiple: true }
+      - name: Fixed download names
+        # The website links to releases/latest/download/<these names>, so its buttons always start the
+        # newest installer straight away (no GitHub page, no version number to update).
+        run: |
+          cd artifacts
+          copy() { f=$(ls $1 2>/dev/null | grep -v "$3" | head -1); [ -n "$f" ] && cp "$f" "$2" && echo "$f -> $2" || echo "no match for $1"; }
+          copy "Orbital-*-arm64.dmg" Orbital-Mac-AppleChip.dmg "^$"
+          copy "Orbital-*.dmg" Orbital-Mac-Intel.dmg "arm64"
+          copy "Orbital-Setup-*.exe" Orbital-Windows.exe "^$"
+          copy "Orbital-*.AppImage" Orbital-Linux.AppImage "arm64"
+          copy "orbital_*_amd64.deb" Orbital-Linux.deb "^$"
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.release.tag_name }}
