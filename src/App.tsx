@@ -135,7 +135,7 @@ function AppRoutes() {
  */
 const OPENED_KEY = "orbital.opened";
 const reducedMotion = () => typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-const minShow = (kind: IntroKind) => (reducedMotion() ? 700 : kind === "open" ? 2400 : 2000);
+const minShow = (kind: IntroKind) => (reducedMotion() ? 900 : kind === "open" ? 4400 : 4200);
 
 export function App() {
   const { loaded, user, workspace } = useApp();

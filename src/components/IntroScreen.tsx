@@ -23,7 +23,12 @@ function band(y: number, side: number) {
   const s = side * 0.5 + 0.5;
   return mix(mix(rgb(a0), rgb(b0), s), mix(rgb(a1), rgb(b1), s), f);
 }
-const ease = (t: number) => 1 - Math.pow(1 - Math.min(1, Math.max(0, t)), 3);
+const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
+/** Gentle at both ends (no jolt at the start, a long soft landing). */
+const ease = (t: number) => { t = clamp01(t); return t < 0.5 ? 8 * t ** 4 : 1 - Math.pow(-2 * t + 2, 4) / 2; };
+const easeSoft = (t: number) => 0.5 - Math.cos(clamp01(t) * Math.PI) / 2;
+// Timings (seconds): specks gather, the word completes, then the line underneath.
+const GATHER = 2.1, STAGGER = 0.7, WORD_AT = 2.0, WORD_FOR = 1.0;
 
 export type IntroKind = "open" | "welcome";
 
@@ -34,7 +39,7 @@ export function IntroScreen({ kind, name, leaving, onGone }: { kind: IntroKind; 
 
   useEffect(() => {
     if (!leaving) return;
-    const t = setTimeout(() => { setGone(true); onGone(); }, 520);
+    const t = setTimeout(() => { setGone(true); onGone(); }, 1250);
     return () => clearTimeout(t);
   }, [leaving, onGone]);
 
@@ -78,9 +83,9 @@ export function IntroScreen({ kind, name, leaving, onGone }: { kind: IntroKind; 
         const roll = rnd();
         const c = roll < 0.05 ? [255, 255, 255] : roll < 0.15 ? rgb(PALETTE[(rnd() * PALETTE.length) | 0]) : band(-ny * 0.94 + nx * 0.34 + (rnd() - 0.5) * 0.15, nx);
         // Start far out on a wide ring, so the specks visibly fall into orbit.
-        const a = rnd() * Math.PI * 2, R = Math.max(W, H) * (0.35 + rnd() * 0.4);
+        const a = rnd() * Math.PI * 2, R = Math.max(W, H) * (0.22 + rnd() * 0.3);
         const tx = x0 + jx - 2, ty = oy0 + jy;
-        pts.push({ tx, ty, sx: tx + Math.cos(a) * R, sy: ty + Math.sin(a) * R * 0.7, c, r: 0.7 + Math.pow(rnd(), 2) * fontPx / 52, d: rnd() * 0.35, ph: rnd() * 6.28 });
+        pts.push({ tx, ty, sx: tx + Math.cos(a) * R, sy: ty + Math.sin(a) * R * 0.7, c, r: 0.7 + Math.pow(rnd(), 2) * fontPx / 52, d: Math.pow(rnd(), 1.4) * STAGGER, ph: rnd() * 6.28 });
       }
       const start = performance.now();
       const draw = (now: number) => {
@@ -89,25 +94,27 @@ export function IntroScreen({ kind, name, leaving, onGone }: { kind: IntroKind; 
         ctx.clearRect(0, 0, W, H);
         ctx.globalCompositeOperation = light ? "source-over" : "lighter";
         for (const p of pts) {
-          const k = ease((t - p.d) / 1.05);
+          const k = ease((t - p.d) / GATHER);
           // Arrive along a gentle curve, then keep a faint shimmer, as if still in orbit.
-          const swirl = (1 - k) * 0.9;
+          const swirl = (1 - k) * 0.7;
           const cx = p.sx + (p.tx - p.sx) * k, cy = p.sy + (p.ty - p.sy) * k;
-          const ox = Math.sin(swirl * 3 + p.ph) * swirl * 40 + (k >= 1 ? Math.sin(t * 2 + p.ph) * 0.5 : 0);
-          const oy = Math.cos(swirl * 3 + p.ph) * swirl * 40 + (k >= 1 ? Math.cos(t * 1.7 + p.ph) * 0.5 : 0);
+          const ox = Math.sin(swirl * 2.4 + p.ph) * swirl * 34 + Math.sin(t * 1.3 + p.ph) * 0.6 * k;
+          const oy = Math.cos(swirl * 2.4 + p.ph) * swirl * 34 + Math.cos(t * 1.1 + p.ph) * 0.6 * k;
           let col = p.c;
           if (light) { const mx = Math.max(...col) || 1; col = col.map((v) => (v / mx) * 255); const wh = Math.min(...col) / 255; col = col.map((v) => v * (1 - 0.6 * wh)); }
-          ctx.fillStyle = `rgba(${col[0] | 0},${col[1] | 0},${col[2] | 0},${(0.25 + 0.75 * k) * (light ? 0.9 : 0.95)})`;
+          ctx.fillStyle = `rgba(${col[0] | 0},${col[1] | 0},${col[2] | 0},${easeSoft(Math.min(1, (t - p.d) / 0.6)) * (0.3 + 0.7 * k) * (light ? 0.9 : 0.95)})`;
           ctx.beginPath(); ctx.arc(cx + ox, cy + oy, p.r, 0, Math.PI * 2); ctx.fill();
         }
         ctx.globalCompositeOperation = "source-over";
         // "rbital" completes the word once the o has nearly formed.
-        const ta = ease((t - 0.75) / 0.5);
+        const ta = easeSoft((t - WORD_AT) / WORD_FOR);
         if (ta > 0) {
           ctx.fillStyle = `rgb(${fgc} / ${ta})`; ctx.textBaseline = "alphabetic";
-          const slide = (1 - ta) * fontPx * 0.12;
+          const slide = (1 - ta) * fontPx * 0.08;
+          ctx.filter = ta < 1 ? `blur(${((1 - ta) * 6).toFixed(2)}px)` : "none";
           ctx.font = `700 ${fontPx}px Outfit`; ctx.fillText("rb", x0 + wo + slide, base);
           ctx.font = `400 ${fontPx}px Outfit`; ctx.fillText("ital", x0 + wo + wrb + slide, base);
+          ctx.filter = "none";
         }
         raf = requestAnimationFrame(draw);
       };
@@ -120,11 +127,11 @@ export function IntroScreen({ kind, name, leaving, onGone }: { kind: IntroKind; 
   const line = kind === "welcome" ? (name ? tx("Welcome back, {name}.", { name }) : tx("Welcome back.")) : tx("Your intelligence. Compounding.");
   return (
     <div
-      className="fixed inset-0 z-[100] bg-black transition-opacity duration-500 ease-out"
+      className="fixed inset-0 z-[100] bg-black transition-opacity duration-[1200ms] ease-[cubic-bezier(0.45,0,0.2,1)]"
       style={{ opacity: leaving ? 0 : 1, pointerEvents: leaving ? "none" : "auto" }}
       role="status" aria-label={tx("Opening Orbital")}
     >
-      <canvas ref={canvas} className="absolute inset-0 h-full w-full transition-transform duration-500 ease-out" style={{ transform: leaving ? "scale(1.04)" : "none" }} />
+      <canvas ref={canvas} className="absolute inset-0 h-full w-full transition-[transform,filter] duration-[1200ms] ease-[cubic-bezier(0.45,0,0.2,1)]" style={{ transform: leaving ? "scale(1.025)" : "none", filter: leaving ? "blur(3px)" : "none" }} />
       <p className="intro-line absolute inset-x-0 top-1/2 mt-[clamp(70px,9vw,118px)] text-center font-brand text-[clamp(0.95rem,1.4vw,1.15rem)] text-mute">{line}</p>
     </div>
   );

@@ -89,6 +89,6 @@ html.light .hljs-title, html.light .hljs-function { color: #1d4ed8; }
 html.light .dark-only { display: none; }
 
 /* Intro screen: the line under the wordmark arrives after the word has formed. */
-.intro-line { opacity: 0; animation: intro-line 0.6s ease-out 1.25s forwards; }
-@keyframes intro-line { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.intro-line { opacity: 0; animation: intro-line 1.1s cubic-bezier(0.45, 0, 0.2, 1) 2.9s forwards; }
+@keyframes intro-line { from { opacity: 0; transform: translateY(8px); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
 @media (prefers-reduced-motion: reduce) { .intro-line { animation-delay: 0s; animation-duration: 0.01s; } }
