@@ -1657,3 +1657,6 @@
 4652|Hell
 4653|Wie mein Computer
 4654|Design
+4660|Orbital wird geöffnet
+4661|Willkommen zurück, {name}.
+4662|Willkommen zurück.

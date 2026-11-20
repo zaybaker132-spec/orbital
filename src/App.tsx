@@ -1,4 +1,5 @@
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { IntroScreen, type IntroKind } from "./components/IntroScreen";
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { useApp } from "./state/app";
@@ -41,7 +42,7 @@ const NEXT_KEY = "orbital.next";
 const inviteMatch = location.pathname.match(/^\/invite\/([A-Za-z0-9_-]{10,200})$/);
 if (inviteMatch) { try { sessionStorage.setItem(INVITE_KEY, inviteMatch[1]); } catch { /* ignore */ } history.replaceState(null, "", "/"); }
 
-export function App() {
+function AppRoutes() {
   const { loaded, user, load, workspace, refreshWorkspaces, switchWorkspace, desktop } = useApp();
   const loc = useLocation();
   const navigate = useNavigate();
@@ -124,5 +125,50 @@ export function App() {
         </motion.div>
       </AnimatePresence>
     </Shell>
+  );
+}
+
+/**
+ * The intro screen plays when Orbital opens (once per session: a refresh doesn't replay it; the desktop
+ * app plays it on every launch) and again right after signing in, covering the load of the workspace.
+ * It leaves once the app is ready, and never before its animation has had time to finish.
+ */
+const OPENED_KEY = "orbital.opened";
+const reducedMotion = () => typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+const minShow = (kind: IntroKind) => (reducedMotion() ? 700 : kind === "open" ? 2400 : 2000);
+
+export function App() {
+  const { loaded, user, workspace } = useApp();
+  const [intro, setIntro] = useState<{ kind: IntroKind; leaving: boolean; at: number } | null>(() => {
+    if (location.pathname === "/clip") return null; // the web clipper's small window
+    let seen = false;
+    try { seen = sessionStorage.getItem(OPENED_KEY) === "1"; sessionStorage.setItem(OPENED_KEY, "1"); } catch { /* ignore */ }
+    return seen ? null : { kind: "open", leaving: false, at: performance.now() };
+  });
+  const prevUser = useRef<string | null | undefined>(undefined);
+
+  // Signing in (or creating an account, or resetting a password) plays the welcome.
+  useEffect(() => {
+    if (!loaded) return;
+    const id = user?.id ?? null;
+    if (prevUser.current === null && id) setIntro({ kind: "welcome", leaving: false, at: performance.now() });
+    prevUser.current = id;
+  }, [loaded, user?.id]);
+
+  // Leave when ready: the app has loaded (and, signed in, the workspace too).
+  const ready = loaded && (!user || !!workspace);
+  useEffect(() => {
+    if (!intro || intro.leaving || !ready) return;
+    const wait = Math.max(0, minShow(intro.kind) - (performance.now() - intro.at));
+    const t = setTimeout(() => setIntro((i) => (i ? { ...i, leaving: true } : i)), wait);
+    return () => clearTimeout(t);
+  }, [intro, ready]);
+  const done = useCallback(() => setIntro(null), []);
+
+  return (
+    <>
+      <AppRoutes />
+      {intro && <IntroScreen key={intro.kind + intro.at} kind={intro.kind} name={user?.displayName} leaving={intro.leaving} onGone={done} />}
+    </>
   );
 }

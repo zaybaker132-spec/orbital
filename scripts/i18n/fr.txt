@@ -1657,3 +1657,6 @@
 4652|Clair
 4653|Comme mon ordinateur
 4654|Thème
+4660|Ouverture d'Orbital
+4661|Bon retour, {name}.
+4662|Bon retour.
