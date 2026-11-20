@@ -4,10 +4,10 @@ Orbital for Mac, Windows and Linux. Everything stays on your computer in Orbital
 
 | Your computer | File |
 |---|---|
-| Mac with Apple chip (M1–M4) | `Orbital-0.3.2-arm64.dmg` |
-| Mac with Intel chip | `Orbital-0.3.2.dmg` |
-| Windows | `Orbital-Setup-0.3.2.exe` |
-| Linux | `Orbital-0.3.2.AppImage` or `orbital_0.3.2_amd64.deb` |
+| Mac with Apple chip (M1–M4) | `Orbital-0.3.3-arm64.dmg` |
+| Mac with Intel chip | `Orbital-0.3.3.dmg` |
+| Windows | `Orbital-Setup-0.3.3.exe` |
+| Linux | `Orbital-0.3.3.AppImage` or `orbital_0.3.3_amd64.deb` |
 
 Not sure which Mac you have? Apple menu → About This Mac → "Chip".
 
@@ -25,9 +25,7 @@ Orbital works without an AI key: notes, Papers, projects, search, reminders, foc
 questions are answered from your own knowledge. For AI chat, research and writing help, add your own key in
 **Settings → AI & research**. It stays on your computer.
 
-## What's new in 0.3.2
+## What's new in 0.3.3
 
-- **Light and dark themes:** Settings → Appearance → Theme (Dark, Light, or Match my computer)
-- **New look:** the orbital wordmark, and the Neural Core's colour bands now swirl into each other
-- **Intro screen:** the logo assembles itself when Orbital opens and when you sign in
-- Includes everything from 0.3.1: Electron 45 security updates, password reset, account security, AI usage in Settings
+- **Smoother intro:** the logo now gathers slowly and gently, comes into focus, and dissolves softly into the app
+- Includes everything from 0.3.2: light and dark themes, the new wordmark, the Neural Core's swirling colour bands
