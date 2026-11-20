@@ -38,6 +38,13 @@ size each one Small, Medium or Wide, remove it, and rename the dashboard. **+** 
 - **Text size:** small, default or large
 - **Sidebar:** show, hide and reorder sections (Settings and New conversation always stay)
 
+- **Clock:** the time and date at the bottom of the sidebar, in this device's format, 12-hour or 24-hour, or hidden
+
+**Weather:** click **Add weather** at the bottom of the sidebar, type a city or town, and pick it from the
+matches; click the weather later to change the place, switch °C / °F, or remove it. Conditions refresh every
+15 minutes. Weather comes from Open-Meteo (free, no key) through Orbital's server: only the place you chose is
+sent, as coordinates rounded to about a kilometre. `ORBITAL_WEATHER=false` turns it off on a server.
+
 Light or dark is under Settings → Appearance.
 
 ## How it works

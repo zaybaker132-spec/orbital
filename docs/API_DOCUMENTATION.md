@@ -287,6 +287,13 @@ Prefix: `/api`
 | POST | /admin/jobs/:id/retry | server admin | Requeues a failed job. 404 if it isn't failed. |
 | POST | /admin/housekeeping | server admin | Runs retention now. `{removed: {table: count}}`. |
 
+## Weather
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | /api/weather/places | `?q=` (2–100 chars) `&lang=en|es|fr|pt|de` → `[{name, region, country, lat, lon}]` (max 6). Cached 24 h. 30/min. |
+| GET | /api/weather | `?lat&lon&unit=c|f` → `{temperature, code (WMO), isDay, unit, high, low, timezone}`. Coordinates rounded to 0.01°; cached 10 min. 502 `weather_unavailable` when Open-Meteo is down. |
+
 ## Token API (`/api/v1`)
 
 For scripts and integrations. Authenticate with `Authorization: Bearer <token>` (create tokens in Settings →

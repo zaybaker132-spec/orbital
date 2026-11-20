@@ -293,6 +293,10 @@ function ServerStatus() {
 function EnvironmentGroup() {
   const env = useEnvironment();
   const light = useLightTheme();
+  const setPrefs = useApp((s) => s.setPrefs);
+  const clockPref = useApp((s) => s.prefs.clock) ?? { show: true, hour12: "auto" as const };
+  const clockValue = clockPref.show ? clockPref.hour12 : "hidden";
+  const weatherPlace = useApp((s) => s.prefs.weather?.place?.name);
   const set = (patch: Partial<Environment>) => saveEnvironment(patch).catch(toastError);
   const NAV_LABEL = Object.fromEntries(NAV.map((n) => [n.id, n.label])) as Record<NavKey, string>;
   const moveNav = (i: number, d: number) => {
@@ -309,6 +313,12 @@ function EnvironmentGroup() {
         <Select label={tx("Opens to")} value={env.home} onChange={(v) => set({ home: v as Environment["home"] })} className="w-56"
           options={[{ value: "chat", label: "A new conversation" }, { value: "dashboard", label: "Your dashboard" }]} />
       </Row>
+      <Row label={tx("Clock")}>
+        <Select label={tx("Clock")} value={clockValue} className="w-56"
+          onChange={(v) => setPrefs({ clock: v === "hidden" ? { show: false, hour12: clockPref.hour12 } : { show: true, hour12: v as "auto" | "12" | "24" } }).catch(toastError)}
+          options={[{ value: "auto", label: "Show (this device's format)" }, { value: "12", label: "Show, 12-hour" }, { value: "24", label: "Show, 24-hour" }, { value: "hidden", label: "Hidden" }]} />
+      </Row>
+      <Row label={tx("Weather")}><span className="text-[0.82rem] text-mute">{weatherPlace ? tx("{place} · change it from the weather in the sidebar", { place: weatherPlace }) : tx("Click \"Add weather\" at the bottom of the sidebar and type a place.")}</span></Row>
       <Row label={tx("Context panel")}>
         <Select label={tx("Context panel")} value={env.contextPanel} onChange={(v) => set({ contextPanel: v as Environment["contextPanel"] })} className="w-56"
           options={[{ value: "remember", label: "As I last left it" }, { value: "open", label: "Open when Orbital starts" }, { value: "closed", label: "Closed when Orbital starts" }]} />

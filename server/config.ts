@@ -85,6 +85,12 @@ export const config = {
   /** Optional Slack-compatible webhook for operational alerts (server errors, failing background jobs). */
   alertWebhook: process.env.ORBITAL_ALERT_WEBHOOK || "",
   /** Transactional email (password reset, waitlist). Resend; without a key, nothing is sent and the app says so. */
+  /** Sidebar weather via Open-Meteo (free, no key). ORBITAL_WEATHER=false turns it off. */
+  weather: {
+    enabled: process.env.ORBITAL_WEATHER !== "false",
+    forecastUrl: (process.env.WEATHER_API_URL || "https://api.open-meteo.com").replace(/\/$/, ""),
+    geocodeUrl: (process.env.WEATHER_GEOCODE_URL || "https://geocoding-api.open-meteo.com").replace(/\/$/, ""),
+  },
   email: {
     resendApiKey: process.env.RESEND_API_KEY || "",
     apiUrl: (process.env.RESEND_API_URL || "https://api.resend.com").replace(/\/$/, ""),

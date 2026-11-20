@@ -29,6 +29,7 @@ import { languageFromRequest } from "./lib/language.js";
 import { docs } from "./routes/docs.js";
 import { ops } from "./routes/ops.js";
 import { startHousekeeping } from "./lib/housekeeping.js";
+import { weather } from "./routes/weather.js";
 
 export async function createApp(opts: { jobs?: boolean } = {}) {
   const database = await getDb();
@@ -103,6 +104,7 @@ export async function createApp(opts: { jobs?: boolean } = {}) {
   app.use("/api", researchIntel);
   app.use("/api", docs);
   app.use("/api", ops);
+  app.use("/api", weather);
   app.use("/api", (_req, _res, next) => next(new HttpError(404, "Not found", "not_found")));
 
   const dist = config.staticDir;

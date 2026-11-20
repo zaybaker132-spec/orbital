@@ -1769,3 +1769,30 @@
 4776|{n} atrasadas
 4777|{n} sesión
 4778|{n} sesiones
+4780|Añadir el tiempo
+4781|Cambiar la ubicación del tiempo
+4782|Despejado
+4783|Haz clic en «Añadir el tiempo» al final de la barra lateral y escribe un lugar.
+4784|Reloj
+4785|Nublado
+4786|Llovizna
+4787|Niebla
+4788|Máx. {high}° Mín. {low}°
+4789|Oculto
+4790|No se encontraron lugares. Prueba otra forma de escribirlo o añade el país.
+4791|Ahora: {place}
+4792|Cubierto
+4793|Parcialmente nublado
+4794|Lluvia
+4795|Buscando…
+4796|Mostrar (formato de este dispositivo)
+4797|Mostrar, 12 horas
+4798|Mostrar, 24 horas
+4799|Nieve
+4800|Unidad de temperatura
+4801|Tormenta
+4802|Escribe una ciudad o pueblo
+4803|El tiempo
+4804|El tiempo no está disponible ahora mismo
+4805|Ubicación del tiempo
+4806|{place} · cámbialo desde el tiempo en la barra lateral

@@ -1769,3 +1769,30 @@
 4776|{n} en retard
 4777|{n} session
 4778|{n} sessions
+4780|Ajouter la météo
+4781|Changer le lieu de la météo
+4782|Dégagé
+4783|Cliquez sur « Ajouter la météo » en bas de la barre latérale et saisissez un lieu.
+4784|Horloge
+4785|Nuageux
+4786|Bruine
+4787|Brouillard
+4788|Max. {high}° Min. {low}°
+4789|Masqué
+4790|Aucun lieu trouvé. Essayez une autre orthographe ou ajoutez le pays.
+4791|Actuel : {place}
+4792|Couvert
+4793|Partiellement nuageux
+4794|Pluie
+4795|Recherche…
+4796|Afficher (format de cet appareil)
+4797|Afficher, 12 heures
+4798|Afficher, 24 heures
+4799|Neige
+4800|Unité de température
+4801|Orage
+4802|Saisissez une ville
+4803|Météo
+4804|La météo n'est pas disponible pour le moment
+4805|Lieu de la météo
+4806|{place} · modifiez-le depuis la météo dans la barre latérale

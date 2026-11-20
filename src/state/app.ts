@@ -13,7 +13,12 @@ export interface Preferences {
   reducedMotion?: "system" | "on" | "off"; particleDensity?: "auto" | "low" | "medium" | "high"; defaultMode?: string; autoExtractMemories?: boolean;
   speakAnswers?: boolean; voiceName?: string; voiceRate?: number; focusMinutes?: 25 | 50 | 90; nudges?: boolean; language?: "auto" | Lang;
   environment?: Environment;
+  clock?: ClockPrefs;
+  weather?: WeatherPrefs;
 }
+export interface ClockPrefs { show: boolean; hour12: "auto" | "12" | "24" }
+export interface WeatherPlace { name: string; region: string; country: string; lat: number; lon: number }
+export interface WeatherPrefs { place: WeatherPlace | null; unit: "c" | "f" }
 export interface ServerInfo { version: string; database: "embedded" | "postgres"; transcription: boolean; turn: boolean; maxParticipants: number }
 
 interface AppStore {

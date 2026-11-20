@@ -1769,3 +1769,30 @@
 4776|{n} überfällig
 4777|{n} Sitzung
 4778|{n} Sitzungen
+4780|Wetter hinzufügen
+4781|Wetterort ändern
+4782|Klar
+4783|Klicke unten in der Seitenleiste auf „Wetter hinzufügen“ und gib einen Ort ein.
+4784|Uhr
+4785|Bewölkt
+4786|Nieselregen
+4787|Nebel
+4788|H {high}° T {low}°
+4789|Ausgeblendet
+4790|Keine Orte gefunden. Versuche eine andere Schreibweise oder füge das Land hinzu.
+4791|Aktuell: {place}
+4792|Bedeckt
+4793|Teilweise bewölkt
+4794|Regen
+4795|Suche…
+4796|Anzeigen (Format dieses Geräts)
+4797|Anzeigen, 12 Stunden
+4798|Anzeigen, 24 Stunden
+4799|Schnee
+4800|Temperatureinheit
+4801|Gewitter
+4802|Stadt oder Ort eingeben
+4803|Wetter
+4804|Das Wetter ist gerade nicht verfügbar
+4805|Wetterort
+4806|{place} · ändere ihn über das Wetter in der Seitenleiste

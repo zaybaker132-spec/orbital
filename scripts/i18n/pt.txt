@@ -1769,3 +1769,30 @@
 4776|{n} atrasadas
 4777|{n} sessão
 4778|{n} sessões
+4780|Adicionar o clima
+4781|Mudar o local do clima
+4782|Céu limpo
+4783|Clique em "Adicionar o clima" no fim da barra lateral e digite um local.
+4784|Relógio
+4785|Nublado
+4786|Garoa
+4787|Neblina
+4788|Máx. {high}° Mín. {low}°
+4789|Oculto
+4790|Nenhum local encontrado. Tente outra grafia ou adicione o país.
+4791|Agora: {place}
+4792|Encoberto
+4793|Parcialmente nublado
+4794|Chuva
+4795|Pesquisando…
+4796|Mostrar (formato deste dispositivo)
+4797|Mostrar, 12 horas
+4798|Mostrar, 24 horas
+4799|Neve
+4800|Unidade de temperatura
+4801|Tempestade
+4802|Digite uma cidade
+4803|Clima
+4804|O clima não está disponível agora
+4805|Local do clima
+4806|{place} · mude pelo clima na barra lateral

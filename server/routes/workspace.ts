@@ -543,6 +543,11 @@ workspace.put("/preferences", ah(async (req, res) => {
     nudges: z.boolean().optional(),
     language: z.enum(["auto", "en", "es", "fr", "pt", "de"]).optional(),
     environment: EnvironmentInput.optional(),
+    clock: z.object({ show: z.boolean(), hour12: z.enum(["auto", "12", "24"]) }).strict().optional(),
+    weather: z.object({
+      place: z.object({ name: z.string().trim().min(1).max(80), region: z.string().max(80), country: z.string().max(80), lat: z.number().min(-90).max(90), lon: z.number().min(-180).max(180) }).strict().nullable(),
+      unit: z.enum(["c", "f"]),
+    }).strict().optional(),
   }), req.body);
   const r = await db().query("INSERT INTO user_preferences(user_id, settings) VALUES ($1,$2) ON CONFLICT (user_id) DO UPDATE SET settings = user_preferences.settings || $2, updated_at=now() RETURNING settings", [actor(req), JSON.stringify(b)]);
   res.json(r.rows[0].settings);
