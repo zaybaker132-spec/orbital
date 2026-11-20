@@ -4,7 +4,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Video, Brain, Compass, FileText, FolderKanban, Lightbulb, MessageSquare, MessageSquarePlus, Network, PanelLeft, PanelRight, Search, Settings, StickyNote, Sparkles, BookOpen, Upload, Scissors, Target, Bell, Mic, GraduationCap, Scale, FlaskConical, HeartPulse } from "lucide-react";
 import { useApp } from "@/state/app";
 import { api } from "@/lib/api";
-import { invalidate } from "@/lib/resource";
+import { invalidate, useResource } from "@/lib/resource";
+import { itemPath, type TrailItem } from "./Trail";
 import { modKey } from "@/lib/format";
 import { toastError } from "@/state/ui";
 import { cx } from "./ui";
@@ -28,6 +29,7 @@ export function CommandPalette() {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const [results, setResults] = useState<any[]>([]);
+  const { data: recent } = useResource<TrailItem[]>(paletteOpen ? "/recent" : null);
   const [sel, setSel] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
@@ -102,9 +104,13 @@ export function CommandPalette() {
       return { id: `${r.type}-${r.id}`, label: r.title, hint: r.snippet && r.type !== "document" ? String(r.snippet).slice(0, 40) : undefined, group: meta.group, icon: meta.icon, run: go(meta.to(r.id)) };
     });
     const acts = actions.filter((a) => !needle || a.id === "search-all" || a.id === "research" || a.id === "note" || a.id === "learn" || a.id === "lab" || a.id === "hypothesis" || `${a.label} ${tx(a.label)} ${a.keywords ?? ""}`.toLowerCase().includes(needle));
-    return needle ? [...found, ...acts.filter((a) => a.id === "search-all"), ...acts.filter((a) => a.id !== "search-all")] : acts;
+    if (needle) return [...found, ...acts.filter((a) => a.id === "search-all"), ...acts.filter((a) => a.id !== "search-all")];
+    // Nothing typed yet: the last things you opened come first.
+    const RECENT_ICON = { document: StickyNote, paper: FileText, conversation: MessageSquare, project: FolderKanban, research: Compass };
+    const recentItems: Item[] = (recent ?? []).map((r) => ({ id: `recent-${r.kind}-${r.ref}`, label: r.title || "Untitled", group: "Recently viewed", icon: RECENT_ICON[r.kind as keyof typeof RECENT_ICON] ?? StickyNote, run: go(itemPath(r)) }));
+    return [...recentItems, ...acts];
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [results, actions, q]);
+  }, [results, actions, q, recent]);
 
   useEffect(() => setSel(0), [q, results.length]);
   useEffect(() => {

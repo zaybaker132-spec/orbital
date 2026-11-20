@@ -12,12 +12,13 @@ import { toast, toastError } from "@/state/ui";
 import { NeuralCore } from "@/neural/NeuralCore";
 import { ContributionGraph } from "@/components/ContributionGraph";
 import type { WidgetType } from "../../../shared/environment";
+import { TrailList, type TrailItem } from "@/components/Trail";
 
 /** A widget's body. Each one reads its own data, so a dashboard only loads what it shows. */
 export const WIDGET_BODIES: Record<WidgetType, () => ReactNode> = {
   today: Today, ask: Ask, core: Core, "quick-note": QuickNote, tasks: Tasks, projects: Projects, reminders: Reminders,
   nudges: Nudges, notes: Notes, papers: Papers, research: Research, focus: Focus, activity: Activity, growth: Growth,
-  questions: Questions, opportunities: Opportunities,
+  questions: Questions, opportunities: Opportunities, recent: Recent, favorites: Favorites,
 };
 /** Where a widget's "open" arrow goes. */
 export const WIDGET_LINKS: Partial<Record<WidgetType, string>> = {
@@ -222,6 +223,16 @@ function Opportunities() {
   const { data } = useResource<any[]>("/opportunities");
   const open = data?.filter((o) => o.status !== "dismissed").slice(0, 6);
   return <List empty={tx("No opportunities yet.")} items={open?.map((o) => <Row key={o.id} to="/opportunities" title={o.title} meta={label(o.status)} />)} />;
+}
+
+function Recent() {
+  const { data } = useResource<TrailItem[]>("/recent");
+  return data ? <TrailList items={data} empty={tx("Nothing opened yet.")} /> : <Pulse />;
+}
+
+function Favorites() {
+  const { data } = useResource<TrailItem[]>("/bookmarks");
+  return data ? <TrailList items={data} empty={tx("Star a page, note, paper, conversation or project to keep it here.")} /> : <Pulse />;
 }
 
 export function WidgetLink({ to }: { to: string }) {

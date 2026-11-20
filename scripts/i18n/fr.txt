@@ -1804,3 +1804,16 @@
 4815|Utiliser ma position
 4816|Votre position
 4817|approximatif
+4820|Ajouter aux favoris
+4821|Ajouté aux favoris
+4822|Double-cliquez pour renommer · faites glisser pour réorganiser
+4823|Tout ce que vous avez mis en favori.
+4824|Nom du favori
+4825|Favoris
+4826|Rien d'ouvert pour l'instant.
+4827|Consultés récemment
+4828|Retirer des favoris
+4829|Retiré des favoris
+4830|Mettez en favori une page, une note, un document, une conversation ou un projet pour le retrouver ici.
+4831|Équipe
+4832|Les 10 derniers éléments ouverts.

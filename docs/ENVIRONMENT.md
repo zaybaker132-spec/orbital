@@ -55,3 +55,16 @@ Stored as `environment` in your preferences (`PUT /api/preferences`). The server
 types, sizes, sections and colours, slug ids, short names, and at most 8 dashboards of 24 widgets; anything
 else is refused (`server/routes/workspace.ts`, `shared/environment.ts`). Widgets read existing endpoints,
 plus `GET /api/dashboard/tasks` for open tasks across the current workspace. Tests: `server/test/environment.test.ts`.
+
+## Recently viewed and favorites
+
+- **Recent** (sidebar, the command palette before you type, and the "Recently viewed" widget): the last 10
+  things you opened — notes, files, web clips, papers, conversations, projects and research — newest first.
+  An item counts once you've been on it for a moment. **Clear** empties the list.
+- **Favorites**: the ☆ in the top bar pins whatever you're looking at — a note, paper, conversation, project,
+  research report, or any page (including a search). They appear in the sidebar and the "Favorites" widget.
+  Drag to reorder, double-click to rename, hover and × to remove, or click the ☆ again.
+- Both are private to you and per workspace. Titles follow renames, and anything deleted (or no longer
+  visible to you) drops off by itself. Up to 50 favorites.
+- API: `POST/GET/DELETE /api/recent`, `GET/POST /api/bookmarks`, `PATCH/DELETE /api/bookmarks/:id`,
+  `PUT /api/bookmarks/order`. Tests: `server/test/trail.test.ts`.

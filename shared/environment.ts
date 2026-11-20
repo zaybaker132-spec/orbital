@@ -5,7 +5,7 @@
 
 export const WIDGET_TYPES = [
   "today", "ask", "core", "quick-note", "tasks", "projects", "reminders", "nudges",
-  "notes", "papers", "research", "focus", "activity", "growth", "questions", "opportunities",
+  "notes", "papers", "research", "focus", "activity", "growth", "questions", "opportunities", "recent", "favorites",
 ] as const;
 export type WidgetType = (typeof WIDGET_TYPES)[number];
 export const WIDGET_SIZES = ["s", "m", "l"] as const;
@@ -30,6 +30,8 @@ export const WIDGETS: WidgetMeta[] = [
   { type: "growth", title: "Growth", description: "How your knowledge is growing.", size: "m" },
   { type: "questions", title: "Open questions", description: "Gaps in what you know, ready to research.", size: "s" },
   { type: "opportunities", title: "Opportunities", description: "Opportunities you're tracking.", size: "s" },
+  { type: "recent", title: "Recently viewed", description: "The last 10 things you opened.", size: "s" },
+  { type: "favorites", title: "Favorites", description: "Everything you've starred.", size: "s" },
 ];
 
 export interface Widget { id: string; type: WidgetType; size: WidgetSize }

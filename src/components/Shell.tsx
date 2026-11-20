@@ -19,6 +19,7 @@ import { Wordmark } from "@/components/Wordmark";
 import { navVisible, useEnvironment } from "@/state/environment";
 import type { NavKey } from "../../shared/environment";
 import { ClockWeather } from "./ClockWeather";
+import { BookmarkButton, SidebarTrail, useTrackViews } from "./Trail";
 
 export const NAV: { id: NavKey; to: string; label: string; icon: typeof Brain; key: string }[] = [
   { id: "dashboard", to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, key: "h" },
@@ -40,6 +41,7 @@ const STATE_LABEL: Record<string, string> = { idle: "Idle", thinking: "Thinking"
 export function Shell({ children }: { children: ReactNode }) {
   const { sidebarCollapsed, rightPanel, toggleSidebar, toggleRightPanel, setPalette } = useApp();
   const navigate = useNavigate();
+  useTrackViews();
   const [width, setWidth] = useState(() => {
     try { return Number(localStorage.getItem("orbital.sidebarWidth")) || 252; } catch { return 252; }
   });
@@ -100,6 +102,7 @@ function TopBar() {
         <Search size={13} className="shrink-0" /> <span className="truncate">{tx("Search or run a command")}</span> <span className="kbd ml-auto shrink-0 whitespace-nowrap">{modKey} K</span>
       </button>
       <div className="ml-auto flex items-center gap-3">
+        <BookmarkButton />
         <span className="flex items-center gap-2 text-[0.75rem] text-mute" aria-live="polite">
           <span className={cx("h-1.5 w-1.5 rounded-full transition-colors", state === "idle" ? "bg-white/30" : "bg-white animate-pulse")} />
           {tx(STATE_LABEL[state])}
@@ -172,9 +175,11 @@ function Sidebar({ width, collapsed, onResize }: { width: number; collapsed: boo
         ))}
       </ul>
       {!collapsed && (
-        <div className="mt-6 flex min-h-0 flex-1 flex-col">
+        <div className="mt-2 flex min-h-0 flex-1 flex-col overflow-y-auto">
+          <SidebarTrail />
+          <div className="mt-4" />
           <div className="label px-5 pb-2">{tx("Conversations")}</div>
-          <ul className="min-h-0 flex-1 space-y-px overflow-y-auto px-2.5 pb-3">
+          <ul className="space-y-px px-2.5 pb-3">
             {convs?.length === 0 && <li className="px-2.5 py-1 text-[0.8rem] text-mute-soft">{tx("No conversations yet")}</li>}
             {convs?.map((c) => {
               const active = loc.pathname === `/c/${c.id}`;

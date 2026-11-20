@@ -112,7 +112,7 @@ Full documents written in Orbital, like Google Docs: templates, rich formatting,
 
 ## Your environment
 
-Dashboards of widgets (tasks, projects, reminders, notes, research, focus, activity, growth and more) that you add, resize and arrange, with templates and several dashboards; choose what Orbital opens to, reorder or hide sidebar sections, and pick an accent colour, Neural Core colours, a background and text size. See [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md).
+Dashboards of widgets (tasks, projects, reminders, notes, research, focus, activity, growth and more) that you add, resize and arrange, with templates and several dashboards; choose what Orbital opens to, reorder or hide sidebar sections, and pick an accent colour, Neural Core colours, a background and text size. A clock and weather in the sidebar, a **Recent** trail of the last 10 things you opened, and **Favorites** you pin with the ☆. See [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md).
 
 ## Languages
 

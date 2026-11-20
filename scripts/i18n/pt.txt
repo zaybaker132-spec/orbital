@@ -1804,3 +1804,16 @@
 4815|Usar minha localização
 4816|Sua localização
 4817|aproximado
+4820|Adicionar aos favoritos
+4821|Adicionado aos favoritos
+4822|Clique duas vezes para renomear · arraste para reordenar
+4823|Tudo o que você marcou com estrela.
+4824|Nome do favorito
+4825|Favoritos
+4826|Nada aberto ainda.
+4827|Vistos recentemente
+4828|Remover dos favoritos
+4829|Removido dos favoritos
+4830|Marque com estrela uma página, nota, documento, conversa ou projeto para mantê-lo aqui.
+4831|Equipe
+4832|As últimas 10 coisas que você abriu.

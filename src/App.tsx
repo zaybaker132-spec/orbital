@@ -138,7 +138,8 @@ function AppRoutes() {
  */
 const OPENED_KEY = "orbital.opened";
 const reducedMotion = () => typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-const minShow = (kind: IntroKind) => (reducedMotion() ? 900 : kind === "open" ? 4400 : 4200);
+// Never shorter than 2.5 s (even with reduced motion, where it shows a still version instead).
+const minShow = (kind: IntroKind) => (reducedMotion() ? 2500 : kind === "open" ? 4400 : 4200);
 
 export function App() {
   const { loaded, user, workspace } = useApp();

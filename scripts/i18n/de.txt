@@ -1804,3 +1804,16 @@
 4815|Meinen Standort verwenden
 4816|Dein Standort
 4817|ungefähr
+4820|Zu Favoriten hinzufügen
+4821|Zu Favoriten hinzugefügt
+4822|Doppelklick zum Umbenennen · ziehen zum Sortieren
+4823|Alles, was du markiert hast.
+4824|Name des Favoriten
+4825|Favoriten
+4826|Noch nichts geöffnet.
+4827|Zuletzt angesehen
+4828|Aus Favoriten entfernen
+4829|Aus Favoriten entfernt
+4830|Markiere eine Seite, Notiz, ein Dokument, Gespräch oder Projekt mit einem Stern, um es hier zu behalten.
+4831|Team
+4832|Die letzten 10 Dinge, die du geöffnet hast.
