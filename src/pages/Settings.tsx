@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Download, Monitor, FolderOpen, KeyRound, LogOut, BellRing, Volume2 } from "lucide-react";
+import { Download, Monitor, FolderOpen, KeyRound, LogOut, BellRing, Volume2, ChevronUp, ChevronDown } from "lucide-react";
 import { useApp } from "@/state/app";
 import { useResource, invalidate } from "@/lib/resource";
 import { api, getWorkspaceId } from "@/lib/api";
@@ -12,10 +12,14 @@ import { modKey } from "@/lib/format";
 import { MODES } from "./Chat";
 import { LANGUAGES, language, locale, resolveLanguage, setLanguage, tn, tx } from "@/i18n";
 import { setThemePref, useThemePref, type ThemePref } from "@/lib/theme";
+import { saveEnvironment, useEnvironment } from "@/state/environment";
+import { NAV } from "@/components/Shell";
+import { useLightTheme } from "@/lib/theme";
+import { ACCENTS, ACCENT_HEX, CORE_PALETTES, CORE_PALETTE_STOPS, NAV_KEYS, type Accent, type CorePalette, type Environment, type NavKey } from "../../shared/environment";
 
 const SECTIONS = [
   ["account", "Account"], ["workspace", "Workspace"], ["ai", "AI & research"], ["voice", "Voice"], ["reminders", "Reminders & focus"],
-  ["appearance", "Appearance"], ["language", "Language"], ["meetings", "Meetings"], ["tools", "Desktop & web clipper"], ["keyboard", "Keyboard"], ["data", "Your data"], ["about", "About"],
+  ["appearance", "Appearance"], ["environment", "Your environment"], ["language", "Language"], ["meetings", "Meetings"], ["tools", "Desktop & web clipper"], ["keyboard", "Keyboard"], ["data", "Your data"], ["about", "About"],
 ] as const;
 
 export function SettingsPage() {
@@ -90,6 +94,8 @@ export function SettingsPage() {
             </Row>
             <Row label={tx("Intro animation")}><Button size="sm" variant="ghost" onClick={() => { try { sessionStorage.removeItem("orbital.intro"); } catch { /* ignore */ } toast(tx("The formation will play next time the Neural Core opens")); }}>{tx("Replay it next time")}</Button></Row>
           </Group>
+
+          <EnvironmentGroup />
 
           <Group id="language" title={tx("Language")} description={tx("The whole interface, Orbital's answers, research reports, voice and dates use this language.")}>
             <Row label={tx("Language")}>
@@ -279,6 +285,83 @@ function ServerStatus() {
           </ul>
         </div>
       )}
+    </Group>
+  );
+}
+
+/** Your environment: what Orbital opens to, the sidebar, and its colours and size. */
+function EnvironmentGroup() {
+  const env = useEnvironment();
+  const light = useLightTheme();
+  const set = (patch: Partial<Environment>) => saveEnvironment(patch).catch(toastError);
+  const NAV_LABEL = Object.fromEntries(NAV.map((n) => [n.id, n.label])) as Record<NavKey, string>;
+  const moveNav = (i: number, d: number) => {
+    const order = [...env.nav.order]; const j = i + d;
+    if (j < 0 || j >= order.length) return;
+    [order[i], order[j]] = [order[j], order[i]]; set({ nav: { ...env.nav, order } });
+  };
+  const ACCENT_NAME: Record<Accent, string> = { white: tx("Default"), violet: tx("Violet"), magenta: tx("Magenta"), red: tx("Red"), orange: tx("Orange"), amber: tx("Amber"), lime: tx("Lime"), green: tx("Green"), cyan: tx("Cyan"), blue: tx("Blue") };
+  const CORE_NAME: Record<CorePalette, string> = { spectrum: tx("Spectrum"), aurora: tx("Aurora"), ember: tx("Ember"), ocean: tx("Ocean"), mono: tx("Mono") };
+  const swatch = (stops: string[]) => `linear-gradient(90deg, ${stops.join(", ")})`;
+  return (
+    <Group id="environment" title={tx("Your environment")} description={tx("Make Orbital yours: where it opens, what's in the sidebar, and how it looks. Dashboards are on the Dashboard page.")}>
+      <Row label={tx("Opens to")}>
+        <Select label={tx("Opens to")} value={env.home} onChange={(v) => set({ home: v as Environment["home"] })} className="w-56"
+          options={[{ value: "chat", label: "A new conversation" }, { value: "dashboard", label: "Your dashboard" }]} />
+      </Row>
+      <Row label={tx("Context panel")}>
+        <Select label={tx("Context panel")} value={env.contextPanel} onChange={(v) => set({ contextPanel: v as Environment["contextPanel"] })} className="w-56"
+          options={[{ value: "remember", label: "As I last left it" }, { value: "open", label: "Open when Orbital starts" }, { value: "closed", label: "Closed when Orbital starts" }]} />
+      </Row>
+      <Row label={tx("Accent colour")}>
+        <div role="radiogroup" aria-label={tx("Accent colour")} className="flex flex-wrap gap-2">
+          {ACCENTS.map((a) => (
+            <button key={a} role="radio" aria-checked={env.accent === a} title={ACCENT_NAME[a]} aria-label={ACCENT_NAME[a]} onClick={() => set({ accent: a })}
+              className={`h-7 w-7 rounded-full border transition-transform ${env.accent === a ? "scale-110 border-white ring-2 ring-white/30 ring-offset-2 ring-offset-black" : "border-line-strong hover:scale-105"}`}
+              style={{ background: ACCENT_HEX[a][light ? 1 : 0] }} />
+          ))}
+        </div>
+      </Row>
+      <Row label={tx("Neural Core colours")}>
+        <div role="radiogroup" aria-label={tx("Neural Core colours")} className="flex flex-wrap gap-2">
+          {CORE_PALETTES.map((p) => (
+            <button key={p} role="radio" aria-checked={env.corePalette === p} onClick={() => set({ corePalette: p })}
+              className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[0.8rem] ${env.corePalette === p ? "border-white/60 text-white" : "border-line text-mute hover:text-white"}`}>
+              <span className="h-3 w-8 rounded-full" style={{ background: swatch(p === "spectrum" ? ["#ff1f2e", "#ffd23a", "#2cff7a", "#1fd0ff", "#7a2cff"] : CORE_PALETTE_STOPS[p]) }} />
+              {CORE_NAME[p]}
+            </button>
+          ))}
+        </div>
+      </Row>
+      <Row label={tx("Background")}>
+        <Select label={tx("Background")} value={env.background} onChange={(v) => set({ background: v as Environment["background"] })} className="w-56"
+          options={[{ value: "plain", label: "Plain" }, { value: "glow", label: "Soft glow" }, { value: "grid", label: "Dot grid" }, { value: "stars", label: "Stars" }]} />
+      </Row>
+      <Row label={tx("Text size")}>
+        <Select label={tx("Text size")} value={env.textSize} onChange={(v) => set({ textSize: v as Environment["textSize"] })} className="w-56"
+          options={[{ value: "small", label: "Small" }, { value: "default", label: "Default" }, { value: "large", label: "Large" }]} />
+      </Row>
+      <Row label={tx("Sidebar")}>
+        <div className="w-full max-w-sm">
+          <ul className="divide-y divide-line rounded-lg border border-line">
+            {env.nav.order.map((k, i) => {
+              const hidden = env.nav.hidden.includes(k);
+              return (
+                <li key={k} className="flex items-center gap-2 px-3 py-1.5 text-[0.84rem]">
+                  <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-2">
+                    <input type="checkbox" checked={!hidden} className="accent-white"
+                      onChange={() => set({ nav: { ...env.nav, hidden: hidden ? env.nav.hidden.filter((x) => x !== k) : [...env.nav.hidden, k] } })} />
+                    <span className={hidden ? "text-mute-soft" : "text-white"}>{tx(NAV_LABEL[k])}</span>
+                  </label>
+                  <button onClick={() => moveNav(i, -1)} disabled={i === 0} className="rounded p-1 text-mute hover:text-white disabled:opacity-25" aria-label={tx("Move up")}><ChevronUp size={14} /></button>
+                  <button onClick={() => moveNav(i, 1)} disabled={i === env.nav.order.length - 1} className="rounded p-1 text-mute hover:text-white disabled:opacity-25" aria-label={tx("Move down")}><ChevronDown size={14} /></button>
+                </li>
+              );
+            })}
+          </ul>
+          <button className="mt-2 text-[0.78rem] text-mute underline-offset-2 hover:text-white hover:underline" onClick={() => set({ nav: { order: [...NAV_KEYS], hidden: [] } })}>{tx("Reset the sidebar")}</button>
+        </div>
+      </Row>
     </Group>
   );
 }

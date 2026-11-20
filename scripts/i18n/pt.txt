@@ -1660,3 +1660,112 @@
 4660|Abrindo o Orbital
 4661|Bem-vindo de volta, {name}.
 4662|Bem-vindo de volta.
+4670|Um pouco de tudo: seu dia, seu trabalho e seu conhecimento.
+4671|Uma saudação, a data e o que vence hoje.
+4672|Uma nova conversa
+4673|Um pensamento, um link, uma ideia…
+4674|Um ano do seu trabalho, dia a dia.
+4675|Cor de destaque
+4676|Projetos ativos e quanto já avançaram.
+4677|Adicionar um widget
+4678|Adicionar widget
+4679|Adicione widgets para o que você mais consulta: tarefas, projetos, notas, pesquisas e mais.
+4680|Âmbar
+4681|Como deixei
+4682|Perguntar
+4683|Aurora
+4684|Voltar à sua sessão
+4685|Azul
+4686|Anote uma ideia em uma linha.
+4687|Fechado ao abrir o Orbital
+4688|Painel de contexto
+4689|Ctrl/⌘ + Enter para salvar
+4690|Personalizar
+4691|Ciano
+4692|Painel
+4693|Painéis
+4694|Padrão
+4695|Excluir painel
+4696|Excluir o painel "{name}"? Seus dados não são afetados.
+4697|Os documentos que você está escrevendo.
+4698|Grade de pontos
+4699|Arraste os widgets para reorganizá-los; redimensione ou remova pelo canto.
+4700|Brasa
+4701|Lacunas no que você sabe, prontas para pesquisar.
+4702|Verde
+4703|Crescimento
+4704|Como seu conhecimento está crescendo.
+4705|Só o trabalho de hoje e um cronômetro.
+4706|Grande
+4707|Lima
+4708|Magenta
+4709|Deixe o Orbital do seu jeito: onde ele abre, o que fica na barra lateral e como ele aparece. Os painéis ficam na página Painel.
+4710|Marcar como feita
+4711|Mono
+4712|Mover para baixo
+4713|Mover para antes
+4714|Mover para depois
+4715|Mover para cima
+4716|Meu Orbital
+4717|Cores do Neural Core
+4718|Novo painel
+4719|Nenhum projeto ativo ainda.
+4720|Nenhuma nota ainda.
+4721|Nenhuma pergunta em aberto.
+4722|Nenhuma tarefa em aberto. Adicione algumas em um projeto.
+4723|Nenhuma oportunidade ainda.
+4724|Nenhum documento ainda.
+4725|Nada precisa da sua atenção.
+4726|Nada agendado.
+4727|Lembretes
+4728|Oceano
+4729|Tarefas abertas de todos os seus projetos, as mais próximas primeiro.
+4730|Aberto ao abrir o Orbital
+4731|Abre em
+4732|Oportunidades que você acompanha.
+4733|Laranja
+4734|Trabalho atrasado, prazos em risco e projetos parados.
+4735|Liso
+4736|Projetos, oportunidades e o que precisa de atenção.
+4737|Perguntas, pesquisas e seu conhecimento em crescimento.
+4738|Nota rápida
+4739|Notas recentes
+4740|Documentos recentes
+4741|Vermelho
+4742|Remover widget
+4743|Redefinir a barra lateral
+4744|Perguntas resolvidas
+4745|Salvar nota
+4746|Salvo nas suas notas
+4747|Barra lateral
+4748|Tamanho
+4749|Pequeno
+4750|Brilho suave
+4751|Espectro
+4752|Estrelas
+4753|Comece uma conversa de qualquer lugar.
+4754|Iniciar uma sessão de foco
+4755|Inicie uma sessão de foco; seu tempo de foco nesta semana.
+4756|Comece vazio e adicione seus próprios widgets.
+4757|Começar de
+4758|Tamanho do texto
+4759|As notas, arquivos e recortes que você usou por último.
+4760|Este painel está vazio
+4761|Próximas tarefas
+4762|Descobertas verificadas
+4763|Violeta
+4764|O que vem por aí.
+4765|Largo
+4766|Seu painel
+4767|Seu ambiente
+4768|Suas pesquisas mais recentes e o status delas.
+4769|Seu orbe vivo, que cresce com o que você sabe.
+4770|adicionado
+4771|sem tarefas
+4772|lembrete hoje
+4773|lembretes hoje
+4774|tarefa a vencer
+4775|tarefas a vencer
+4776|{n} atrasadas
+4777|{n} sessão
+4778|{n} sessões

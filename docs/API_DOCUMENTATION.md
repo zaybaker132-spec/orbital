@@ -121,13 +121,14 @@ Prefix: `/api`
 | POST | /opportunities/:id/refresh-evidence |  |  |
 | POST | /opportunities/:id/plan |  |  |
 | DELETE | /opportunities/:id |  |  |
+| GET | /dashboard/tasks |  | Open tasks across the workspace's active and paused projects, soonest due first (max 12), with `overdue` and `project_name`. `?today=YYYY-MM-DD`. |
 | GET | /growth |  |  |
 | GET | /growth/maintenance |  |  |
 | PATCH | /gaps/:id |  |  |
 | POST | /gaps/:id/research |  |  |
 | GET | /search/all |  |  |
 | GET | /search |  |  |
-| PUT | /preferences |  |  |
+| PUT | /preferences |  | Partial update of your preferences. `environment` (dashboards, layout, theme) is replaced whole and strictly validated: see docs/ENVIRONMENT.md. |  |
 | GET | /export |  | Everything in the workspace as a JSON download. |
 | POST | /account/delete |  | `{confirm: "DELETE", password}`. Deletes the user, their personal workspace and sessions. 401 on a wrong password. |
 

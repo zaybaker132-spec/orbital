@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Brain, Compass, FileText, FolderKanban, Lightbulb, LogOut, MessageSquarePlus, Network, PanelLeft, PanelRight, Search, Settings, BookOpen, Workflow, Video, Bell, Target, X,
+  Brain, Compass, LayoutDashboard, FileText, FolderKanban, Lightbulb, LogOut, MessageSquarePlus, Network, PanelLeft, PanelRight, Search, Settings, BookOpen, Workflow, Video, Bell, Target, X,
 } from "lucide-react";
 import { useApp } from "@/state/app";
 import { useCore } from "@/state/core";
@@ -16,19 +16,22 @@ import { CommandPalette } from "./CommandPalette";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import { tx } from "@/i18n";
 import { Wordmark } from "@/components/Wordmark";
+import { navVisible, useEnvironment } from "@/state/environment";
+import type { NavKey } from "../../shared/environment";
 
-export const NAV = [
-  { to: "/core", label: "Neural Core", icon: Brain, key: "n" },
-  { to: "/research", label: "Research", icon: Compass, key: "r" },
-  { to: "/papers", label: "Papers", icon: FileText, key: "d" },
-  { to: "/knowledge", label: "Knowledge", icon: BookOpen, key: "k" },
-  { to: "/connections", label: "Connections", icon: Network, key: "g" },
-  { to: "/projects", label: "Projects", icon: FolderKanban, key: "p" },
-  { to: "/reminders", label: "Reminders", icon: Bell, key: "t" },
-  { to: "/focus", label: "Focus", icon: Target, key: "f" },
-  { to: "/opportunities", label: "Opportunities", icon: Lightbulb, key: "o" },
-  { to: "/meetings", label: "Meetings", icon: Video, key: "m" },
-  { to: "/operations", label: "Operations", icon: Workflow, key: "w" },
+export const NAV: { id: NavKey; to: string; label: string; icon: typeof Brain; key: string }[] = [
+  { id: "dashboard", to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, key: "h" },
+  { id: "core", to: "/core", label: "Neural Core", icon: Brain, key: "n" },
+  { id: "research", to: "/research", label: "Research", icon: Compass, key: "r" },
+  { id: "papers", to: "/papers", label: "Papers", icon: FileText, key: "d" },
+  { id: "knowledge", to: "/knowledge", label: "Knowledge", icon: BookOpen, key: "k" },
+  { id: "connections", to: "/connections", label: "Connections", icon: Network, key: "g" },
+  { id: "projects", to: "/projects", label: "Projects", icon: FolderKanban, key: "p" },
+  { id: "reminders", to: "/reminders", label: "Reminders", icon: Bell, key: "t" },
+  { id: "focus", to: "/focus", label: "Focus", icon: Target, key: "f" },
+  { id: "opportunities", to: "/opportunities", label: "Opportunities", icon: Lightbulb, key: "o" },
+  { id: "meetings", to: "/meetings", label: "Meetings", icon: Video, key: "m" },
+  { id: "operations", to: "/operations", label: "Operations", icon: Workflow, key: "w" },
 ] as const;
 
 const STATE_LABEL: Record<string, string> = { idle: "Idle", thinking: "Thinking", researching: "Researching", learning: "Learning", connecting: "Connecting", opportunity: "Opportunity detected" };
@@ -115,6 +118,8 @@ function Sidebar({ width, collapsed, onResize }: { width: number; collapsed: boo
   const pending = actions?.length ?? 0;
   const { data: reminders } = useResource<any[]>("/reminders");
   const due = reminders?.filter((r) => r.status === "fired").length ?? 0;
+  const env = useEnvironment();
+  const navItems = navVisible(env).map((k) => NAV.find((n) => n.id === k)!).filter(Boolean);
   const dragging = useRef(false);
 
   const startDrag = useCallback((e: React.PointerEvent) => {
@@ -147,15 +152,15 @@ function Sidebar({ width, collapsed, onResize }: { width: number; collapsed: boo
         </button>
       </div>
       <ul className={cx("mt-3 space-y-px px-2.5", collapsed && "px-2")}>
-        {NAV.map((n) => (
+        {navItems.map((n) => (
           <li key={n.to}>
             <NavLink to={n.to} title={`${tx(n.label)} (g ${n.key})`}
               className={({ isActive }) => cx("group relative flex h-8 items-center gap-2.5 rounded-lg px-2.5 text-[0.86rem] transition-colors", collapsed && "justify-center px-0",
                 isActive ? "text-white" : "text-mute hover:bg-white/[0.04] hover:text-white/90")}>
               {({ isActive }) => (
                 <>
-                  {isActive && <motion.span layoutId="nav-active" className="absolute inset-0 rounded-lg bg-white/[0.07]" transition={{ duration: 0.2 }} />}
-                  <n.icon size={15} className="relative shrink-0" strokeWidth={1.6} />
+                  {isActive && <motion.span layoutId="nav-active" className="absolute inset-0 rounded-lg bg-white/[0.07]" transition={{ duration: 0.2 }}><span className="absolute inset-y-1.5 left-0 w-[2px] rounded-full bg-accent" /></motion.span>}
+                  <n.icon size={15} className={cx("relative shrink-0", isActive && "text-accent")} strokeWidth={1.6} />
                   {!collapsed && <span className="relative">{tx(n.label)}</span>}
                   {n.to === "/reminders" && due > 0 && <span className={cx("relative rounded-full bg-white px-1.5 text-[0.66rem] leading-4 text-black", collapsed ? "absolute right-1 top-0.5" : "ml-auto")} aria-label={tx("{due} due", { due: due })}>{due}</span>}
                   {n.to === "/operations" && pending > 0 && <span className={cx("relative rounded-full bg-white px-1.5 text-[0.66rem] leading-4 text-black", collapsed ? "absolute right-1 top-0.5" : "ml-auto")} aria-label={tx("{pending} awaiting approval", { pending: pending })}>{pending}</span>}

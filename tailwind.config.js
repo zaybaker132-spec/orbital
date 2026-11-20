@@ -26,6 +26,7 @@ export default {
     extend: {
       colors: {
         white: v("fg"),
+        accent: v("accent"),
         black: v("bg"),
         ink: { 0: v("ink-0"), 1: v("ink-1"), 2: v("ink-2"), 3: v("ink-3"), 4: v("ink-4") },
         line: { DEFAULT: "rgb(var(--c-fg) / 0.08)", strong: "rgb(var(--c-fg) / 0.14)" },
@@ -46,13 +47,13 @@ export default {
     plugin(({ addBase }) => {
       addBase({
         ":root": {
-          "--c-fg": "255 255 255", "--c-bg": "0 0 0",
+          "--c-fg": "255 255 255", "--c-bg": "0 0 0", "--c-accent": "255 255 255",
           "--c-ink-0": "0 0 0", "--c-ink-1": "8 8 8", "--c-ink-2": "17 17 17", "--c-ink-3": "24 24 24", "--c-ink-4": "34 34 34",
           "--c-mute": "136 136 136", "--c-mute-soft": "95 95 95", "--c-mute-bright": "180 180 180",
           ...accentVars(false),
         },
         "html.light": {
-          "--c-fg": "17 17 20", "--c-bg": "255 255 255",
+          "--c-fg": "17 17 20", "--c-bg": "255 255 255", "--c-accent": "17 17 20",
           "--c-ink-0": "255 255 255", "--c-ink-1": "248 248 249", "--c-ink-2": "241 241 243", "--c-ink-3": "234 234 237", "--c-ink-4": "224 224 228",
           "--c-mute": "104 104 112", "--c-mute-soft": "146 146 154", "--c-mute-bright": "64 64 70",
           ...accentVars(true),

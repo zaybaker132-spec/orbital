@@ -1,5 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { IntroScreen, type IntroKind } from "./components/IntroScreen";
+import { EnvironmentEffects, resolveEnvironment } from "./state/environment";
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { useApp } from "./state/app";
@@ -13,6 +14,7 @@ import { ChatPage } from "./pages/Chat";
 import { NotFoundPage } from "./pages/NotFound";
 import { isAppRoute } from "@shared/routes";
 
+const DashboardPage = lazy(() => import("./pages/Dashboard").then((m) => ({ default: m.DashboardPage })));
 const CorePage = lazy(() => import("./pages/Core").then((m) => ({ default: m.CorePage })));
 const ResearchPage = lazy(() => import("./pages/Research").then((m) => ({ default: m.ResearchPage })));
 const KnowledgePage = lazy(() => import("./pages/Knowledge").then((m) => ({ default: m.KnowledgePage })));
@@ -95,6 +97,7 @@ function AppRoutes() {
             <Routes location={loc}>
               <Route path="/" element={<ChatPage />} />
               <Route path="/c/:id" element={<ChatPage />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/core" element={<CorePage />} />
               <Route path="/research" element={<ResearchPage />} />
               <Route path="/research/:id" element={<ResearchPage />} />
@@ -165,8 +168,20 @@ export function App() {
   }, [intro, ready]);
   const done = useCallback(() => setIntro(null), []);
 
+  // Your environment's start-up choices: open on your dashboard, and the context panel open or closed.
+  const navigate = useNavigate();
+  const started = useRef(false);
+  useEffect(() => {
+    if (!loaded || !user || started.current) return;
+    started.current = true;
+    const env = resolveEnvironment(useApp.getState().prefs.environment);
+    if (env.contextPanel !== "remember") useApp.getState().toggleRightPanel(env.contextPanel === "open");
+    if (env.home === "dashboard" && location.pathname === "/" && !location.search) navigate("/dashboard", { replace: true });
+  }, [loaded, user, navigate]);
+
   return (
     <>
+      <EnvironmentEffects />
       <AppRoutes />
       {intro && <IntroScreen key={intro.kind + intro.at} kind={intro.kind} name={user?.displayName} leaving={intro.leaving} onGone={done} />}
     </>

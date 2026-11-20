@@ -110,6 +110,10 @@ Orbital is usable with no AI provider: notes, PDF/Word/Excel/PowerPoint/text imp
 
 Full documents written in Orbital, like Google Docs: templates, rich formatting, tables, images, comments, version history, find and replace, PDF/Word/Markdown export, and several people editing at once with live cursors. Orbital can write and rewrite with you, and every paper becomes searchable knowledge. See [docs/PAPERS.md](docs/PAPERS.md).
 
+## Your environment
+
+Dashboards of widgets (tasks, projects, reminders, notes, research, focus, activity, growth and more) that you add, resize and arrange, with templates and several dashboards; choose what Orbital opens to, reorder or hide sidebar sections, and pick an accent colour, Neural Core colours, a background and text size. See [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md).
+
 ## Languages
 
 The interface, Orbital's answers, research reports, voice and dates in English, Spanish, French, Portuguese or German: Settings → Language. See [docs/LANGUAGES.md](docs/LANGUAGES.md).

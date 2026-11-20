@@ -1660,3 +1660,112 @@
 4660|Orbital wird geöffnet
 4661|Willkommen zurück, {name}.
 4662|Willkommen zurück.
+4670|Von allem etwas: dein Tag, deine Arbeit und dein Wissen.
+4671|Eine Begrüßung, das Datum und was heute fällig ist.
+4672|Ein neues Gespräch
+4673|Ein Gedanke, ein Link, eine Idee…
+4674|Ein Jahr deiner Arbeit, Tag für Tag.
+4675|Akzentfarbe
+4676|Aktive Projekte und wie weit sie sind.
+4677|Widget hinzufügen
+4678|Widget hinzufügen
+4679|Füge Widgets für das hinzu, was du am häufigsten ansiehst: Aufgaben, Projekte, Notizen, Recherchen und mehr.
+4680|Bernstein
+4681|Wie zuletzt
+4682|Fragen
+4683|Polarlicht
+4684|Zurück zur Sitzung
+4685|Blau
+4686|Halte einen Gedanken in einer Zeile fest.
+4687|Beim Start von Orbital geschlossen
+4688|Kontextbereich
+4689|Strg/⌘ + Enter zum Speichern
+4690|Anpassen
+4691|Cyan
+4692|Dashboard
+4693|Dashboards
+4694|Standard
+4695|Dashboard löschen
+4696|Dashboard „{name}“ löschen? Deine Daten bleiben unverändert.
+4697|Dokumente, an denen du schreibst.
+4698|Punktraster
+4699|Ziehe Widgets, um sie neu anzuordnen; Größe ändern oder entfernen über ihre Ecke.
+4700|Glut
+4701|Lücken in deinem Wissen, bereit zur Recherche.
+4702|Grün
+4703|Wachstum
+4704|Wie dein Wissen wächst.
+4705|Nur die heutige Arbeit und ein Timer.
+4706|Groß
+4707|Limette
+4708|Magenta
+4709|Mach Orbital zu deinem: wo es startet, was in der Seitenleiste steht und wie es aussieht. Dashboards findest du auf der Dashboard-Seite.
+4710|Als erledigt markieren
+4711|Mono
+4712|Nach unten
+4713|Nach vorne
+4714|Nach hinten
+4715|Nach oben
+4716|Mein Orbital
+4717|Farben des Neural Core
+4718|Neues Dashboard
+4719|Noch keine aktiven Projekte.
+4720|Noch keine Notizen.
+4721|Keine offenen Fragen.
+4722|Keine offenen Aufgaben. Füge welche in einem Projekt hinzu.
+4723|Noch keine Chancen.
+4724|Noch keine Dokumente.
+4725|Nichts braucht deine Aufmerksamkeit.
+4726|Nichts geplant.
+4727|Hinweise
+4728|Ozean
+4729|Offene Aufgaben aus allen Projekten, die nächsten zuerst.
+4730|Beim Start von Orbital geöffnet
+4731|Startet mit
+4732|Chancen, die du verfolgst.
+4733|Orange
+4734|Überfällige Arbeit, wackelnde Fristen und stockende Projekte.
+4735|Schlicht
+4736|Projekte, Chancen und was Aufmerksamkeit braucht.
+4737|Fragen, Recherchen und dein wachsendes Wissen.
+4738|Schnelle Notiz
+4739|Letzte Notizen
+4740|Letzte Dokumente
+4741|Rot
+4742|Widget entfernen
+4743|Seitenleiste zurücksetzen
+4744|Gelöste Fragen
+4745|Notiz speichern
+4746|In deinen Notizen gespeichert
+4747|Seitenleiste
+4748|Größe
+4749|Klein
+4750|Sanftes Leuchten
+4751|Spektrum
+4752|Sterne
+4753|Starte von überall ein Gespräch.
+4754|Fokussitzung starten
+4755|Starte eine Fokussitzung; deine Fokuszeit diese Woche.
+4756|Starte leer und füge eigene Widgets hinzu.
+4757|Ausgehend von
+4758|Textgröße
+4759|Die Notizen, Dateien und Ausschnitte, die du zuletzt bearbeitet hast.
+4760|Dieses Dashboard ist leer
+4761|Anstehende Aufgaben
+4762|Geprüfte Erkenntnisse
+4763|Violett
+4764|Was ansteht.
+4765|Breit
+4766|Dein Dashboard
+4767|Deine Umgebung
+4768|Deine neuesten Recherchen und ihr Stand.
+4769|Dein lebendiger Orb, der mit deinem Wissen wächst.
+4770|hinzugefügt
+4771|keine Aufgaben
+4772|Erinnerung heute
+4773|Erinnerungen heute
+4774|Aufgabe fällig
+4775|Aufgaben fällig
+4776|{n} überfällig
+4777|{n} Sitzung
+4778|{n} Sitzungen

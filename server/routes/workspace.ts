@@ -20,6 +20,7 @@ import { upsertNode, deleteNodeByRef } from "../engines/graph.js";
 import { ownFolder, ownMilestone, ownProject, friendlyAiError } from "./core.js";
 import { verifyPassword } from "../auth/auth.js";
 import { authEvent } from "../lib/authEvents.js";
+import { ACCENTS, BACKGROUNDS, CORE_PALETTES, LIMITS as ENV_LIMITS, NAV_KEYS, TEXT_SIZES, WIDGET_SIZES, WIDGET_TYPES } from "../../shared/environment.js";
 
 export const workspace = Router();
 
@@ -502,6 +503,33 @@ workspace.get("/search", ah(async (req, res) => {
 }));
 
 // ── Settings, export, deletion ─────────────────────────────────────────────
+/** Your environment (dashboards, layout, theme): strictly shaped and size-capped, since it's stored as given. */
+const slug = z.string().regex(/^[a-z0-9-]{1,40}$/);
+const EnvironmentInput = z.object({
+  home: z.enum(["chat", "dashboard"]).optional(),
+  dashboards: z.array(z.object({
+    id: slug,
+    name: z.string().trim().min(1).max(ENV_LIMITS.name),
+    widgets: z.array(z.object({ id: slug, type: z.enum(WIDGET_TYPES), size: z.enum(WIDGET_SIZES) }).strict()).max(ENV_LIMITS.widgets),
+  }).strict()).min(1).max(ENV_LIMITS.dashboards).optional(),
+  activeDashboard: slug.optional(),
+  nav: z.object({ order: z.array(z.enum(NAV_KEYS)).max(NAV_KEYS.length), hidden: z.array(z.enum(NAV_KEYS)).max(NAV_KEYS.length) }).strict().optional(),
+  contextPanel: z.enum(["remember", "open", "closed"]).optional(),
+  accent: z.enum(ACCENTS).optional(),
+  corePalette: z.enum(CORE_PALETTES).optional(),
+  background: z.enum(BACKGROUNDS).optional(),
+  textSize: z.enum(TEXT_SIZES).optional(),
+}).strict();
+
+/** Open tasks across the workspace's projects, soonest due first (the dashboard's tasks widget). */
+workspace.get("/dashboard/tasks", ah(async (req, res) => {
+  res.json((await db().query(
+    `SELECT t.id, t.title, t.due_date, t.project_id, p.name AS project_name, (t.due_date < $2::date) AS overdue
+     FROM tasks t JOIN projects p ON p.id=t.project_id AND p.workspace_id=t.workspace_id
+     WHERE t.workspace_id=$1 AND NOT t.done AND p.status IN ('active','paused')
+     ORDER BY t.due_date NULLS LAST, t.created_at LIMIT 12`, [ws(req), clientToday(req)])).rows);
+}));
+
 workspace.put("/preferences", ah(async (req, res) => {
   const b = parse(z.object({
     reducedMotion: z.enum(["system", "on", "off"]).optional(),
@@ -514,6 +542,7 @@ workspace.put("/preferences", ah(async (req, res) => {
     focusMinutes: z.union([z.literal(25), z.literal(50), z.literal(90)]).optional(),
     nudges: z.boolean().optional(),
     language: z.enum(["auto", "en", "es", "fr", "pt", "de"]).optional(),
+    environment: EnvironmentInput.optional(),
   }), req.body);
   const r = await db().query("INSERT INTO user_preferences(user_id, settings) VALUES ($1,$2) ON CONFLICT (user_id) DO UPDATE SET settings = user_preferences.settings || $2, updated_at=now() RETURNING settings", [actor(req), JSON.stringify(b)]);
   res.json(r.rows[0].settings);

@@ -1660,3 +1660,112 @@
 4660|Ouverture d'Orbital
 4661|Bon retour, {name}.
 4662|Bon retour.
+4670|Un peu de tout : votre journée, votre travail et vos connaissances.
+4671|Un bonjour, la date et ce qui est prévu aujourd'hui.
+4672|Une nouvelle conversation
+4673|Une pensée, un lien, une idée…
+4674|Une année de votre travail, jour après jour.
+4675|Couleur d'accent
+4676|Les projets actifs et leur avancement.
+4677|Ajouter un widget
+4678|Ajouter un widget
+4679|Ajoutez des widgets pour ce que vous consultez le plus : tâches, projets, notes, recherches et plus.
+4680|Ambre
+4681|Comme je l'ai laissé
+4682|Demander
+4683|Aurore
+4684|Revenir à votre session
+4685|Bleu
+4686|Notez une idée en une ligne.
+4687|Fermé au démarrage d'Orbital
+4688|Panneau de contexte
+4689|Ctrl/⌘ + Entrée pour enregistrer
+4690|Personnaliser
+4691|Cyan
+4692|Tableau de bord
+4693|Tableaux de bord
+4694|Par défaut
+4695|Supprimer le tableau de bord
+4696|Supprimer le tableau de bord « {name} » ? Vos données ne sont pas touchées.
+4697|Les documents que vous rédigez.
+4698|Grille de points
+4699|Faites glisser les widgets pour les réorganiser ; redimensionnez-les ou retirez-les depuis leur coin.
+4700|Braise
+4701|Les lacunes de vos connaissances, prêtes à être explorées.
+4702|Vert
+4703|Croissance
+4704|Comment vos connaissances progressent.
+4705|Seulement le travail du jour et un minuteur.
+4706|Grand
+4707|Citron vert
+4708|Magenta
+4709|Faites d'Orbital le vôtre : où il s'ouvre, ce qu'il y a dans la barre latérale et son apparence. Les tableaux de bord sont sur la page Tableau de bord.
+4710|Marquer comme fait
+4711|Mono
+4712|Descendre
+4713|Déplacer avant
+4714|Déplacer après
+4715|Monter
+4716|Mon Orbital
+4717|Couleurs du Neural Core
+4718|Nouveau tableau de bord
+4719|Pas encore de projet actif.
+4720|Pas encore de notes.
+4721|Aucune question ouverte.
+4722|Aucune tâche ouverte. Ajoutez-en dans un projet.
+4723|Pas encore d'opportunités.
+4724|Pas encore de documents.
+4725|Rien ne demande votre attention.
+4726|Rien de prévu.
+4727|Rappels doux
+4728|Océan
+4729|Les tâches ouvertes de tous vos projets, les plus proches d'abord.
+4730|Ouvert au démarrage d'Orbital
+4731|S'ouvre sur
+4732|Les opportunités que vous suivez.
+4733|Orange
+4734|Travail en retard, échéances qui glissent et projets à l'arrêt.
+4735|Uni
+4736|Projets, opportunités et ce qui demande de l'attention.
+4737|Questions, recherches et vos connaissances qui grandissent.
+4738|Note rapide
+4739|Notes récentes
+4740|Documents récents
+4741|Rouge
+4742|Retirer le widget
+4743|Réinitialiser la barre latérale
+4744|Questions résolues
+4745|Enregistrer la note
+4746|Enregistré dans vos notes
+4747|Barre latérale
+4748|Taille
+4749|Petit
+4750|Lueur douce
+4751|Spectre
+4752|Étoiles
+4753|Lancez une conversation de n'importe où.
+4754|Démarrer une session de concentration
+4755|Démarrez une session de concentration ; votre temps concentré cette semaine.
+4756|Partez de zéro et ajoutez vos propres widgets.
+4757|Partir de
+4758|Taille du texte
+4759|Les notes, fichiers et extraits modifiés en dernier.
+4760|Ce tableau de bord est vide
+4761|Tâches à venir
+4762|Résultats vérifiés
+4763|Violet
+4764|Ce qui arrive.
+4765|Large
+4766|Votre tableau de bord
+4767|Votre environnement
+4768|Vos dernières recherches et leur statut.
+4769|Votre orbe vivant, qui grandit avec ce que vous savez.
+4770|ajouté
+4771|aucune tâche
+4772|rappel aujourd'hui
+4773|rappels aujourd'hui
+4774|tâche prévue
+4775|tâches prévues
+4776|{n} en retard
+4777|{n} session
+4778|{n} sessions

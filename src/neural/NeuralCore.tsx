@@ -6,14 +6,44 @@ import { fragmentShader, lineFragmentShader, lineVertexShader, vertexShader } fr
 import { useCore, type CoreState } from "@/state/core";
 import { useMotionPrefs } from "@/state/app";
 import { isLight, useLightTheme } from "@/lib/theme";
+import { useEnvironment } from "@/state/environment";
+import { CORE_PALETTE_STOPS, type CorePalette } from "../../shared/environment";
 
 type Density = "low" | "medium" | "high";
 const DENSITY: Record<Density, number> = { low: 0.35, medium: 0.65, high: 1 };
-const cache = new Map<Density, PointCloud>();
-const getCloud = (d: Density) => {
+const cache = new Map<string, PointCloud>();
+const getCloud = (d: Density, palette: CorePalette = "spectrum") => {
   if (!cache.has(d)) cache.set(d, buildPointCloud(DENSITY[d]));
-  return cache.get(d)!;
+  const base = cache.get(d)!;
+  if (palette === "spectrum") return base;
+  const key = `${d}:${palette}`;
+  if (!cache.has(key)) cache.set(key, { ...base, color: recolour(base.color, palette), orbColor: recolour(base.orbColor, palette) });
+  return cache.get(key)!;
 };
+
+/**
+ * A Neural Core colour scheme (Settings → Your environment): each speck keeps its brightness and how
+ * saturated it is, and its hue is mapped onto the scheme's colours, so the orb's structure stays the same.
+ */
+function recolour(src: Float32Array, palette: Exclude<CorePalette, "spectrum">) {
+  const stops = CORE_PALETTE_STOPS[palette].map((h) => [parseInt(h.slice(1, 3), 16) / 255, parseInt(h.slice(3, 5), 16) / 255, parseInt(h.slice(5, 7), 16) / 255]);
+  const out = new Float32Array(src.length);
+  for (let i = 0; i < src.length; i += 3) {
+    const r = src[i], g = src[i + 1], b = src[i + 2];
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    if (max <= 0) continue;
+    const d = max - min, sat = d / max;
+    let h = 0;
+    if (d > 0) h = max === r ? ((g - b) / d + 6) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    const t = (h / 6) * stops.length, k = Math.floor(t) % stops.length, f = t - Math.floor(t);
+    const a = stops[k], c = stops[(k + 1) % stops.length];
+    for (let j = 0; j < 3; j++) {
+      const target = a[j] + (c[j] - a[j]) * f;
+      out[i + j] = (1 - sat + sat * target) * max; // greys and whites stay; colours take the scheme's
+    }
+  }
+  return out;
+}
 
 /** Line geometry: each segment endpoint carries its particle's attributes so lines move with particles. */
 const lineCache = new WeakMap<PointCloud, THREE.BufferGeometry>();
@@ -96,6 +126,7 @@ export function NeuralCore({ framing = "full", className = "", interactive = tru
   useEffect(() => setDensity(initialDensity(densityPref)), [densityPref]);
 
   const light = useLightTheme();
+  const palette = useEnvironment().corePalette;
   if (!supported || contextLost) return <FallbackCore className={className} reducedMotion={reducedMotion} framing={framing} label={label} />;
 
   const f = FRAMING[framing];
@@ -115,7 +146,7 @@ export function NeuralCore({ framing = "full", className = "", interactive = tru
       >
         <Particles
           key={density}
-          cloud={getCloud(density)}
+          cloud={getCloud(density, palette)}
           framing={framing}
           interactive={interactive}
           motion={reducedMotion ? 0 : 1}

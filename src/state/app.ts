@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { api, getWorkspaceId, setWorkspaceId } from "@/lib/api";
 import { invalidate } from "@/lib/resource";
 import { languagePref, setLanguage, type Lang } from "@/i18n";
+import type { Environment } from "../../shared/environment";
 
 export interface User { id: string; email: string; displayName: string }
 export interface AiStatus { provider: "anthropic" | "openai" | "none"; model: string | null; webSearch: boolean; embeddings: string }
@@ -11,6 +12,7 @@ export interface Workspace { id: string; name: string; kind: "personal" | "busin
 export interface Preferences {
   reducedMotion?: "system" | "on" | "off"; particleDensity?: "auto" | "low" | "medium" | "high"; defaultMode?: string; autoExtractMemories?: boolean;
   speakAnswers?: boolean; voiceName?: string; voiceRate?: number; focusMinutes?: 25 | 50 | 90; nudges?: boolean; language?: "auto" | Lang;
+  environment?: Environment;
 }
 export interface ServerInfo { version: string; database: "embedded" | "postgres"; transcription: boolean; turn: boolean; maxParticipants: number }
 
