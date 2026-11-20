@@ -47,7 +47,7 @@ export function CorePage() {
         </div>
         <p className="pointer-events-none absolute bottom-5 left-8 text-[0.72rem] text-mute-soft">{tx("Move the cursor through the particles. Click to send a ripple.")}</p>
         <button onClick={() => useCore.getState().replayIntro()} className="absolute bottom-4 right-8 rounded-full border border-line px-3 py-1 text-[0.74rem] text-mute transition-colors hover:border-line-strong hover:text-white">{tx("Replay formation")}</button>
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#040404] to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black to-transparent dark-only" />
       </div>
 
       <div className="mx-auto max-w-[1100px] px-8 pb-16">

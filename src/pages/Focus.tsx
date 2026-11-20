@@ -215,7 +215,7 @@ function FocusSession({ session }: { session: any }) {
           <h1 className="max-w-xl text-[clamp(1.6rem,3vw,2.4rem)] font-light leading-tight tracking-[-0.02em]">{session.objective}</h1>
           <div className="relative h-56 w-56">
             <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90" aria-hidden>
-              <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" />
+              <circle cx="50" cy="50" r="46" fill="none" style={{ stroke: "rgb(var(--c-fg) / 0.08)" }} strokeWidth="1.5" />
               <circle cx="50" cy="50" r="46" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeDasharray={`${progress * 289} 289`} style={{ transition: "stroke-dasharray .3s linear" }} />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">

@@ -20,7 +20,7 @@ export const KIND_META: { kind: Kind; label: string; hint: string; color: string
 ];
 const COLOR = Object.fromEntries(KIND_META.map((k) => [k.kind, k.color])) as Record<Kind, string>;
 const LEVEL_ALPHA = [0, 0.3, 0.52, 0.76, 1];
-const EMPTY = "rgba(255,255,255,0.05)";
+const EMPTY = "rgb(var(--c-fg) / 0.05)";
 const GAP = 3, LEFT = 30, TOP = 18;
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -115,7 +115,7 @@ export function ContributionGraph({ projectId, title, compact = false }: { proje
             {[["Mon", 1], ["Wed", 3], ["Fri", 5]].map(([l, r]) => <text key={l} x={0} y={TOP + (r as number) * (CELL + GAP) + CELL - 2} className="fill-[#8a8a93] text-[10px]">{l}</text>)}
             {weeks.map((w, i) => w.map((d, r) => d && (
               <rect key={d.date} x={LEFT + i * (CELL + GAP)} y={TOP + r * (CELL + GAP)} width={CELL} height={CELL} rx={Math.max(2, CELL / 4.5)}
-                fill={fill(d)} stroke={d.date === data.days[data.days.length - 1].date ? "rgba(255,255,255,0.45)" : "none"} strokeWidth={1}
+                style={{ fill: fill(d), stroke: d.date === data.days[data.days.length - 1].date ? "rgb(var(--c-fg) / 0.45)" : "none" }} strokeWidth={1}
                 onMouseEnter={() => setHover(d)}>
                 <title>{describe(d)}</title>
               </rect>
@@ -125,7 +125,7 @@ export function ContributionGraph({ projectId, title, compact = false }: { proje
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2 text-[0.72rem] text-mute">
           <span className="min-h-[1.2em] min-w-0 flex-1 truncate" aria-live="polite">{hover ? describe(hover) : tx("Hover a day for details · click a colour to show only that kind of work")}</span>
           <span className="flex items-center gap-1">{tx("Less")}
-            {LEVEL_ALPHA.map((a, i) => <i key={i} className="inline-block h-[10px] w-[10px] rounded-[2px]" style={{ background: i ? hexA(only ? COLOR[only] : "#ffffff", a * (only ? 1 : 0.85)) : EMPTY }} />)}
+            {LEVEL_ALPHA.map((a, i) => <i key={i} className="inline-block h-[10px] w-[10px] rounded-[2px]" style={{ background: i ? (only ? hexA(COLOR[only], a) : `rgb(var(--c-fg) / ${a * 0.85})`) : EMPTY }} />)}
             {tx("More")}</span>
         </div>
         <div className="mt-2.5 flex flex-wrap gap-1.5" role="group" aria-label={tx("Colour key")}>

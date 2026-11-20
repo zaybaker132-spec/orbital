@@ -5,6 +5,7 @@ import { BRAIN_CENTER, buildPointCloud, CLUSTER_CENTROIDS, type PointCloud } fro
 import { fragmentShader, lineFragmentShader, lineVertexShader, vertexShader } from "./shaders";
 import { useCore, type CoreState } from "@/state/core";
 import { useMotionPrefs } from "@/state/app";
+import { isLight, useLightTheme } from "@/lib/theme";
 
 type Density = "low" | "medium" | "high";
 const DENSITY: Record<Density, number> = { low: 0.35, medium: 0.65, high: 1 };
@@ -94,17 +95,21 @@ export function NeuralCore({ framing = "full", className = "", interactive = tru
   const [contextLost, setContextLost] = useState(false);
   useEffect(() => setDensity(initialDensity(densityPref)), [densityPref]);
 
+  const light = useLightTheme();
   if (!supported || contextLost) return <FallbackCore className={className} reducedMotion={reducedMotion} framing={framing} label={label} />;
 
   const f = FRAMING[framing];
   return (
     <div className={/\b(absolute|fixed|relative)\b/.test(className) ? className : `relative ${className}`} role="img" aria-label={label}>
       <Canvas
+        key={light ? "light" : "dark"}
         dpr={[1, density === "low" ? 1.25 : 2]}
-        gl={{ antialias: false, alpha: false, powerPreference: "high-performance", preserveDrawingBuffer: false }}
+        gl={{ antialias: false, alpha: light, powerPreference: "high-performance", preserveDrawingBuffer: false }}
         camera={{ position: [0, 0, f.camZ], fov: 34, near: 0.1, far: 50 }}
         onCreated={({ gl }) => {
-          gl.setClearColor("#000000", 1);
+          // Dark: particles add light onto black (a glow). Light: a see-through canvas over the page,
+          // with particles painted normally, since adding light onto white would wash them out.
+          gl.setClearColor("#000000", light ? 0 : 1);
           gl.domElement.addEventListener("webglcontextlost", (e) => { e.preventDefault(); setContextLost(true); });
         }}
       >
@@ -115,6 +120,7 @@ export function NeuralCore({ framing = "full", className = "", interactive = tru
           interactive={interactive}
           motion={reducedMotion ? 0 : 1}
           holdGraph={holdGraph}
+          light={light}
           onSlow={() => densityPref === "auto" && setDensity((d) => (d === "high" ? "medium" : d === "medium" ? "low" : d))}
         />
       </Canvas>
@@ -124,7 +130,7 @@ export function NeuralCore({ framing = "full", className = "", interactive = tru
 
 const STATES: Exclude<CoreState, "idle">[] = ["thinking", "researching", "learning", "connecting", "opportunity"];
 
-function Particles({ cloud, framing, interactive, motion, onSlow, holdGraph }: { cloud: PointCloud; framing: Framing; interactive: boolean; motion: number; onSlow: () => void; holdGraph: boolean }) {
+function Particles({ cloud, framing, interactive, motion, onSlow, holdGraph, light }: { cloud: PointCloud; framing: Framing; interactive: boolean; motion: number; onSlow: () => void; holdGraph: boolean; light: boolean }) {
   const group = useRef<THREE.Group>(null);
   const { size, camera, gl, raycaster, pointer } = useThree();
 
@@ -153,9 +159,9 @@ function Particles({ cloud, framing, interactive, motion, onSlow, holdGraph }: {
         transparent: true,
         depthWrite: false,
         depthTest: false,
-        blending: THREE.AdditiveBlending,
+        blending: light ? THREE.NormalBlending : THREE.AdditiveBlending,
         uniforms: {
-          uTime: { value: 0 }, uPixelRatio: { value: 1 }, uScale: { value: 9 }, uMotion: { value: 1 }, uMorph: { value: 1 }, uSpin: { value: 0 }, uLineAlpha: { value: 0.028 }, uGraphOffset: { value: new THREE.Vector3() }, uGraphScale: { value: 1 }, uOrbMode: { value: CORE_SHAPE === "orb" ? 1 : 0 }, uOrbRadius: { value: 1 }, uOrbSpin: { value: 0 },
+          uTime: { value: 0 }, uPixelRatio: { value: 1 }, uScale: { value: 9 }, uMotion: { value: 1 }, uMorph: { value: 1 }, uSpin: { value: 0 }, uLineAlpha: { value: 0.028 }, uGraphOffset: { value: new THREE.Vector3() }, uGraphScale: { value: 1 }, uOrbMode: { value: CORE_SHAPE === "orb" ? 1 : 0 }, uLight: { value: light ? 1 : 0 }, uOrbRadius: { value: 1 }, uOrbSpin: { value: 0 },
           uMouse: { value: new THREE.Vector3(99, 99, 0) }, uMouseStrength: { value: 0 },
           uRipples: { value: Array.from({ length: 4 }, () => new THREE.Vector4(0, 0, 0, -99)) },
           uActivity: { value: 0 }, uThinking: { value: 0 }, uResearch: { value: 0 }, uLearning: { value: 0 },
@@ -171,8 +177,8 @@ function Particles({ cloud, framing, interactive, motion, onSlow, holdGraph }: {
   // Lines share every uniform with the particles (same object), so both animate identically.
   const lineMaterial = useMemo(() => new THREE.ShaderMaterial({
     vertexShader: lineVertexShader, fragmentShader: lineFragmentShader, uniforms: material.uniforms,
-    transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
-  }), [material]);
+    transparent: true, depthWrite: false, depthTest: false, blending: light ? THREE.NormalBlending : THREE.AdditiveBlending,
+  }), [material, light]);
   useEffect(() => () => { lineMaterial.dispose(); }, [lineMaterial]);
   useEffect(() => () => { geometry.dispose(); }, [geometry]);
 
@@ -369,13 +375,14 @@ function FallbackCore({ className, reducedMotion, framing, label }: { className:
       if (time - last < 50) return;
       last = time;
       const w = (cv.width = cv.clientWidth * devicePixelRatio), h = (cv.height = cv.clientHeight * devicePixelRatio);
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, w, h);
+      const lightBg = isLight();
+      if (lightBg) ctx.clearRect(0, 0, w, h);
+      else { ctx.fillStyle = "#000"; ctx.fillRect(0, 0, w, h); }
       const orb = CORE_SHAPE === "orb";
       const scale = orb ? h * 0.36 : (framing === "head" ? 0.42 : 0.27) * h;
       const oy = orb ? h * 0.5 : framing === "head" ? h * 0.42 : h * 0.4;
       const t = reducedMotion ? 0 : time / 1000;
-      ctx.globalCompositeOperation = "lighter";
+      ctx.globalCompositeOperation = lightBg ? "source-over" : "lighter";
       for (let i = 0; i < cloud.baseCount; i++) {
         const src = orb ? cloud.orb : cloud.position;
         const x = src[i * 3], y = src[i * 3 + 1];

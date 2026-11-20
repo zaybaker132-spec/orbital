@@ -2,7 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Outfit:wght@400;700&family=JetBrains+Mono:wght@400&display=swap">
 <style>
   /* Layout: a live instrument up top (the Neural Core), then a guided tour of the real interface.
      Single dark theme by choice: the product is pure black with color reserved for the particles. */
@@ -30,7 +30,9 @@
   body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: rgba(0,0,0,0.82); }
   header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; background: rgba(0,0,0,0.72); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
   header.top .wrap { display: flex; align-items: center; gap: 24px; height: 56px; }
-  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; letter-spacing: 0.3em; font-size: 13px; }
+  .brand { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+  .wordmark { font-family: "Outfit", var(--sans); font-size: 21px; font-weight: 400; letter-spacing: -0.01em; line-height: 1; }
+  .wordmark b { font-weight: 700; }
   nav.links { display: flex; gap: 22px; margin-left: auto; font-size: 13px; }
   nav.links a { color: var(--mute); text-decoration: none; }
   nav.links a:hover { color: var(--fg); }
@@ -167,7 +169,7 @@
   <div class="wrap">
     <a class="brand" href="#top" aria-label="Orbital">
       <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><g fill="#fff"><circle cx="12" cy="12" r="2.6"/><circle cx="21" cy="12" r="1.1"/><circle cx="19.3" cy="16.8" r=".7" opacity=".7"/><circle cx="15.4" cy="20.3" r=".7" opacity=".5"/><circle cx="10.4" cy="20.9" r="1.1" opacity=".9"/><circle cx="5.6" cy="18.3" r=".7" opacity=".6"/><circle cx="3" cy="13.6" r=".7" opacity=".8"/><circle cx="3.6" cy="8.3" r="1.1" opacity=".5"/><circle cx="7" cy="4.4" r=".7" opacity=".9"/><circle cx="12" cy="3" r=".7" opacity=".6"/><circle cx="17" cy="4.4" r="1.1" opacity=".8"/><circle cx="20.3" cy="7.6" r=".7" opacity=".5"/></g></svg>
-      ORBITAL
+      <span class="wordmark"><b>orb</b>ital</span>
     </a>
     <nav class="links" aria-label="Sections">
       <a href="#tour">Tour</a>

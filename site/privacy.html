@@ -6,13 +6,22 @@
 <title>Privacy · Orbital</title>
 <meta name="description" content="How Orbital handles your data: everything stays on your computer.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap">
+<script>
+  (function () { var t = null; try { t = localStorage.getItem("orbital.site.theme"); } catch (e) {}
+    var light = t ? t === "light" : matchMedia("(prefers-color-scheme: light)").matches;
+    document.documentElement.classList.toggle("light", light); })();
+</script>
 <style>
   :root { color-scheme: dark; --bg: #000; --fg: #fff; --mute: #9a9aa3; --line: rgba(255,255,255,0.1); }
+  html.light { color-scheme: light; --bg: #fff; --fg: #111114; --mute: #5f5f68; --line: rgba(0,0,0,0.1); }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.7 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
   main { max-width: 720px; margin: 0 auto; padding: 48px 16px 80px; }
   a { color: var(--fg); }
-  .back { color: var(--mute); text-decoration: none; font-size: 13px; letter-spacing: 0.2em; }
+  .back { color: var(--mute); text-decoration: none; font-size: 15px; }
+  .wordmark { font-family: "Outfit", ui-sans-serif, system-ui, sans-serif; font-size: 20px; color: var(--fg); letter-spacing: -0.01em; }
+  .wordmark b { font-weight: 700; }
   h1 { font-weight: 300; font-size: clamp(30px, 6vw, 42px); letter-spacing: -0.02em; margin: 28px 0 4px; }
   h2 { font-weight: 400; font-size: 18px; margin: 36px 0 6px; padding-top: 20px; border-top: 1px solid var(--line); }
   p, li { color: var(--mute); }
@@ -22,7 +31,7 @@
 </head>
 <body>
 <main>
-  <a class="back" href="./">← ORBITAL</a>
+  <a class="back" href="./">← <span class="wordmark"><b>orb</b>ital</span></a>
   <h1>Privacy</h1>
   <p class="updated">Last updated 19 November 2026</p>
 

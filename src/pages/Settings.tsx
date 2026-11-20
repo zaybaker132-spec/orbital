@@ -11,6 +11,7 @@ import { Badge, Button, Dialog, Input, PageHeader, Select, cx } from "@/componen
 import { modKey } from "@/lib/format";
 import { MODES } from "./Chat";
 import { LANGUAGES, language, locale, resolveLanguage, setLanguage, tn, tx } from "@/i18n";
+import { setThemePref, useThemePref, type ThemePref } from "@/lib/theme";
 
 const SECTIONS = [
   ["account", "Account"], ["workspace", "Workspace"], ["ai", "AI & research"], ["voice", "Voice"], ["reminders", "Reminders & focus"],
@@ -75,7 +76,10 @@ export function SettingsPage() {
             <Row label={tx("Knowledge health")}><Link to="/maintenance" className="text-white/85 underline decoration-white/20 hover:text-white">{tx("Review cleanup suggestions →")}</Link><p className="mt-1 text-[0.76rem] text-mute">{tx("Orbital checks daily for duplicates, conflicts, outdated and disconnected knowledge. Nothing changes until you choose.")}</p></Row>
           </Group>
 
-          <Group id="appearance" title={tx("Appearance")} description={tx("Orbital is designed in black, with colour reserved for the Neural Core.")}>
+          <Group id="appearance" title={tx("Appearance")} description={tx("Choose dark or light, or match your computer's setting.")}>
+            <Row label={tx("Theme")}>
+              <ThemeSelect />
+            </Row>
             <Row label={tx("Reduced motion")}>
               <Select label={tx("Reduced motion")} value={prefs.reducedMotion ?? "system"} onChange={(v) => save({ reducedMotion: v })} className="w-56"
                 options={[{ value: "system", label: "Follow system" }, { value: "on", label: "Reduce motion" }, { value: "off", label: "Full motion" }]} />
@@ -276,6 +280,14 @@ function ServerStatus() {
         </div>
       )}
     </Group>
+  );
+}
+
+function ThemeSelect() {
+  const pref = useThemePref();
+  return (
+    <Select label={tx("Theme")} value={pref} onChange={(v) => setThemePref(v as ThemePref)} className="w-56"
+      options={[{ value: "system", label: "Match my computer" }, { value: "dark", label: "Dark" }, { value: "light", label: "Light" }]} />
   );
 }
 

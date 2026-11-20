@@ -289,7 +289,7 @@ function Avatar({ name, level = 0 }: { name: string; level?: number }) {
   return (
     <div className="absolute inset-0 flex items-center justify-center">
       <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/[0.08] text-[1.8rem] font-light uppercase text-white transition-shadow"
-        style={{ boxShadow: level > 0.12 ? `0 0 0 ${2 + level * 8}px rgba(255,255,255,0.25)` : "none" }}>{name.trim()[0] ?? "?"}</div>
+        style={{ boxShadow: level > 0.12 ? `0 0 0 ${2 + level * 8}px rgb(var(--c-fg) / 0.25)` : "none" }}>{name.trim()[0] ?? "?"}</div>
     </div>
   );
 }

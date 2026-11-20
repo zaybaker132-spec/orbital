@@ -1652,3 +1652,8 @@
 4643|ativo há {h} h · {mb} MB de memória
 4644|{n} com falha
 4645|{q} aguardando · {r} em execução · {f} com falha em 24 h
+4650|Escolha escuro ou claro, ou siga a configuração do seu computador.
+4651|Escuro
+4652|Claro
+4653|Igual ao meu computador
+4654|Tema

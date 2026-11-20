@@ -1652,3 +1652,8 @@
 4643|activo {h} h · {mb} MB de memoria
 4644|{n} fallidas
 4645|{q} en espera · {r} en curso · {f} fallidas en 24 h
+4650|Elige oscuro o claro, o usa el ajuste de tu ordenador.
+4651|Oscuro
+4652|Claro
+4653|Igual que mi ordenador
+4654|Tema

@@ -8,6 +8,7 @@ import { cx } from "@/components/ui";
 import { AI_TOOLS, COMPUTERS, DEVICES, HEARD_FROM, MAX_RANKED, NOTES_APPS, PERSONAS, REMEMBER, SCALE } from "@shared/waitlist";
 import { tx } from "@/i18n";
 import { LanguagePicker } from "@/components/LanguagePicker";
+import { Wordmark } from "@/components/Wordmark";
 
 /**
  * Public waitlist. While you answer, the Neural Core holds its knowledge-graph form and orbits;
@@ -86,7 +87,7 @@ export function WaitlistPage() {
         <a href="/login" className="absolute right-6 top-5 z-10 rounded-full border border-white/20 px-4 py-1.5 text-[0.75rem] uppercase tracking-[0.16em] text-white/85 transition-colors hover:border-white hover:text-white lg:hidden">{tx("Sign in")}</a>
         <div className="pointer-events-none absolute left-6 top-6 flex items-center gap-2.5 lg:left-10 lg:top-9">
           <OrbitalMark size={20} />
-          <span className="text-[0.8rem] tracking-[0.32em] text-white">{tx("ORBITAL")}</span>
+          <Wordmark className="text-[1.2rem]" />
         </div>
         <div className="pointer-events-none absolute inset-x-0 bottom-0 hidden bg-gradient-to-t from-black via-black/60 to-transparent px-10 pb-10 pt-24 lg:block">
           <AnimatePresence mode="wait">

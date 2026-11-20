@@ -7,6 +7,7 @@ import { Button, ErrorNote, Input } from "@/components/ui";
 import { OrbitalMark } from "@/components/Shell";
 import { tx } from "@/i18n";
 import { LanguagePicker } from "@/components/LanguagePicker";
+import { Wordmark } from "@/components/Wordmark";
 
 export function AuthPage() {
   const signupAllowed = useApp((s) => s.signupAllowed);
@@ -47,7 +48,7 @@ export function AuthPage() {
       <div className="relative hidden lg:block">
         <NeuralCore framing="full" className="absolute inset-0" />
         <div className="pointer-events-none absolute bottom-10 left-12">
-          <div className="text-[0.82rem] tracking-[0.32em] text-white">{tx("ORBITAL")}</div>
+          <div><Wordmark className="text-[1.25rem]" /></div>
           <p className="mt-2 text-[1.5rem] font-light tracking-[-0.02em] text-white">{tx("Your intelligence. Compounding.")}</p>
           <p className="mt-1 text-[0.86rem] text-mute">{tx("The more you learn, the more valuable your Orbital becomes.")}</p>
         </div>

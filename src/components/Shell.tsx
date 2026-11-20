@@ -15,6 +15,7 @@ import { RightPanel } from "./RightPanel";
 import { CommandPalette } from "./CommandPalette";
 import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 import { tx } from "@/i18n";
+import { Wordmark } from "@/components/Wordmark";
 
 export const NAV = [
   { to: "/core", label: "Neural Core", icon: Brain, key: "n" },
@@ -135,7 +136,7 @@ function Sidebar({ width, collapsed, onResize }: { width: number; collapsed: boo
     <nav aria-label={tx("Primary")} className="relative flex h-full shrink-0 flex-col bg-black transition-[width] duration-200" style={{ width: w }}>
       <div className={cx("flex h-11 items-center gap-2.5 px-4", collapsed && "justify-center px-0")}>
         <OrbitalMark />
-        {!collapsed && <span className="text-[0.82rem] tracking-[0.28em] text-white">{tx("ORBITAL")}</span>}
+        {!collapsed && <Wordmark className="text-[1.2rem]" />}
       </div>
       <WorkspaceSwitcher collapsed={collapsed} />
       <div className={cx("px-2.5 pt-2", collapsed && "px-2")}>
@@ -208,9 +209,9 @@ export function OrbitalMark({ size = 18 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden className="shrink-0">
       {Array.from({ length: 14 }, (_, i) => {
         const a = (i / 14) * Math.PI * 2;
-        return <circle key={i} cx={12 + Math.cos(a) * 9} cy={12 + Math.sin(a) * 9} r={i % 3 === 0 ? 1.1 : 0.7} fill="#fff" opacity={0.35 + (i % 4) * 0.18} />;
+        return <circle key={i} cx={12 + Math.cos(a) * 9} cy={12 + Math.sin(a) * 9} r={i % 3 === 0 ? 1.1 : 0.7} fill="currentColor" opacity={0.35 + (i % 4) * 0.18} />;
       })}
-      <circle cx="12" cy="12" r="2.6" fill="#fff" />
+      <circle cx="12" cy="12" r="2.6" fill="currentColor" />
     </svg>
   );
 }

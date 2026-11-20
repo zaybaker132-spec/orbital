@@ -38,7 +38,7 @@ export function mountNeuralCore(container: HTMLElement) {
 
   let renderer: THREE.WebGLRenderer;
   try {
-    renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false, powerPreference: "high-performance" });
+    renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, powerPreference: "high-performance" });
   } catch {
     container.classList.add("no-webgl");
     return null;
@@ -69,7 +69,7 @@ export function mountNeuralCore(container: HTMLElement) {
     uTime: { value: 0 }, uPixelRatio: { value: 1 }, uScale: { value: 9 }, uMotion: { value: reduced ? 0 : 1 },
     uMorph: { value: reduced ? 1 : 0 }, uSpin: { value: 0 }, uLineAlpha: { value: 0.028 },
     uGraphOffset: { value: new THREE.Vector3(0.05, -FR.y - 0.45, 0) }, uGraphScale: { value: FR.scale },
-    uOrbMode: { value: 1 }, uOrbRadius: { value: FR.orb }, uOrbSpin: { value: 0 },
+    uOrbMode: { value: 1 }, uLight: { value: 0 }, uOrbRadius: { value: FR.orb }, uOrbSpin: { value: 0 },
     uMouse: { value: new THREE.Vector3(99, 99, 0) }, uMouseStrength: { value: 0 },
     uRipples: { value: Array.from({ length: 4 }, () => new THREE.Vector4(0, 0, 0, -99)) },
     uActivity: { value: 0 }, uThinking: { value: 0 }, uResearch: { value: 0 }, uLearning: { value: 0 },
@@ -197,6 +197,12 @@ export function mountNeuralCore(container: HTMLElement) {
   return {
     setState(s: State) { state = s; },
     replay() { if (!reduced) { introStart = -1; uniforms.uMorph.value = 0; } },
+    /** Dark: particles add light onto black. Light: see-through canvas, particles painted normally. */
+    setTheme(light: boolean) {
+      renderer.setClearColor(0x000000, light ? 0 : 1);
+      uniforms.uLight.value = light ? 1 : 0;
+      for (const m of [material, lineMaterial]) { m.blending = light ? THREE.NormalBlending : THREE.AdditiveBlending; m.needsUpdate = true; }
+    },
   };
 }
 

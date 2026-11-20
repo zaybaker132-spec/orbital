@@ -1652,3 +1652,8 @@
 4643|läuft seit {h} h · {mb} MB Speicher
 4644|{n} fehlgeschlagen
 4645|{q} wartend · {r} laufend · {f} fehlgeschlagen in 24 h
+4650|Wähle dunkel oder hell, oder übernimm die Einstellung deines Computers.
+4651|Dunkel
+4652|Hell
+4653|Wie mein Computer
+4654|Design

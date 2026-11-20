@@ -36,7 +36,7 @@ export function ContradictionLab({ lab, cite }: { lab: any; cite: (refs: number[
           {lab.disagreements.map((d: any, i: number) => (
             <li key={i} className="rounded-xl border border-line">
               <div className="border-b border-line px-5 py-3 text-[0.95rem] text-white">{d.topic}</div>
-              <div className="grid gap-px bg-[rgba(255,255,255,0.06)] sm:grid-cols-2">
+              <div className="grid gap-px bg-white/[0.06] sm:grid-cols-2">
                 {d.claims.map((c: any, j: number) => (
                   <div key={j} className="bg-black px-5 py-3">
                     <div className="mb-1 flex items-center gap-1.5 text-[0.72rem]" style={{ color: color(c.position) }}><i className="h-1.5 w-1.5 rounded-full" style={{ background: color(c.position) }} />{c.position}</div>

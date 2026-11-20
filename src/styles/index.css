@@ -1,29 +1,33 @@
 @import "@fontsource-variable/inter";
 @import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/outfit/400.css";
+@import "@fontsource/outfit/700.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
   color-scheme: dark;
-  --bg: #000000;
-  --bg-1: #080808;
-  --bg-2: #111111;
-  --text: #ffffff;
-  --mute: #888888;
-  --line: rgba(255, 255, 255, 0.08);
-  --focus: rgba(255, 255, 255, 0.55);
+  /* Theme colours live in tailwind.config.js (--c-*). These are the same values as CSS colours. */
+  --bg: rgb(var(--c-bg));
+  --bg-1: rgb(var(--c-ink-1));
+  --bg-2: rgb(var(--c-ink-2));
+  --text: rgb(var(--c-fg));
+  --mute: rgb(var(--c-mute));
+  --line: rgb(var(--c-fg) / 0.08);
+  --focus: rgb(var(--c-fg) / 0.55);
 }
+html.light { color-scheme: light; }
 
 @layer base {
   html, body, #root { height: 100%; }
   html { font-size: 15px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
   body { @apply bg-black text-white font-sans; font-feature-settings: "cv11", "ss01", "ss03"; overflow: hidden; }
-  ::selection { background: rgba(255, 255, 255, 0.22); }
+  ::selection { background: rgb(var(--c-fg) / 0.22); }
   :focus-visible { outline: 1.5px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
-  * { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.14) transparent; }
+  * { scrollbar-width: thin; scrollbar-color: rgb(var(--c-fg) / 0.14) transparent; }
   ::-webkit-scrollbar { width: 9px; height: 9px; }
-  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 9px; border: 2px solid transparent; background-clip: padding-box; }
+  ::-webkit-scrollbar-thumb { background: rgb(var(--c-fg) / 0.12); border-radius: 9px; border: 2px solid transparent; background-clip: padding-box; }
   input, textarea, select, button { font: inherit; color: inherit; }
 }
 
@@ -71,5 +75,15 @@
   .wl-input { @apply w-full border-0 border-b border-white/20 bg-transparent px-0 pb-2.5 pt-1 text-[1rem] text-white outline-none transition-colors placeholder:text-mute-soft focus:border-white; border-radius: 0; }
   .wl-select { @apply cursor-pointer appearance-none pr-8; background: no-repeat right 4px center / 11px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='%23fff'/%3E%3C/svg%3E"); }
   .wl-chip { @apply inline-flex h-10 items-center rounded-full border border-white/20 px-4 text-[0.88rem] text-white/85 transition-all duration-200 hover:border-white/60 hover:text-white; }
-  .wl-chip-on { @apply border-white bg-white text-black hover:text-black; box-shadow: 0 0 24px rgba(255, 255, 255, 0.18); }
+  .wl-chip-on { @apply border-white bg-white text-black hover:text-black; box-shadow: 0 0 24px rgb(var(--c-fg) / 0.18); }
 }
+
+/* Code highlighting on light backgrounds */
+html.light .hljs-keyword, html.light .hljs-built_in, html.light .hljs-type { color: #6d28d9; }
+html.light .hljs-string, html.light .hljs-attr { color: #047857; }
+html.light .hljs-number, html.light .hljs-literal { color: #b45309; }
+html.light .hljs-comment { color: #8a8a93; }
+html.light .hljs-title, html.light .hljs-function { color: #1d4ed8; }
+
+/* Shown only in the dark theme (e.g. fades that blend the Neural Core's black canvas into the page). */
+html.light .dark-only { display: none; }

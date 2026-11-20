@@ -25,9 +25,9 @@ export function ScoreRing({ score, grade, size = 44 }: { score: number; grade: s
   const color = GRADE_STYLE[grade]?.color ?? "#8a8a93";
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={tx("Credibility {score} of 100, {grade}", { score: score, grade: grade })} className="shrink-0">
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="3" />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" style={{ stroke: "rgb(var(--c-fg) / 0.08)" }} strokeWidth="3" />
       <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeDasharray={`${(score / 100) * c} ${c}`} transform={`rotate(-90 ${size / 2} ${size / 2})`} />
-      <text x="50%" y="54%" textAnchor="middle" dominantBaseline="middle" fill="#fff" fontSize={size * 0.3} fontWeight="300">{score}</text>
+      <text x="50%" y="54%" textAnchor="middle" dominantBaseline="middle" fill="currentColor" fontSize={size * 0.3} fontWeight="300">{score}</text>
     </svg>
   );
 }

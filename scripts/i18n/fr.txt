@@ -1652,3 +1652,8 @@
 4643|actif depuis {h} h · {mb} Mo de mémoire
 4644|{n} en échec
 4645|{q} en attente · {r} en cours · {f} en échec sur 24 h
+4650|Choisissez sombre ou clair, ou suivez le réglage de votre ordinateur.
+4651|Sombre
+4652|Clair
+4653|Comme mon ordinateur
+4654|Thème

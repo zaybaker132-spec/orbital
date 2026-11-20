@@ -4,6 +4,7 @@ import { ArrowLeft, Search } from "lucide-react";
 import { useApp } from "@/state/app";
 import { cx } from "@/components/ui";
 import { tx } from "@/i18n";
+import { Wordmark } from "@/components/Wordmark";
 
 /** Orbital's palette, the same colours the Neural Core's clusters use. */
 const PALETTE = ["#ff1f2e", "#ff5a1f", "#ff9a1a", "#ffd23a", "#a6ff2e", "#2cff7a", "#1fd0ff", "#2f7dff", "#7a2cff", "#b02bff", "#ff2bd6"];
@@ -49,10 +50,12 @@ function LostOrbit({ className }: { className?: string }) {
       const t = reduced ? 8 : (now - t0) / 1000;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w, h);
+      const fgc = getComputedStyle(document.documentElement).getPropertyValue("--c-fg").trim() || "255 255 255";
+      const F = (a: number) => `rgb(${fgc} / ${a})`;
       const cx = w / 2, cy = h * 0.27, R = Math.min(w * 0.3, h * 0.15);
-      for (const d of dust) { ctx.globalAlpha = d.a; ctx.fillStyle = "#fff"; ctx.fillRect(cx + d.x * w * 0.5, cy + d.y * h * 0.5, d.s, d.s); }
+      for (const d of dust) { ctx.globalAlpha = d.a; ctx.fillStyle = F(1); ctx.fillRect(cx + d.x * w * 0.5, cy + d.y * h * 0.5, d.s, d.s); }
       ctx.globalAlpha = 0.5;
-      ctx.strokeStyle = "rgba(255,255,255,0.12)";
+      ctx.strokeStyle = F(0.12);
       ctx.setLineDash([2, 6]);
       ctx.beginPath(); ctx.arc(cx, cy, R * 0.34, 0, Math.PI * 2); ctx.stroke();
       ctx.setLineDash([]);
@@ -75,12 +78,12 @@ function LostOrbit({ className }: { className?: string }) {
       for (let i = 0; i < 18; i++) {
         const q = Math.max(0, k - i * 0.006);
         ctx.globalAlpha = (1 - i / 18) * 0.5 * (1 - k * 0.6);
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = F(1);
         ctx.beginPath(); ctx.arc(start.x + q * q * w * 0.42 + Math.sin(q * 6) * 6, start.y - q * h * 0.26, 2.2 * (1 - i / 18), 0, Math.PI * 2); ctx.fill();
       }
       ctx.globalAlpha = 1 - k * 0.7;
       const glow = ctx.createRadialGradient(dx, dy, 0, dx, dy, 14);
-      glow.addColorStop(0, "rgba(255,255,255,0.95)"); glow.addColorStop(1, "rgba(255,255,255,0)");
+      glow.addColorStop(0, F(0.95)); glow.addColorStop(1, F(0));
       ctx.fillStyle = glow;
       ctx.beginPath(); ctx.arc(dx, dy, 14, 0, Math.PI * 2); ctx.fill();
       ctx.globalCompositeOperation = "source-over";
@@ -117,7 +120,7 @@ export function NotFoundPage({ what, back, standalone }: { what?: string; back?:
       <LostOrbit className="pointer-events-none absolute inset-0 h-full w-full opacity-90" />
 
       {standalone && (
-        <Link to="/" className="absolute left-6 top-5 z-10 text-[0.82rem] tracking-[0.3em] text-white/90">{tx("ORBITAL")}</Link>
+        <Link to="/" className="absolute left-6 top-5 z-10"><Wordmark className="text-[1.2rem]" /></Link>
       )}
       <div className="relative z-10 mt-[30vh] max-w-[560px] pb-10">
         <div className="font-mono text-[0.74rem] uppercase tracking-[0.3em] text-mute">{what ? tx("{what} not found", { what: what }) : tx("404 · Lost in orbit")}</div>

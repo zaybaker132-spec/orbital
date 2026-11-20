@@ -126,13 +126,41 @@ export interface PointCloud {
 
 const lerp3 = (a: number[], b: number[], t: number) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 
+/**
+ * The orb's colour field, top to bottom, in the graph's palette: a red/orange crown, magenta and
+ * purple shoulders, a warm yellow middle, cyan and blue underneath, violet at the base. Colour
+ * follows height (with a gentle sideways drift) so the near and far sides of the see-through ball
+ * agree and the zones read cleanly from any angle while it spins.
+ */
+const ORB_BANDS: [number, string, string][] = [
+  // [height, colour on one side, colour on the other]
+  [1.0, "#ff1f2e", "#ff5a1f"],
+  [0.6, "#ff5a1f", "#ff2bd6"],
+  [0.3, "#ff9a1a", "#b02bff"],
+  [0.0, "#ffd23a", "#ffd23a"],
+  [-0.3, "#a6ff2e", "#ff9a1a"],
+  [-0.55, "#1fd0ff", "#b02bff"],
+  [-0.8, "#2f7dff", "#7a2cff"],
+  [-1.0, "#7a2cff", "#2f7dff"],
+];
+
+function orbHue(y: number, side: number): number[] {
+  const t = Math.max(-1, Math.min(1, y));
+  let i = 0;
+  while (i < ORB_BANDS.length - 2 && t < ORB_BANDS[i + 1][0]) i++;
+  const [y0, a0, b0] = ORB_BANDS[i], [y1, a1, b1] = ORB_BANDS[i + 1];
+  const f = smooth(0, 1, (y0 - t) / (y0 - y1));
+  const s = side * 0.5 + 0.5;
+  return lerp3(lerp3(hexRgb(a0), hexRgb(b0), s), lerp3(hexRgb(a1), hexRgb(b1), s), f);
+}
+
 /** A point of the Orbital orb and its colour. Region 4 (ambient dust) becomes a faint outer halo. */
 function orbPoint(region: number, rnd: () => number): [number, number, number, number, number, number] {
   const u = rnd() * 2 - 1, th = rnd() * Math.PI * 2, sq = Math.sqrt(1 - u * u);
   const x = sq * Math.cos(th), z = sq * Math.sin(th);
   if (region === 4) {
     const r = 1.5 + rnd() * 0.9, v = 0.05 + rnd() * 0.08;
-    const c = PALETTE[Math.floor(rnd() * PALETTE.length)];
+    const c = orbHue(u, x);
     return [x * r, u * r, z * r, (c[0] * 0.5 + 0.5) * v, (c[1] * 0.5 + 0.5) * v, (c[2] * 0.5 + 0.5) * v];
   }
   const shell = rnd() < 0.86;
@@ -144,11 +172,18 @@ function orbPoint(region: number, rnd: () => number): [number, number, number, n
     col = lerp3([1, 0.82, 0.35], [1, 0.97, 0.88], rnd());
   } else if (roll < 0.05) {
     col = [1, 1, 1]; // sparkles, like the graph's hub nodes
-  } else {
-    // Scattered: every speck takes its own colour from the graph palette, mixed evenly over the sphere
-    // (no bands), with a slight per-speck shift so neighbouring specks of one colour aren't identical.
-    const c = PALETTE[Math.floor(rnd() * PALETTE.length)], j = 0.88 + rnd() * 0.24;
+  } else if (roll < 0.16) {
+    // A sprinkle of specks in any palette colour, so the zones glitter instead of reading as flat paint.
+    const c = PALETTE[Math.floor(rnd() * PALETTE.length)], j = 0.85 + rnd() * 0.3;
     col = [Math.min(1, c[0] * j), Math.min(1, c[1] * j), Math.min(1, c[2] * j)];
+  } else {
+    // The colour bands, made organic: measured along a slightly tilted axis, and pushed around by
+    // smooth 3-D noise so neighbouring colours swirl into each other instead of meeting in straight
+    // stripes. Noise is sampled on the sphere's surface, so the near and far sides still agree.
+    const h = u * 0.94 + x * 0.34;
+    const warp = fbm(x * 1.6 + 3.1, u * 1.6, z * 1.6) * 0.42;
+    const side = Math.max(-1, Math.min(1, x * 1.25 + fbm(z * 1.9 + 7.3, u * 1.9, x * 1.9) * 0.8));
+    col = orbHue(h + warp + (rnd() - 0.5) * 0.1, side);
   }
   const b = (shell ? 0.55 + rnd() * 0.55 : 0.6 + rnd() * 0.5) * (roll < 0.05 && shell ? 1.25 : 1);
   return [x * r, u * r, z * r, col[0] * b, col[1] * b, col[2] * b];

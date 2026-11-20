@@ -147,7 +147,11 @@ function GraphCanvas({ graph, selected, matches, onSelect }: { graph: { nodes: N
       const w = canvas.clientWidth, h = canvas.clientHeight;
       if (canvas.width !== w * dpr) { canvas.width = w * dpr; canvas.height = h * dpr; }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.fillStyle = "#050505";
+      // Theme colours, read once per frame (canvas can't use CSS classes).
+      const css = getComputedStyle(document.documentElement);
+      const fgc = css.getPropertyValue("--c-fg").trim() || "255 255 255";
+      const F = (a: number) => `rgb(${fgc} / ${a})`;
+      ctx.fillStyle = `rgb(${css.getPropertyValue("--c-ink-1").trim() || "5 5 5"})`;
       ctx.fillRect(0, 0, w, h);
       const { x: vx, y: vy, k } = view.current;
       ctx.translate(w / 2 + vx, h / 2 + vy);
@@ -161,7 +165,7 @@ function GraphCanvas({ graph, selected, matches, onSelect }: { graph: { nodes: N
       for (const e of edges) {
         const s = e.source as N, t = e.target as N;
         const on = focus && (s.id === focus || t.id === focus);
-        ctx.strokeStyle = e.relation === "contradicts" ? `rgba(252,211,77,${on ? 0.8 : 0.35})` : `rgba(255,255,255,${on ? 0.55 : e.status === "confirmed" ? 0.16 : 0.07})`;
+        ctx.strokeStyle = e.relation === "contradicts" ? `rgb(${css.getPropertyValue("--c-amber-300").trim()} / ${on ? 0.8 : 0.35})` : F(on ? 0.55 : e.status === "confirmed" ? 0.16 : 0.07);
         ctx.lineWidth = (on ? 1.2 : 0.7) / k;
         ctx.setLineDash(e.status === "suggested" ? [3 / k, 3 / k] : []);
         ctx.beginPath(); ctx.moveTo(s.x!, s.y!); ctx.lineTo(t.x!, t.y!); ctx.stroke();
@@ -171,13 +175,13 @@ function GraphCanvas({ graph, selected, matches, onSelect }: { graph: { nodes: N
         const r = 2.6 + Math.sqrt(n.degree) * 1.4;
         const d = dim(n.id);
         ctx.globalAlpha = d ? 0.18 : 1;
-        ctx.fillStyle = KIND_COLOR[n.kind] ?? "#fff";
+        ctx.fillStyle = KIND_COLOR[n.kind] ?? F(1);
         ctx.beginPath(); ctx.arc(n.x!, n.y!, r, 0, Math.PI * 2); ctx.fill();
-        if (n.id === sel) { ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.2 / k; ctx.beginPath(); ctx.arc(n.x!, n.y!, r + 3.5 / k, 0, Math.PI * 2); ctx.stroke(); }
+        if (n.id === sel) { ctx.strokeStyle = F(1); ctx.lineWidth = 1.2 / k; ctx.beginPath(); ctx.arc(n.x!, n.y!, r + 3.5 / k, 0, Math.PI * 2); ctx.stroke(); }
         const showLabel = nodes.length <= 40 || n.id === focus || neighbors.has(n.id) || state.current.matches.has(n.id) || (k > 1.4 && n.degree > 1) || n.degree >= 6;
         if (showLabel && !d) {
           ctx.font = `${11.5 / k}px Inter, system-ui, sans-serif`;
-          ctx.fillStyle = n.id === focus ? "#fff" : "rgba(255,255,255,0.7)";
+          ctx.fillStyle = n.id === focus ? F(1) : F(0.7);
           ctx.fillText(n.title.length > 42 ? n.title.slice(0, 40) + "…" : n.title, n.x! + r + 4 / k, n.y! + 4 / k);
         }
       }

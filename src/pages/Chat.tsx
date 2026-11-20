@@ -198,7 +198,7 @@ function EmptyState({ onPick }: { onPick: (text: string, mode?: ModeId) => strin
     <div className="relative flex h-full flex-col items-center">
       <div className="relative h-[58%] min-h-[300px] w-full">
         <NeuralCore framing="head" className="absolute inset-0" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#040404] to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black to-transparent dark-only" />
       </div>
       <div className="relative z-10 -mt-4 w-full max-w-[720px] px-8 text-center">
         <h1 className="text-[1.5rem] font-light tracking-[-0.02em] text-white">{greet}</h1>

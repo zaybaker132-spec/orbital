@@ -90,7 +90,7 @@ export function VoiceMode({ messages, streaming, onSend, onClose, onRemember, ca
       <div className="relative min-h-0 flex-1">
         <NeuralCore framing="full" className="absolute inset-0" />
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="rounded-full transition-transform duration-150" style={{ width: 8, height: 8, transform: `scale(${1 + speech.level * 18})`, background: "rgba(255,255,255,0.08)" }} />
+          <div className="rounded-full transition-transform duration-150" style={{ width: 8, height: 8, transform: `scale(${1 + speech.level * 18})`, background: "rgb(var(--c-fg) / 0.08)" }} />
         </div>
       </div>
       <div className="mx-auto w-full max-w-[720px] px-6 pb-8 text-center">

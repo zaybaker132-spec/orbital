@@ -193,6 +193,7 @@ uniform float uTime;
 uniform float uMotion;
 uniform float uLineAlpha;
 uniform float uOrbMode;
+uniform float uLight;
 varying vec3 vColor;
 varying float vAlpha;
 varying float vGraph;
@@ -204,11 +205,14 @@ void main() {
   // The orb is pure particles: connections dissolve as it forms.
   float keep = mix(1.0, vGraph, uOrbMode);
   float a = (uLineAlpha * mix(1.0, 2.1, vGraph) + pulse * 0.75) * vAlpha * keep;
+  // Light theme: dark ink lines on white instead of light added onto black.
+  if (uLight > 0.5) { gl_FragColor = vec4(vec3(0.12), a * 0.9); return; }
   gl_FragColor = vec4(mix(vColor * 1.25, vec3(1.0), 0.12 + pulse * 0.55), a);
 }
 `;
 
 export const fragmentShader = /* glsl */ `
+uniform float uLight;
 varying vec3 vColor;
 varying float vAlpha;
 void main() {
@@ -216,6 +220,16 @@ void main() {
   float d = length(c);
   if (d > 0.5 || vAlpha < 0.01) discard;
   float a = smoothstep(0.5, 0.2, d);
+  if (uLight > 0.5) {
+    // Light theme: brightness becomes opacity (dim specks fade out instead of turning muddy), the colour
+    // is kept at full strength, and near-white specks are darkened so they still show on white.
+    float m = max(max(vColor.r, vColor.g), vColor.b);
+    vec3 col = vColor / max(m, 0.001);
+    float whiteness = min(min(col.r, col.g), col.b);
+    col *= 1.0 - 0.62 * whiteness;
+    gl_FragColor = vec4(col, a * vAlpha * clamp(m * 1.15, 0.0, 1.0));
+    return;
+  }
   gl_FragColor = vec4(vColor, a * vAlpha);
 }
 `;
