@@ -1,0 +1,226 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Orbital · showcase</title>
+<!--
+  "Orbital" showcase film: one swarm of particles that becomes the orb, then each thing Orbital does
+  (as a word), then the logo. Deterministic: renderAt(seconds) draws any moment, so the same file plays
+  live in a browser and renders frame-perfect video (scripts/render-showcase.cjs → brand/orbital-showcase.mp4).
+-->
+<style>
+  @font-face { font-family: "Outfit"; font-weight: 400; src: url("../node_modules/@fontsource/outfit/files/outfit-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Outfit"; font-weight: 700; src: url("../node_modules/@fontsource/outfit/files/outfit-latin-700-normal.woff2") format("woff2"); }
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  canvas { display: block; width: 100vw; height: 100vh; object-fit: contain; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script>
+const W = 1920, H = 1080, N = 7000;
+const cv = document.getElementById("c"), ctx = cv.getContext("2d");
+
+// ── Palette and colour bands: the Neural Core's (src/neural/geometry.ts) ──────────────────────────
+const PALETTE = ["#b02bff", "#ff2bd6", "#ff1f2e", "#ff5a1f", "#2f7dff", "#1fd0ff", "#ffd23a", "#ff9a1a", "#a6ff2e", "#2cff7a", "#7a2cff"].map(rgb);
+const BANDS = [[1.0, "#ff1f2e", "#ff5a1f"], [0.6, "#ff5a1f", "#ff2bd6"], [0.3, "#ff9a1a", "#b02bff"], [0.0, "#ffd23a", "#ffd23a"],
+  [-0.3, "#a6ff2e", "#ff9a1a"], [-0.55, "#1fd0ff", "#b02bff"], [-0.8, "#2f7dff", "#7a2cff"], [-1.0, "#7a2cff", "#2f7dff"]].map(([y, a, b]) => [y, rgb(a), rgb(b)]);
+function rgb(h) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }
+const lerp = (a, b, t) => a + (b - a) * t;
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const smooth = (t) => { t = clamp(t); return t * t * (3 - 2 * t); };
+const easeInOut = (t) => { t = clamp(t); return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; };
+const easeOut = (t) => 1 - Math.pow(1 - clamp(t), 3);
+function band(y, side) {
+  const t = clamp(y, -1, 1); let i = 0;
+  while (i < BANDS.length - 2 && t < BANDS[i + 1][0]) i++;
+  const [y0, a0, b0] = BANDS[i], [y1, a1, b1] = BANDS[i + 1];
+  const f = smooth((y0 - t) / (y0 - y1)), s = side * 0.5 + 0.5;
+  return [0, 1, 2].map((k) => lerp(lerp(a0[k], b0[k], s), lerp(a1[k], b1[k], s), f));
+}
+let seed = 5; const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+const noise = (x, y) => Math.sin(x * 1.7 + 1.3) * Math.sin(y * 2.3 + 0.4) * 0.6 + Math.sin(x * 3.1 + y * 1.3 + 2.1) * 0.4;
+
+// Per-particle constants: a speck on the sphere, its size, its personality.
+const P = Array.from({ length: N }, () => {
+  const u = rnd() * 2 - 1, th = rnd() * Math.PI * 2, sq = Math.sqrt(1 - u * u);
+  const shell = rnd() < 0.88, r = shell ? 0.94 + rnd() * 0.06 : Math.cbrt(rnd()) * 0.9;
+  const roll = rnd();
+  return {
+    sx: sq * Math.cos(th) * r, sy: u * r, sz: sq * Math.sin(th) * r,
+    size: 0.9 + Math.pow(rnd(), 2.4) * 2.6, ph: rnd() * Math.PI * 2, kind: roll < 0.05 ? "spark" : roll < 0.15 ? "glitter" : "band",
+    glitter: PALETTE[(rnd() * PALETTE.length) | 0], j: rnd(), dust: [rnd() * W, rnd() * H], pick: rnd(),
+  };
+});
+function colourFor(p, nx, ny) {
+  if (p.kind === "spark") return [255, 255, 255];
+  if (p.kind === "glitter") return p.glitter;
+  return band(-ny * 0.94 + nx * 0.34 + noise(nx * 2.2, ny * 2.2) * 0.32 + (p.j - 0.5) * 0.12, clamp(nx * 1.3 + noise(ny * 2 + 4, nx * 2) * 0.6, -1, 1));
+}
+
+// ── Shapes the swarm takes ─────────────────────────────────────────────────────────────────────────
+/** Points sampled from text, one per particle (so every speck has somewhere to be). */
+function textShape(parts, fontPx, cx, cy) {
+  const c = document.createElement("canvas"); c.width = W; c.height = H;
+  const m = c.getContext("2d"); m.fillStyle = "#fff"; m.textBaseline = "alphabetic";
+  const widths = parts.map(([t, w]) => { m.font = `${w} ${fontPx}px Outfit`; return m.measureText(t).width; });
+  let x = cx - widths.reduce((a, b) => a + b, 0) / 2; const base = cy + fontPx * 0.3, left = x;
+  parts.forEach(([t, w, draw = true], i) => { m.font = `${w} ${fontPx}px Outfit`; if (draw) m.fillText(t, x, base); x += widths[i]; });
+  const d = m.getImageData(0, 0, W, H).data, on = [];
+  for (let y = 0; y < H; y += 2) for (let xx = 0; xx < W; xx += 2) if (d[(y * W + xx) * 4 + 3] > 140) on.push(xx, y);
+  const pts = new Float32Array(N * 2), cols = new Float32Array(N * 3);
+  const x0 = left, x1 = x, y0 = base - fontPx * 0.78, y1 = base + fontPx * 0.2;
+  for (let i = 0; i < N; i++) {
+    const k = (Math.floor(P[i].pick * (on.length / 2)) * 2) % on.length;
+    const px = on[k] + (rnd() - 0.5) * 2.4, py = on[k + 1] + (rnd() - 0.5) * 2.4;
+    pts[i * 2] = px; pts[i * 2 + 1] = py;
+    const c3 = colourFor(P[i], ((px - x0) / (x1 - x0)) * 2 - 1, ((py - y0) / (y1 - y0)) * 2 - 1);
+    cols.set(c3, i * 3);
+  }
+  return { pts, cols, widths, left, base };
+}
+const ORB_COLS = new Float32Array(N * 3);
+P.forEach((p, i) => ORB_COLS.set(p.kind === "band" && Math.hypot(p.sx, p.sy, p.sz) < 0.9 ? [255, 220, 140] : colourFor(p, p.sx, -p.sy), i * 3));
+/** The orb, spinning, centred at (cx, cy) with radius R. */
+function orbShape(t, cx, cy, R) {
+  const pts = new Float32Array(N * 2), a = t * 0.35, ca = Math.cos(a), sa = Math.sin(a), tilt = -0.25;
+  for (let i = 0; i < N; i++) {
+    const p = P[i]; const x = p.sx * ca + p.sz * sa, z = -p.sx * sa + p.sz * ca;
+    const y = p.sy * Math.cos(tilt) - z * Math.sin(tilt);
+    pts[i * 2] = cx + x * R; pts[i * 2 + 1] = cy - y * R;
+  }
+  return pts;
+}
+function dustShape(t) {
+  const pts = new Float32Array(N * 2);
+  for (let i = 0; i < N; i++) { const p = P[i]; pts[i * 2] = (p.dust[0] + Math.sin(t * 0.3 + p.ph) * 30); pts[i * 2 + 1] = (p.dust[1] + Math.cos(t * 0.25 + p.ph) * 30); }
+  return pts;
+}
+
+// ── The script ─────────────────────────────────────────────────────────────────────────────────────
+const FEATURES = [
+  ["remember.", "MEMORY", "Everything you save is kept, with where it came from."],
+  ["connect.", "CONNECTIONS", "Your ideas link themselves into a living map."],
+  ["research.", "RESEARCH", "Real answers, with every source cited."],
+  ["write.", "PAPERS", "Full documents, written together, live."],
+  ["plan.", "PROJECTS", "Deadlines, reminders and focus, in one place."],
+  ["together.", "TEAMS", "Shared knowledge, meetings and approvals for a team."],
+];
+let SH = null; // shapes, built once fonts are ready
+function build() {
+  SH = { words: FEATURES.map(([w]) => textShape([[w, 700]], 250, W / 2, H / 2 - 30)) };
+  // The logo: only the "o" is particles; its layout gives where "rbital" goes.
+  SH.logo = textShape([["o", 700], ["rb", 700, false], ["ital", 400, false]], 220, W / 2, H / 2 - 20);
+}
+
+// Timeline (seconds): each step is [start, shape-at(t), label].
+const T_ORB = 0.8, T_W0 = 4.2, STEP = 3.1, T_BACK = T_W0 + FEATURES.length * STEP, T_LOGO = T_BACK + 2.4, T_END = T_LOGO + 6.2;
+const DURATION = T_END;
+function target(t, i) {
+  // Which shape the swarm is heading for at time t, and the one before it.
+  if (t < T_ORB) return null;
+  if (t < T_W0) return "orb";
+  if (t < T_BACK) return "w" + Math.min(FEATURES.length - 1, Math.floor((t - T_W0) / STEP));
+  if (t < T_LOGO) return "orb";
+  return "logo";
+}
+const stages = [];
+stages.push({ at: 0, key: "dust" }, { at: T_ORB, key: "orb", dur: 2.4 });
+FEATURES.forEach((_, i) => stages.push({ at: T_W0 + i * STEP, key: "w" + i, dur: 1.25 }));
+stages.push({ at: T_BACK, key: "orb", dur: 1.6 }, { at: T_LOGO, key: "logo", dur: 1.5 });
+
+function shapeAt(key, t) {
+  if (key === "dust") return { pts: dustShape(t), cols: ORB_COLS };
+  if (key === "orb") return { pts: orbShape(t, W / 2, H / 2, key === "orb" && t > T_BACK ? 300 : 300), cols: ORB_COLS };
+  if (key === "logo") return SH.logo;
+  return SH.words[+key.slice(1)];
+}
+
+function renderAt(t) {
+  ctx.globalCompositeOperation = "source-over";
+  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+  let s = 0; while (s < stages.length - 1 && t >= stages[s + 1].at) s++;
+  const cur = stages[s], prev = stages[Math.max(0, s - 1)];
+  const A = shapeAt(prev.key, t), B = shapeAt(cur.key, t);
+  const local = cur.dur ? (t - cur.at) / cur.dur : 1;
+
+  // Particles: staggered left-to-right sweep along a curve, with a gentle shimmer once settled.
+  ctx.globalCompositeOperation = "lighter";
+  for (let i = 0; i < N; i++) {
+    const p = P[i];
+    const ax = A.pts[i * 2], ay = A.pts[i * 2 + 1], bx = B.pts[i * 2], by = B.pts[i * 2 + 1];
+    const stagger = (bx / W) * 0.32 + p.j * 0.12;
+    const k = s === 0 ? 1 : easeInOut((local - stagger) / (1 - 0.44));
+    const bend = Math.sin(k * Math.PI) * (60 + p.j * 90);
+    const nx = -(by - ay), ny = bx - ax, nl = Math.hypot(nx, ny) || 1;
+    const shimmer = k >= 1 ? 1.1 : 0;
+    const x = lerp(ax, bx, k) + (nx / nl) * bend * (p.ph > Math.PI ? 1 : -1) + Math.sin(t * 1.9 + p.ph) * shimmer;
+    const y = lerp(ay, by, k) + (ny / nl) * bend * (p.ph > Math.PI ? 1 : -1) + Math.cos(t * 1.6 + p.ph) * shimmer;
+    const c = [0, 1, 2].map((q) => lerp(A.cols[i * 3 + q], B.cols[i * 3 + q], k));
+    const inFlight = Math.sin(k * Math.PI);
+    const alpha = (s === 0 ? 0.25 + 0.35 * p.j : 0.55 + 0.4 * p.j) * (1 - inFlight * 0.25) * (cur.key === "logo" && t > T_END - 0.8 ? 1 - (t - (T_END - 0.8)) / 0.8 : 1);
+    ctx.fillStyle = `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${alpha})`;
+    // The small "o" holds every speck: thin them (fainter and smaller) so colour shows instead of white.
+    const dense = cur.key === "logo" ? lerp(1, 0.22, k) : 1;
+    ctx.fillStyle = `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${alpha * dense})`;
+    const r = p.size * (cur.key.startsWith("w") ? 0.8 : cur.key === "logo" ? lerp(0.8, 0.62, k) : 1) * (1 + inFlight * 0.35);
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.globalCompositeOperation = "source-over";
+
+  // Words around the shapes.
+  const fadeIn = (t0, d = 0.5) => easeOut((t - t0) / d), fadeOut = (t1, d = 0.4) => 1 - smooth((t - t1) / d);
+  ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+  // Opening line under the orb.
+  text("everything you know, in orbit", W / 2, H / 2 + 400, 400, 40, "#9a9aa3", Math.min(fadeIn(1.6, 0.8), fadeOut(T_W0 - 0.6)), 10 * (1 - fadeIn(1.6, 0.8)));
+  // Each feature: a small label above, a sentence below.
+  FEATURES.forEach(([, label, line], i) => {
+    const t0 = T_W0 + i * STEP, a = Math.min(fadeIn(t0 + 0.75, 0.45), fadeOut(t0 + STEP - 0.45, 0.35));
+    if (a <= 0) return;
+    const rise = 14 * (1 - fadeIn(t0 + 0.75, 0.45));
+    mono(`${String(i + 1).padStart(2, "0")}  ·  ${label}`, W / 2, H / 2 - 230 + rise, a * 0.85);
+    text(line, W / 2, H / 2 + 200 + rise, 400, 44, "#c9c9d1", a, 0);
+  });
+  // The logo: "rbital" slides in beside the particle o, then the tagline and the close.
+  if (t >= T_LOGO + 0.9) {
+    const L = SH.logo, a = Math.min(fadeIn(T_LOGO + 0.9, 0.6), fadeOut(T_END - 0.8, 0.8)), slide = 26 * (1 - fadeIn(T_LOGO + 0.9, 0.6));
+    ctx.textAlign = "left"; ctx.fillStyle = `rgba(255,255,255,${a})`;
+    let x = L.left + L.widths[0] + slide;
+    ctx.font = "700 220px Outfit"; ctx.fillText("rb", x, L.base); x += L.widths[1];
+    ctx.font = "400 220px Outfit"; ctx.fillText("ital", x, L.base);
+    ctx.textAlign = "center";
+    const a2 = Math.min(fadeIn(T_LOGO + 1.9, 0.6), fadeOut(T_END - 0.8, 0.8));
+    text("Your intelligence. Compounding.", W / 2, H / 2 + 190, 400, 50, "#d4d4dc", a2, 10 * (1 - fadeIn(T_LOGO + 1.9, 0.6)));
+    const a3 = Math.min(fadeIn(T_LOGO + 3.0, 0.6), fadeOut(T_END - 0.8, 0.8));
+    mono("FREE  ·  MAC  ·  WINDOWS  ·  LINUX", W / 2, H / 2 + 290, a3 * 0.9);
+  }
+  // Soft vignette.
+  const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.45, W / 2, H / 2, H * 0.95);
+  g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,0.55)");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+}
+function text(s, x, y, weight, px, color, a, dy) {
+  if (a <= 0) return;
+  ctx.font = `${weight} ${px}px Outfit`; ctx.globalAlpha = clamp(a); ctx.fillStyle = color; ctx.fillText(s, x, y + (dy || 0)); ctx.globalAlpha = 1;
+}
+function mono(s, x, y, a) {
+  if (a <= 0) return;
+  ctx.font = "500 22px ui-monospace, SFMono-Regular, Menlo, monospace"; ctx.globalAlpha = clamp(a); ctx.fillStyle = "#8a8a93";
+  if ("letterSpacing" in ctx) ctx.letterSpacing = "6px";
+  ctx.fillText(s, x, y); ctx.globalAlpha = 1; if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
+}
+
+window.DURATION = DURATION;
+window.renderAt = renderAt;
+document.fonts.load("700 100px Outfit").then(() => document.fonts.load("400 100px Outfit")).then(() => {
+  build();
+  window.ready = true;
+  if (!new URLSearchParams(location.search).has("render")) {
+    const t0 = performance.now();
+    const loop = (now) => { renderAt(((now - t0) / 1000) % (DURATION + 1)); requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+  }
+});
+</script>
+</body>
+</html>
