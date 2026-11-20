@@ -52,7 +52,7 @@ export const TEMPLATES: { id: string; name: string; description: string; widgets
 ];
 
 /** Sidebar sections that can be reordered or hidden (Settings and New conversation always stay). */
-export const NAV_KEYS = ["dashboard", "core", "research", "papers", "knowledge", "connections", "projects", "reminders", "focus", "opportunities", "meetings", "operations"] as const;
+export const NAV_KEYS = ["dashboard", "core", "research", "papers", "media", "knowledge", "connections", "projects", "reminders", "focus", "opportunities", "meetings", "operations"] as const;
 export type NavKey = (typeof NAV_KEYS)[number];
 
 export const ACCENTS = ["white", "violet", "magenta", "red", "orange", "amber", "lime", "green", "cyan", "blue"] as const;

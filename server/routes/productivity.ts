@@ -13,6 +13,7 @@ import { emit } from "../lib/events.js";
 import { getLLM, describeAiError } from "../ai/provider.js";
 import { extractMemories } from "../engines/memory.js";
 import { contributionCalendar } from "../engines/calendar.js";
+import { transcribeAudio } from "../lib/transcribe.js";
 
 /** Personal productivity: reminders, nudges and focus sessions. Each person sees only their own. */
 export const productivity = Router();
@@ -151,7 +152,6 @@ productivity.post("/focus/:id/end", ah(async (req, res) => {
 
 // ── Voice ──────────────────────────────────────────────────────────────────
 const audioUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024, files: 1 } });
-const transcriptionKey = () => process.env.TRANSCRIPTION_API_KEY || process.env.OPENAI_API_KEY || "";
 
 productivity.get("/voice/config", (_req, res) => {
   res.json({ serverTranscription: !!config.transcription.baseUrl });
@@ -163,23 +163,8 @@ productivity.post("/voice/transcribe", rateLimit({ windowMs: 60_000, max: 40, ke
   const f = req.file;
   if (!f || f.size < 800) throw new HttpError(400, "No audio received.");
   if (!/^audio\/|^video\/webm/.test(f.mimetype)) throw new HttpError(415, "That isn't an audio recording.");
-  const form = new FormData();
-  const ext = f.mimetype.includes("mp4") ? "m4a" : f.mimetype.includes("ogg") ? "ogg" : f.mimetype.includes("wav") ? "wav" : "webm";
-  form.append("file", new Blob([new Uint8Array(f.buffer)], { type: f.mimetype }), `speech.${ext}`);
-  form.append("model", config.transcription.model);
-  if (typeof req.body?.language === "string" && /^[a-z]{2}$/.test(req.body.language)) form.append("language", req.body.language);
-  const headers: Record<string, string> = {};
-  if (transcriptionKey()) headers.authorization = `Bearer ${transcriptionKey()}`;
-  let r: Response;
-  try {
-    r = await fetch(`${config.transcription.baseUrl}/audio/transcriptions`, { method: "POST", headers, body: form, signal: AbortSignal.timeout(60_000) });
-  } catch {
-    throw new HttpError(502, "Couldn't reach the transcription service.");
-  }
-  if (r.status === 401 || r.status === 403) throw new HttpError(502, "The transcription service rejected the API key.");
-  if (!r.ok) throw new HttpError(502, `The transcription service returned an error (${r.status}).`);
-  const j: any = await r.json().catch(() => ({}));
-  res.json({ text: String(j.text ?? "").trim() });
+  const text = await transcribeAudio(f.buffer, f.mimetype, typeof req.body?.language === "string" ? req.body.language : undefined);
+  res.json({ text });
 }));
 
 /**

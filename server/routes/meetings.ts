@@ -28,7 +28,7 @@ export function normalizeCode(raw: string) {
 }
 
 // ── Live rooms (in memory; single server node) ─────────────────────────────
-interface PeerState { audio: boolean; video: boolean; screen: boolean; hand: boolean }
+interface PeerState { audio: boolean; video: boolean; screen: boolean; hand: boolean; recording?: boolean }
 interface Peer { id: string; userId: string; name: string; res: Response; state: PeerState; joinedAt: number }
 interface Room { meetingId: string; hostId: string; peers: Map<string, Peer> }
 const rooms = new Map<string, Room>();
@@ -151,7 +151,7 @@ meetings.post("/meetings/:code/signal", signalLimit, ah(async (req, res) => {
 }));
 
 meetings.post("/meetings/:code/state", signalLimit, ah(async (req, res) => {
-  const b = parse(z.object({ from: z.uuid(), state: z.object({ audio: z.boolean(), video: z.boolean(), screen: z.boolean(), hand: z.boolean() }) }), req.body);
+  const b = parse(z.object({ from: z.uuid(), state: z.object({ audio: z.boolean(), video: z.boolean(), screen: z.boolean(), hand: z.boolean(), recording: z.boolean().optional() }) }), req.body);
   const { room, peer } = ownPeer(codeParam(req.params.code), b.from, actor(req));
   peer.state = b.state;
   broadcast(room, "state", { peerId: peer.id, state: peer.state });

@@ -8,7 +8,7 @@ export const APP_ROUTES: RegExp[] = [
   "/", "/login", "/reset-password", "/waitlist", "/clip", "/core", "/connections", "/opportunities", "/operations", "/team",
   "/meetings", "/reminders", "/dashboard", "/focus", "/search", "/settings", "/maintenance",
   `/c/${SEG}`, `/m/${SEG}`, `/invite/${SEG}`,
-  `/research(/${SEG})?`, `/papers(/${SEG})?`, `/docs(/${SEG})?`, `/knowledge(/${SEG})?`, `/projects(/${SEG})?`, `/hypotheses(/${SEG})?`,
+  `/research(/${SEG})?`, `/papers(/${SEG})?`, `/media(/${SEG})?`, `/docs(/${SEG})?`, `/knowledge(/${SEG})?`, `/projects(/${SEG})?`, `/hypotheses(/${SEG})?`,
 ].map((p) => new RegExp(`^${p}/?$`));
 
 export const isAppRoute = (pathname: string) => APP_ROUTES.some((r) => r.test(pathname));

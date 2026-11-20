@@ -6,7 +6,7 @@ import { api, getWorkspaceId } from "./api";
  * participant. The newcomer sends offers to everyone already in the room (no offer collisions);
  * signalling goes through the Orbital server, media goes directly between browsers.
  */
-export interface PeerState { audio: boolean; video: boolean; screen: boolean; hand: boolean }
+export interface PeerState { audio: boolean; video: boolean; screen: boolean; hand: boolean; recording?: boolean }
 export interface Participant { peerId: string; name: string; host: boolean; state: PeerState; stream: MediaStream | null; connection: RTCPeerConnectionState | "new" }
 export interface ChatMessage { id: string; peerId: string; name: string; text: string; at: number }
 export type RoomStatus = "connecting" | "live" | "ended" | "removed" | "error";

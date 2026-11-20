@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Copy, Hand, Lock, LockOpen, MessageSquare, Mic, MicOff, MonitorUp, PhoneOff, ScreenShareOff, Send, Users, Video, VideoOff, X } from "lucide-react";
+import { Circle, Copy, Hand, Lock, LockOpen, Square, MessageSquare, Mic, MicOff, MonitorUp, PhoneOff, ScreenShareOff, Send, Users, Video, VideoOff, X } from "lucide-react";
 import { api } from "@/lib/api";
 import { useApp } from "@/state/app";
 import { toast, toastError } from "@/state/ui";
 import { useAudioLevel, useMeeting, type Participant, type PeerState } from "@/lib/meeting";
 import { Button, Input, Pulse, cx } from "@/components/ui";
 import { meetingLink, parseMeetingCode } from "./Meetings";
+import { canRecord, uploadMedia, type Recorder } from "@/lib/capture";
+import { recordMeeting, type Feed } from "@/lib/meetingRecorder";
 import { locale, tx } from "@/i18n";
 
 /** /m/:code — lobby (preview your camera and mic), then the room. */
@@ -108,12 +110,15 @@ function Room({ code, title, name, local, mic, cam, setMic, setCam }: { code: st
   const m = useMeeting(code, { name, local, enabled: true });
   const [screen, setScreen] = useState<MediaStream | null>(null);
   const [hand, setHand] = useState(false);
+  const [rec, setRec] = useState<{ recorder: Recorder; started: number } | null>(null);
+  const [saving, setSaving] = useState<number | null>(null);
+  const feedsRef = useRef<Feed[]>([]);
   const [panel, setPanel] = useState<"chat" | "people" | null>(null);
   const [unread, setUnread] = useState(0);
   const seen = useRef(0);
   const prev = useRef<Record<string, Participant>>({});
 
-  const state: PeerState = useMemo(() => ({ audio: mic && !!local?.getAudioTracks().length, video: cam && !!local?.getVideoTracks().length, screen: !!screen, hand }), [mic, cam, screen, hand, local]);
+  const state: PeerState = useMemo(() => ({ audio: mic && !!local?.getAudioTracks().length, video: cam && !!local?.getVideoTracks().length, screen: !!screen, hand, recording: !!rec }), [mic, cam, screen, hand, local, rec]);
   useEffect(() => { if (m.status === "live") m.sendState(state); }, [state, m.status, m.sendState]);
 
   // Join / leave notices.
@@ -153,6 +158,27 @@ function Room({ code, title, name, local, mic, cam, setMic, setCam }: { code: st
   const endForAll = async () => {
     try { await api.post(`/meetings/${code}/end`); } catch (e) { toastError(e); }
   };
+  const toggleRecording = async () => {
+    if (rec) {
+      const r = rec; setRec(null);
+      const c = await r.recorder.stop();
+      if (!c.blob.size) return;
+      setSaving(0);
+      try {
+        const date = new Date().toLocaleString(locale(), { dateStyle: "medium", timeStyle: "short" });
+        await uploadMedia(c.blob, { kind: "meeting", title: `${title || tx("Meeting")} · ${date}`, durationMs: c.durationMs, width: 1280, height: 720, meeting: code }, setSaving);
+        toast(tx("Recording saved to Media"));
+      } catch (e) { toastError(e); } finally { setSaving(null); }
+      return;
+    }
+    if (!confirm(tx("Everyone in the meeting will see that you're recording. Start recording?"))) return;
+    try { setRec({ recorder: recordMeeting(() => feedsRef.current), started: Date.now() }); } catch (e) { toastError(e); }
+  };
+  // Leaving (or the page closing) while recording keeps what was recorded.
+  const recRef = useRef(rec); recRef.current = rec;
+  const toggleRef = useRef(toggleRecording); toggleRef.current = toggleRecording;
+  useEffect(() => () => { if (recRef.current) void toggleRef.current(); }, []);
+
   const toggleLock = async () => {
     try { await api.post(`/meetings/${code}/lock`, { locked: !m.locked }); m.setLocked(!m.locked); toast(m.locked ? tx("Meeting unlocked") : tx("Meeting locked: no one new can join")); } catch (e) { toastError(e); }
   };
@@ -176,6 +202,13 @@ function Room({ code, title, name, local, mic, cam, setMic, setCam }: { code: st
 
   const others = Object.values(m.participants);
   const self = { peerId: "self", name: `${name} (you)`, host: m.isHost, state, stream: screen ?? local, connection: "connected" as const };
+  // What a recording shows: your camera (and screen if sharing) and everyone else's.
+  feedsRef.current = [
+    ...(screen ? [{ id: "self-screen", name, stream: screen, screen: true, video: true }] : []),
+    { id: "self", name, stream: local, video: state.video },
+    ...others.map((p) => ({ id: p.peerId, name: p.name, stream: p.stream, screen: p.state.screen, video: p.state.video || p.state.screen })),
+  ];
+  const recorders = [...(rec ? [tx("You")] : []), ...others.filter((p) => p.state.recording).map((p) => p.name)];
   const presenter = screen ? self : others.find((p) => p.state.screen);
   const tiles = [self, ...others].filter((p) => p !== presenter);
   const cols = tiles.length <= 1 ? 1 : tiles.length <= 4 ? 2 : tiles.length <= 6 ? 3 : 4;
@@ -188,6 +221,12 @@ function Room({ code, title, name, local, mic, cam, setMic, setCam }: { code: st
           <span className="font-mono text-mute">{code}</span>
           {m.locked && <span className="flex items-center gap-1 text-[0.75rem] text-amber-200/80"><Lock size={12} /> {tx("Locked")}</span>}
           {m.status === "connecting" && <span className="flex items-center gap-2 text-mute"><Pulse /> {tx("Connecting")}</span>}
+          {recorders.length > 0 && (
+            <span className="flex items-center gap-1.5 rounded-full bg-red-500/15 px-2.5 py-0.5 text-[0.75rem] text-red-300" role="status">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+              {recorders.length === 1 && rec ? tx("You're recording this meeting") : tx("{names} recording this meeting", { names: recorders.join(", ") })}
+            </span>
+          )}
           <span className="ml-auto text-[0.78rem] text-mute">{others.length + 1} {tx("in the room")}</span>
         </div>
         <div className="flex min-h-0 flex-1 gap-3 px-4 pb-3">
@@ -239,6 +278,9 @@ function Room({ code, title, name, local, mic, cam, setMic, setCam }: { code: st
             <RoundButton label={tx("Camera {v0} (Ctrl E)", { v0: cam ? "off" : "on" })} off={!cam} onClick={() => setCam(!cam)} disabled={!local?.getVideoTracks().length}>{cam ? <Video size={18} /> : <VideoOff size={18} />}</RoundButton>
             <RoundButton label={screen ? tx("Stop sharing") : tx("Share screen")} active={!!screen} onClick={share}>{screen ? <ScreenShareOff size={18} /> : <MonitorUp size={18} />}</RoundButton>
             <RoundButton label={hand ? tx("Lower hand") : tx("Raise hand")} active={hand} onClick={() => setHand(!hand)}><Hand size={18} /></RoundButton>
+            {canRecord() && <RoundButton label={rec ? tx("Stop recording") : saving !== null ? tx("Saving the recording…") : tx("Record meeting")} active={!!rec} disabled={saving !== null} onClick={toggleRecording}>
+              {rec ? <Square size={16} className="fill-red-500 text-red-500" /> : <Circle size={18} className={saving !== null ? "animate-pulse" : ""} />}
+            </RoundButton>}
             <RoundButton label={tx("Chat")} active={panel === "chat"} onClick={() => { setPanel(panel === "chat" ? null : "chat"); setUnread(0); }} badge={panel === "chat" ? 0 : unread}><MessageSquare size={18} /></RoundButton>
             <RoundButton label={tx("People")} active={panel === "people"} onClick={() => setPanel(panel === "people" ? null : "people")}><Users size={18} /></RoundButton>
             {m.isHost && <RoundButton label={m.locked ? tx("Unlock meeting") : tx("Lock meeting")} active={m.locked} onClick={toggleLock}>{m.locked ? <Lock size={18} /> : <LockOpen size={18} />}</RoundButton>}

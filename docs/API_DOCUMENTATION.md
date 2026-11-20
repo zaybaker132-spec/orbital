@@ -287,6 +287,18 @@ Prefix: `/api`
 | POST | /admin/jobs/:id/retry | server admin | Requeues a failed job. 404 if it isn't failed. |
 | POST | /admin/housekeeping | server admin | Runs retention now. `{removed: {table: count}}`. |
 
+## Media
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | /api/media | `?kind&type=image|video|audio&q=` newest first (max 500). |
+| POST | /api/media | Body = the file (Content-Type = its type); `?kind&title&duration&width&height&meeting`. Streams into 1 MiB pieces. 413 `too_large` / `quota`, 415 unsupported types. 30/min. |
+| GET | /api/media/usage | `{used, quota, maxFile, transcription}` |
+| GET | /api/media/:id · /file · /thumbnail | Metadata; the file with Range support (`?download=1` to save); JPEG preview. |
+| PUT | /api/media/:id/thumbnail | JPEG ≤ 300 KB. |
+| PATCH / DELETE | /api/media/:id | Rename / transcript; delete (whoever added it, or an admin). |
+| POST | /api/media/:id/transcribe | Speech to text for recordings ≤ 25 MB (needs a transcription service). |
+
 ## Weather
 
 | Method | Path | Notes |

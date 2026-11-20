@@ -31,6 +31,7 @@ import { ops } from "./routes/ops.js";
 import { startHousekeeping } from "./lib/housekeeping.js";
 import { weather } from "./routes/weather.js";
 import { trail } from "./routes/trail.js";
+import { media } from "./routes/media.js";
 
 export async function createApp(opts: { jobs?: boolean } = {}) {
   const database = await getDb();
@@ -107,6 +108,7 @@ export async function createApp(opts: { jobs?: boolean } = {}) {
   app.use("/api", ops);
   app.use("/api", weather);
   app.use("/api", trail);
+  app.use("/api", media);
   app.use("/api", (_req, _res, next) => next(new HttpError(404, "Not found", "not_found")));
 
   const dist = config.staticDir;
@@ -114,7 +116,7 @@ export async function createApp(opts: { jobs?: boolean } = {}) {
     app.use((_req, res, next) => {
       res.setHeader(
         "content-security-policy",
-        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
       );
       next();
     });

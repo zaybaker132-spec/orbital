@@ -1817,3 +1817,57 @@
 4830|Markiere eine Seite, Notiz, ein Dokument, Gespräch oder Projekt mit einem Stern, um es hier zu behalten.
 4831|Team
 4832|Die letzten 10 Dinge, die du geöffnet hast.
+4840|Eine andere App verwendet Kamera oder Mikrofon.
+4841|Zurück zu Medien
+4842|Die Aufnahme hat nicht funktioniert.
+4843|Die Aufnahme wurde abgebrochen.
+4844|„{title}“ löschen? Das lässt sich nicht rückgängig machen.
+4845|Herunterladen
+4846|Bilder, Videos oder Audio hier ablegen, um sie hinzuzufügen
+4847|Alle im Meeting sehen, dass du aufnimmst. Aufnahme starten?
+4848|Medien
+4849|Meeting-Aufnahme
+4850|Benennen (optional)
+4851|Keine Kamera oder kein Mikrofon gefunden.
+4852|Noch keine Medien
+4853|Noch kein Transkript.
+4854|Die Berechtigung wurde verweigert. Erlaube Orbital den Zugriff auf Bildschirm, Kamera oder Mikrofon und versuche es erneut.
+4855|Kamera aufnehmen
+4856|Meeting aufnehmen
+4857|Bildschirm aufnehmen
+4858|Sprache aufnehmen
+4859|Aufnahme
+4860|Aufnahme in Medien gespeichert
+4861|Aufnahmen
+4862|Als Notiz speichern
+4863|Aufnahme speichern
+4864|In Medien speichern
+4865|In Medien gespeichert
+4866|Aufnahme wird gespeichert…
+4867|Speichern… {pct} %
+4868|Bildschirmaufnahme
+4869|Bildschirmaufnahmen
+4870|Screenshot
+4871|Screenshots
+4872|Screenshots, Bildschirmaufnahmen, Sprachnotizen, Aufnahmen und Meeting-Aufzeichnungen an einem Ort.
+4873|Medien durchsuchen
+4874|Titel und Transkripte durchsuchen
+4875|Aufnahme beenden
+4876|Mach einen Screenshot, nimm Bildschirm, Stimme oder Kamera auf oder lege Dateien hier ab. Meeting-Aufnahmen erscheinen auch hier.
+4877|Der Upload wurde nicht abgeschlossen. Prüfe deine Verbindung und versuche es erneut.
+4878|Dieses Medium gibt es nicht mehr
+4879|Transkribieren
+4880|Erneut transkribieren
+4881|Transkript
+4882|Transkript hinzugefügt
+4883|Transkription funktioniert bei Aufnahmen bis 25 MB.
+4884|Für Sprache-zu-Text braucht der Server einen Transkriptionsdienst (TRANSCRIPTION_BASE_URL oder einen OpenAI-Schlüssel).
+4885|Hochladen
+4886|{name} hochgeladen
+4887|Uploads
+4888|Sprachaufnahme
+4889|Du nimmst dieses Meeting auf
+4890|{names}: nimmt dieses Meeting auf
+4891|{name} ist kein Bild, Video oder Audio.
+4892|{used} von {quota} belegt
+4893|{used} belegt

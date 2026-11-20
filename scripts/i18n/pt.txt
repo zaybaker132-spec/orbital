@@ -1817,3 +1817,57 @@
 4830|Marque com estrela uma página, nota, documento, conversa ou projeto para mantê-lo aqui.
 4831|Equipe
 4832|As últimas 10 coisas que você abriu.
+4840|Outro app está usando a câmera ou o microfone.
+4841|Voltar para Mídia
+4842|A captura não funcionou.
+4843|A captura foi cancelada.
+4844|Excluir "{title}"? Isso não pode ser desfeito.
+4845|Baixar
+4846|Solte imagens, vídeo ou áudio para adicioná-los
+4847|Todos na reunião verão que você está gravando. Começar a gravar?
+4848|Mídia
+4849|Gravação de reunião
+4850|Dê um nome (opcional)
+4851|Nenhuma câmera ou microfone encontrado.
+4852|Nenhuma mídia ainda
+4853|Nenhuma transcrição ainda.
+4854|A permissão foi negada. Permita o acesso à tela, câmera ou microfone para o Orbital e tente de novo.
+4855|Gravar câmera
+4856|Gravar reunião
+4857|Gravar tela
+4858|Gravar voz
+4859|Gravação
+4860|Gravação salva em Mídia
+4861|Gravações
+4862|Salvar como nota
+4863|Salvar gravação
+4864|Salvar em Mídia
+4865|Salvo em Mídia
+4866|Salvando a gravação…
+4867|Salvando… {pct}%
+4868|Gravação de tela
+4869|Gravações de tela
+4870|Captura de tela
+4871|Capturas de tela
+4872|Capturas, gravações de tela, notas de voz, gravações e reuniões gravadas, em um só lugar.
+4873|Pesquisar mídia
+4874|Pesquisar títulos e transcrições
+4875|Parar gravação
+4876|Faça uma captura, grave sua tela, sua voz ou sua câmera, ou solte arquivos aqui. As gravações de reuniões também aparecem aqui.
+4877|O envio não terminou. Verifique sua conexão e tente de novo.
+4878|Esta mídia não existe mais
+4879|Transcrever
+4880|Transcrever de novo
+4881|Transcrição
+4882|Transcrição adicionada
+4883|A transcrição funciona em gravações de até 25 MB.
+4884|Transformar fala em texto exige um serviço de transcrição no servidor (TRANSCRIPTION_BASE_URL ou uma chave da OpenAI).
+4885|Enviar
+4886|{name} enviado
+4887|Envios
+4888|Gravação de voz
+4889|Você está gravando esta reunião
+4890|{names}: gravando esta reunião
+4891|{name} não é uma imagem, vídeo ou áudio.
+4892|{used} de {quota} usados
+4893|{used} usados

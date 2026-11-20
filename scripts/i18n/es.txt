@@ -1817,3 +1817,57 @@
 4830|Marca con estrella una página, nota, documento, conversación o proyecto para tenerlo aquí.
 4831|Equipo
 4832|Las últimas 10 cosas que abriste.
+4840|Otra aplicación está usando la cámara o el micrófono.
+4841|Volver a Multimedia
+4842|La captura no funcionó.
+4843|Se canceló la captura.
+4844|¿Eliminar «{title}»? No se puede deshacer.
+4845|Descargar
+4846|Suelta imágenes, vídeo o audio para añadirlos
+4847|Todos en la reunión verán que estás grabando. ¿Empezar a grabar?
+4848|Multimedia
+4849|Grabación de reunión
+4850|Ponle nombre (opcional)
+4851|No se encontró cámara ni micrófono.
+4852|Aún no hay contenido multimedia
+4853|Aún no hay transcripción.
+4854|Se denegó el permiso. Permite el acceso a la pantalla, la cámara o el micrófono para Orbital y vuelve a intentarlo.
+4855|Grabar cámara
+4856|Grabar reunión
+4857|Grabar pantalla
+4858|Grabar voz
+4859|Grabación
+4860|Grabación guardada en Multimedia
+4861|Grabaciones
+4862|Guardar como nota
+4863|Guardar grabación
+4864|Guardar en Multimedia
+4865|Guardado en Multimedia
+4866|Guardando la grabación…
+4867|Guardando… {pct} %
+4868|Grabación de pantalla
+4869|Grabaciones de pantalla
+4870|Captura de pantalla
+4871|Capturas de pantalla
+4872|Capturas, grabaciones de pantalla, notas de voz, grabaciones y reuniones grabadas, en un solo lugar.
+4873|Buscar multimedia
+4874|Buscar en títulos y transcripciones
+4875|Detener grabación
+4876|Haz una captura, graba tu pantalla, tu voz o tu cámara, o suelta archivos aquí. Las grabaciones de reuniones también aparecen aquí.
+4877|La subida no terminó. Revisa tu conexión y vuelve a intentarlo.
+4878|Este contenido ya no existe
+4879|Transcribir
+4880|Transcribir de nuevo
+4881|Transcripción
+4882|Transcripción añadida
+4883|La transcripción funciona con grabaciones de hasta 25 MB.
+4884|Convertir voz en texto requiere un servicio de transcripción en el servidor (TRANSCRIPTION_BASE_URL o una clave de OpenAI).
+4885|Subir
+4886|Se subió {name}
+4887|Subidas
+4888|Grabación de voz
+4889|Estás grabando esta reunión
+4890|{names}: grabando esta reunión
+4891|{name} no es una imagen, un vídeo ni un audio.
+4892|{used} de {quota} usados
+4893|{used} usados

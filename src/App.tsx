@@ -15,6 +15,7 @@ import { NotFoundPage } from "./pages/NotFound";
 import { isAppRoute } from "@shared/routes";
 
 const DashboardPage = lazy(() => import("./pages/Dashboard").then((m) => ({ default: m.DashboardPage })));
+const MediaPage = lazy(() => import("./pages/Media").then((m) => ({ default: m.MediaPage })));
 const CorePage = lazy(() => import("./pages/Core").then((m) => ({ default: m.CorePage })));
 const ResearchPage = lazy(() => import("./pages/Research").then((m) => ({ default: m.ResearchPage })));
 const KnowledgePage = lazy(() => import("./pages/Knowledge").then((m) => ({ default: m.KnowledgePage })));
@@ -98,6 +99,8 @@ function AppRoutes() {
               <Route path="/" element={<ChatPage />} />
               <Route path="/c/:id" element={<ChatPage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/media" element={<MediaPage />} />
+              <Route path="/media/:id" element={<MediaPage />} />
               <Route path="/core" element={<CorePage />} />
               <Route path="/research" element={<ResearchPage />} />
               <Route path="/research/:id" element={<ResearchPage />} />

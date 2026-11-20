@@ -85,6 +85,11 @@ export const config = {
   /** Optional Slack-compatible webhook for operational alerts (server errors, failing background jobs). */
   alertWebhook: process.env.ORBITAL_ALERT_WEBHOOK || "",
   /** Transactional email (password reset, waitlist). Resend; without a key, nothing is sent and the app says so. */
+  /** Media library: largest single file, and storage per workspace (0 = no limit). */
+  media: {
+    maxMb: Number(process.env.MEDIA_MAX_MB || 500),
+    quotaMb: Number(process.env.MEDIA_QUOTA_MB || 0),
+  },
   /** Sidebar weather via Open-Meteo (free, no key). ORBITAL_WEATHER=false turns it off. */
   weather: {
     enabled: process.env.ORBITAL_WEATHER !== "false",

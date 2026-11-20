@@ -48,3 +48,8 @@ services:
       # Optional Slack-compatible webhook for server error alerts.
       - key: ORBITAL_ALERT_WEBHOOK
         sync: false
+      # Media library storage per workspace (MB). Supabase's free database is 500 MB in total.
+      - key: MEDIA_QUOTA_MB
+        value: "250"
+      - key: MEDIA_MAX_MB
+        value: "200"

@@ -20,6 +20,7 @@ export const RETENTION = [
   { what: "email_log", sql: "DELETE FROM email_log WHERE created_at < now() - interval '180 days'" },
   { what: "auth_events", sql: "DELETE FROM auth_events WHERE created_at < now() - interval '365 days'" },
   { what: "ai_usage", sql: "DELETE FROM ai_usage WHERE created_at < now() - interval '400 days'" },
+  { what: "media (unfinished uploads)", sql: "DELETE FROM media WHERE status='uploading' AND created_at < now() - interval '1 day'" },
 ];
 
 export async function runHousekeeping() {

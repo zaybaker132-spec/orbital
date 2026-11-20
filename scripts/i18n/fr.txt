@@ -1817,3 +1817,57 @@
 4830|Mettez en favori une page, une note, un document, une conversation ou un projet pour le retrouver ici.
 4831|Équipe
 4832|Les 10 derniers éléments ouverts.
+4840|Une autre application utilise la caméra ou le micro.
+4841|Retour aux médias
+4842|La capture n'a pas fonctionné.
+4843|La capture a été annulée.
+4844|Supprimer « {title} » ? Cette action est irréversible.
+4845|Télécharger
+4846|Déposez des images, vidéos ou sons pour les ajouter
+4847|Tous les participants verront que vous enregistrez. Commencer l'enregistrement ?
+4848|Médias
+4849|Enregistrement de réunion
+4850|Nommez-le (facultatif)
+4851|Aucune caméra ni aucun micro trouvé.
+4852|Pas encore de médias
+4853|Pas encore de transcription.
+4854|L'autorisation a été refusée. Autorisez l'accès à l'écran, à la caméra ou au micro pour Orbital et réessayez.
+4855|Enregistrer la caméra
+4856|Enregistrer la réunion
+4857|Enregistrer l'écran
+4858|Enregistrer la voix
+4859|Enregistrement
+4860|Enregistrement ajouté aux médias
+4861|Enregistrements
+4862|Enregistrer comme note
+4863|Enregistrer
+4864|Ajouter aux médias
+4865|Ajouté aux médias
+4866|Enregistrement en cours…
+4867|Enregistrement… {pct} %
+4868|Enregistrement d'écran
+4869|Enregistrements d'écran
+4870|Capture d'écran
+4871|Captures d'écran
+4872|Captures, enregistrements d'écran, notes vocales, enregistrements et réunions enregistrées, au même endroit.
+4873|Rechercher des médias
+4874|Rechercher dans les titres et transcriptions
+4875|Arrêter l'enregistrement
+4876|Faites une capture, enregistrez votre écran, votre voix ou votre caméra, ou déposez des fichiers ici. Les enregistrements de réunions apparaissent aussi ici.
+4877|Le téléversement n'a pas abouti. Vérifiez votre connexion et réessayez.
+4878|Ce média n'existe plus
+4879|Transcrire
+4880|Transcrire à nouveau
+4881|Transcription
+4882|Transcription ajoutée
+4883|La transcription fonctionne pour les enregistrements jusqu'à 25 Mo.
+4884|La transcription nécessite un service de transcription sur le serveur (TRANSCRIPTION_BASE_URL ou une clé OpenAI).
+4885|Téléverser
+4886|{name} téléversé
+4887|Téléversements
+4888|Enregistrement vocal
+4889|Vous enregistrez cette réunion
+4890|{names} : enregistrement de cette réunion
+4891|{name} n'est pas une image, une vidéo ou un fichier audio.
+4892|{used} sur {quota} utilisés
+4893|{used} utilisés

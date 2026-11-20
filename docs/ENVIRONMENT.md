@@ -68,3 +68,20 @@ plus `GET /api/dashboard/tasks` for open tasks across the current workspace. Tes
   visible to you) drops off by itself. Up to 50 favorites.
 - API: `POST/GET/DELETE /api/recent`, `GET/POST /api/bookmarks`, `PATCH/DELETE /api/bookmarks/:id`,
   `PUT /api/bookmarks/order`. Tests: `server/test/trail.test.ts`.
+
+## Media
+
+**Media** in the sidebar (`g` then `v`) keeps screenshots, screen recordings, voice notes, camera recordings,
+meeting recordings and uploaded images, video and audio, shared within the workspace like notes.
+
+- **Screenshot:** pick a screen or window; Orbital saves a still. **Record screen** (with your microphone),
+  **Record voice**, **Record camera**: a bar shows the time with Stop and Cancel; then watch or listen back, name it,
+  and save or discard. **Upload** or drag files in.
+- **Meetings:** the ⏺ button records the meeting as you see it (everyone's video and names, a shared screen
+  large, all the sound mixed). Everyone in the meeting sees who is recording. Saved to Media with the meeting code.
+- Filter by kind, search titles and transcripts, play with seeking, rename, download, delete (whoever added it,
+  or an admin). Voice and short recordings can be **transcribed** when the server has a transcription service,
+  and the transcript saved as a note.
+- Files are stored in the database in 1 MB pieces and streamed with HTTP ranges. Limits: `MEDIA_MAX_MB` per file
+  (default 500), `MEDIA_QUOTA_MB` per workspace (default unlimited; set it on small hosted databases). Only images
+  (PNG, JPEG, WebP, GIF), video (WebM, MP4, MOV) and audio (WebM, MP3, M4A, WAV, OGG, FLAC) are accepted.
