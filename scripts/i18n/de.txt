@@ -1871,3 +1871,31 @@
 4891|{name} ist kein Bild, Video oder Audio.
 4892|{used} von {quota} belegt
 4893|{used} belegt
+4894|Bei der Anmeldung
+4895|Wiederkehrende Erinnerung löschen
+4896|Wiederholt sich nicht
+4897|Jeden Tag
+4898|Jeden Monat
+4899|Jede Woche
+4900|Jeden Werktag
+4901|Jedes Jahr
+4902|Jeden {days}
+4903|Alle {n} Tage
+4904|Alle {n} Monate
+4905|Alle {n} Wochen
+4906|Alle {n} Wochen: {days}
+4907|Alle {n} Jahre
+4908|Im Hintergrund
+4909|Es startet unauffällig im Hintergrund, damit Erinnerungen funktionieren, sobald dein Computer an ist.
+4910|Orbital weiterlaufen lassen, wenn das Fenster geschlossen ist
+4911|Nächste: {when}
+4912|Orbital bei der Anmeldung am Computer öffnen
+4913|Orbital-Erinnerung
+4914|Orbital bleibt in der Menüleiste, damit dich Erinnerungen weiter erreichen. Beende es über das Symbol in der Menüleiste.
+4915|Orbital bleibt im Infobereich, damit dich Erinnerungen weiter erreichen. Beende es über sein Symbol dort.
+4916|Erinnere mich an … (auf Englisch, z. B. „call Sam Friday at 3“ oder „pay rent every month on the 1st“)
+4917|Erinnerung gesetzt: {title} · {when}
+4918|Wiederholen
+4919|Wiederholt sich
+4920|Nicht mehr wiederholen
+4921|bis {date}

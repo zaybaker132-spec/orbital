@@ -19,6 +19,9 @@ Schema lives in ordered SQL files in `server/db/migrations/`, applied at start-u
 | 010_production.sql | ai_usage, auth_events, password_resets, email_log; waitlist consent/confirm/unsubscribe; job backoff |
 | 011_fk_indexes.sql | an index on each of the 48 foreign-key columns that had none |
 | 012_constraints.sql | CHECK constraints on job/email status, token counts, normalized emails (NOT VALID) |
+| 013_recent_bookmarks.sql | recently viewed trail and favorites |
+| 014_media.sql | media library and its 1 MiB file pieces |
+| 015_repeating_reminders.sql | reminders: `repeat` rule, `time_zone`, `anchor_day`, `series_id` (nullable columns, no rewrite) |
 
 **Rules for migrations.** Each file runs once, in a transaction, recorded in `schema_migrations`. They are
 additive: new tables, columns with defaults, indexes, and constraints added `NOT VALID` so existing rows are

@@ -34,7 +34,7 @@ const PAGE_NAMES: Record<string, string> = { "/settings": "Settings", "/search":
 /** A page's name for its favorite: the sidebar's label, or the page's own name. */
 export function pageTitle(pathname: string, search: string) {
   const nav = NAV.find((n) => n.to === pathname);
-  const base = nav ? tx(nav.label) : PAGE_NAMES[pathname] ? tx(PAGE_NAMES[pathname]) : document.title.replace(/\s*[·|-]\s*Orbital$/, "") || "Orbital";
+  const base = nav ? tx(nav.label) : PAGE_NAMES[pathname] ? tx(PAGE_NAMES[pathname]) : document.title.replace(/^\(\d+\)\s+/, "").replace(/\s*[·|-]\s*Orbital$/, "") || "Orbital";
   const q = new URLSearchParams(search).get("q");
   return (q ? `${base}: ${q}` : base).slice(0, 120);
 }

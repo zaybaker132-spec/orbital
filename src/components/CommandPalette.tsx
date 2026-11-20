@@ -10,6 +10,8 @@ import { modKey } from "@/lib/format";
 import { toastError } from "@/state/ui";
 import { cx } from "./ui";
 import { tx } from "@/i18n";
+import { toast } from "@/state/ui";
+import { createReminder, describeReminder, isReminderRequest, readReminder } from "@/lib/reminders";
 
 interface Item { id: string; label: string; hint?: string; group: string; icon: any; run: () => void | Promise<void>; keywords?: string }
 
@@ -104,7 +106,15 @@ export function CommandPalette() {
       return { id: `${r.type}-${r.id}`, label: r.title, hint: r.snippet && r.type !== "document" ? String(r.snippet).slice(0, 40) : undefined, group: meta.group, icon: meta.icon, run: go(meta.to(r.id)) };
     });
     const acts = actions.filter((a) => !needle || a.id === "search-all" || a.id === "research" || a.id === "note" || a.id === "learn" || a.id === "lab" || a.id === "hypothesis" || `${a.label} ${tx(a.label)} ${a.keywords ?? ""}`.toLowerCase().includes(needle));
-    if (needle) return [...found, ...acts.filter((a) => a.id === "search-all"), ...acts.filter((a) => a.id !== "search-all")];
+    // "remind me to call Sam friday at 3" → set it right here.
+    const rem = isReminderRequest(q) ? readReminder(q) : null;
+    const remind: Item[] = rem ? [{ id: "remind-now", label: `${tx("Set reminder")}: ${rem.title}`, hint: describeReminder(rem.when!, rem.repeat), group: "Actions", icon: Bell,
+      run: async () => {
+        close();
+        try { await createReminder({ title: rem.title, when: rem.when!, repeat: rem.repeat }); toast(tx("Reminder set for {v0}", { v0: describeReminder(rem.when!, rem.repeat) }), { action: { label: "Reminders", to: "/reminders" } }); }
+        catch (e) { toastError(e); }
+      } }] : [];
+    if (needle) return [...remind, ...found, ...acts.filter((a) => a.id === "search-all"), ...acts.filter((a) => a.id !== "search-all")];
     // Nothing typed yet: the last things you opened come first.
     const RECENT_ICON = { document: StickyNote, paper: FileText, conversation: MessageSquare, project: FolderKanban, research: Compass };
     const recentItems: Item[] = (recent ?? []).map((r) => ({ id: `recent-${r.kind}-${r.ref}`, label: r.title || "Untitled", group: "Recently viewed", icon: RECENT_ICON[r.kind as keyof typeof RECENT_ICON] ?? StickyNote, run: go(itemPath(r)) }));

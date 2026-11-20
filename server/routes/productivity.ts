@@ -14,6 +14,7 @@ import { getLLM, describeAiError } from "../ai/provider.js";
 import { extractMemories } from "../engines/memory.js";
 import { contributionCalendar } from "../engines/calendar.js";
 import { transcribeAudio } from "../lib/transcribe.js";
+import { REPEAT_FREQS, firstOccurrence, validTimeZone, wallTime, type RepeatRule } from "../../shared/recurrence.js";
 
 /** Personal productivity: reminders, nudges and focus sessions. Each person sees only their own. */
 export const productivity = Router();
@@ -23,13 +24,34 @@ productivity.get("/reminders", ah(async (req, res) => {
   res.json(await listReminders(ws(req), actor(req)));
 }));
 
+const RepeatInput = z.object({
+  freq: z.enum(REPEAT_FREQS),
+  interval: z.number().int().min(1).max(99).optional(),
+  days: z.array(z.number().int().min(0).max(6)).max(7).optional(),
+  until: z.iso.date().optional(),
+}).strict();
+const TimeZone = z.string().max(64).refine(validTimeZone, "Unknown time zone");
+
 const ReminderInput = z.object({
   title: z.string().trim().max(300).optional(),
   note: z.string().max(2000).default(""),
   dueAt: z.iso.datetime({ offset: true }),
   itemType: z.enum(ITEM_TYPES).nullish(),
   itemId: z.uuid().nullish(),
+  /** Repeat on a schedule, in `timeZone` (the person's own clock). */
+  repeat: RepeatInput.nullish(),
+  timeZone: TimeZone.optional(),
 });
+
+/** Normalise a rule (sorted unique days; a weekly rule without days repeats on the start day) and where the series starts. */
+function seriesStart(repeat: RepeatRule, dueAt: string, tz: string) {
+  const rule: RepeatRule = { freq: repeat.freq };
+  if (repeat.interval && repeat.interval > 1 && repeat.freq !== "weekdays") rule.interval = repeat.interval;
+  if (repeat.freq === "weekly") rule.days = repeat.days?.length ? [...new Set(repeat.days)].sort() : [wallTime(Date.parse(dueAt), tz).dow];
+  if (repeat.until) rule.until = repeat.until;
+  const start = firstOccurrence(rule, Date.parse(dueAt), tz);
+  return { rule, start: new Date(start).toISOString(), anchorDay: wallTime(start, tz).d };
+}
 
 productivity.post("/reminders", ah(async (req, res) => {
   const b = parse(ReminderInput, req.body);
@@ -41,11 +63,17 @@ productivity.post("/reminders", ah(async (req, res) => {
     if (!title) title = t;
   }
   if (!title) throw new HttpError(400, "Give the reminder a title", "invalid_input");
+  if (b.repeat && !b.timeZone) throw new HttpError(400, "A repeating reminder needs your time zone", "invalid_input");
+  const series = b.repeat ? seriesStart(b.repeat, b.dueAt, b.timeZone!) : null;
+  if (series?.rule.until && series.rule.until < new Date(series.start).toISOString().slice(0, 10)) throw new HttpError(400, "The repeat ends before it starts", "invalid_input");
+  const dueAt = series?.start ?? b.dueAt;
   const r = await db().query<any>(
-    "INSERT INTO reminders(workspace_id, user_id, title, note, due_at, item_type, item_id) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *",
-    [ws(req), actor(req), title.slice(0, 300), b.note, b.dueAt, b.itemType ?? null, b.itemId ?? null]);
+    `INSERT INTO reminders(workspace_id, user_id, title, note, due_at, item_type, item_id, repeat, time_zone, anchor_day)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+    [ws(req), actor(req), title.slice(0, 300), b.note, dueAt, b.itemType ?? null, b.itemId ?? null,
+      series ? JSON.stringify(series.rule) : null, b.timeZone ?? null, series?.anchorDay ?? null]);
   // A reminder set in the past (or for "now") fires on the next tick; run one immediately.
-  if (Date.parse(b.dueAt) <= Date.now()) await tickReminders();
+  if (Date.parse(dueAt) <= Date.now()) await tickReminders();
   res.status(201).json(r.rows[0]);
 }));
 
@@ -55,7 +83,20 @@ productivity.patch("/reminders/:id", ah(async (req, res) => {
     note: z.string().max(2000).optional(),
     dueAt: z.iso.datetime({ offset: true }).optional(),
     status: z.enum(["done", "dismissed"]).optional(),
+    /** A new schedule, or null to stop repeating (the next occurrence stays as a one-off). */
+    repeat: RepeatInput.nullable().optional(),
+    timeZone: TimeZone.optional(),
   }), req.body);
+  if (b.repeat !== undefined) {
+    const cur = (await db().query<any>("SELECT due_at, time_zone, status FROM reminders WHERE id=$1 AND workspace_id=$2 AND user_id=$3", [idParam(req), ws(req), actor(req)])).rows[0];
+    if (!cur) throw notFound("Reminder");
+    const tz = b.timeZone ?? cur.time_zone;
+    if (b.repeat && !tz) throw new HttpError(400, "A repeating reminder needs your time zone", "invalid_input");
+    const series = b.repeat ? seriesStart(b.repeat, b.dueAt ?? new Date(cur.due_at).toISOString(), tz) : null;
+    await db().query("UPDATE reminders SET repeat=$4, time_zone=COALESCE($5,time_zone), anchor_day=$6, due_at=COALESCE($7,due_at), updated_at=now() WHERE id=$1 AND workspace_id=$2 AND user_id=$3",
+      [idParam(req), ws(req), actor(req), series ? JSON.stringify(series.rule) : null, tz ?? null, series?.anchorDay ?? null, series && cur.status === "scheduled" ? series.start : null]);
+    if (series && cur.status === "scheduled") b.dueAt = undefined;
+  }
   // Rescheduling (snooze) puts a fired reminder back on the schedule.
   const r = await db().query<any>(
     `UPDATE reminders SET title=COALESCE($4,title), note=COALESCE($5,note), due_at=COALESCE($6,due_at),

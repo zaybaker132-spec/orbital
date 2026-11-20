@@ -91,9 +91,18 @@ Files are checked by their actual bytes, not just their extension, and parsed on
 ## Smart reminders
 
 **Reminders you set:**
-- Set them from the Reminders page, or with the bell on any task, note, project or opportunity. Choose "In 1 hour", "This evening", "Tomorrow morning", "Next week", or any time.
-- When a reminder is due, it appears in Orbital straight away. If you allowed notifications and Orbital is in the background, you also get a system notification. Only you see your reminders, even in a shared workspace.
-- From there you can snooze it, push it to tomorrow, or mark it done.
+- Type them the way you'd say them, on the Reminders page, in chat, or in `⌘K`:
+  - "call Sam friday at 3", "stretch in 20 minutes", "dentist March 5 at 2pm", "lunch with Jo on the 28th at noon"
+  - "pay rent every month on the 1st", "standup every weekday at 9:30", "gym every mon, wed and fri at 6:30am until dec 31", "review every other friday"
+  - The Reminders page shows what it understood (title, time, repeat) before you save. Anything it doesn't read as a time stays in the title.
+  - In chat (typed or spoken), a message starting with "remind me…" or "set a reminder…" is set straight away, with no AI needed. In `⌘K`, the first result becomes "Set reminder: …".
+  - Typed reminders are read in English for now; the rest of Orbital follows your language.
+- Or use the bell on any task, note, project or opportunity, or the quick choices: "In 1 hour", "This evening", "Tomorrow morning", "Next week", or any time.
+- **Repeating reminders:** every day, every weekday, chosen days of the week, every N days/weeks/months/years, with an optional end date. They follow your own clock (9:00 stays 9:00 across daylight-saving changes; "the 31st" falls on the last day of shorter months). Each time one comes due, it appears as its own reminder to complete or snooze, and the series moves to its next time. If Orbital was off, you get one reminder, not one for every missed day. Hover a repeating reminder to stop repeating it.
+- When a reminder is due, it appears in Orbital straight away, the Reminders item in the sidebar shows a count, and the Dock or taskbar icon (desktop) or the browser tab shows how many are due.
+- **Desktop app:** closing the window keeps Orbital running in the menu bar (Mac) or system tray (Windows, Linux), so reminders still arrive as system notifications. Click one to open it. The menu-bar icon shows how many are due and has Open, New reminder and Quit. In **Settings → Desktop** you can turn this off and choose to open Orbital when you log in (Mac and Windows), so reminders work as soon as your computer is on.
+- In a browser, allow notifications for system notifications while the tab is in the background.
+- From there you can snooze it, push it to tomorrow, or mark it done. Only you see your reminders, even in a shared workspace.
 
 **"Orbital noticed"** is worked out from your real data each time you open the page. Nothing is invented, and each item links to its source:
 - tasks that are overdue, or due today or tomorrow

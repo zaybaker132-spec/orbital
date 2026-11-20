@@ -1871,3 +1871,31 @@
 4891|{name} não é uma imagem, vídeo ou áudio.
 4892|{used} de {quota} usados
 4893|{used} usados
+4894|Ao iniciar sessão
+4895|Excluir lembrete recorrente
+4896|Não se repete
+4897|Todos os dias
+4898|Todos os meses
+4899|Todas as semanas
+4900|Todos os dias úteis
+4901|Todos os anos
+4902|Semanalmente: {days}
+4903|A cada {n} dias
+4904|A cada {n} meses
+4905|A cada {n} semanas
+4906|A cada {n} semanas: {days}
+4907|A cada {n} anos
+4908|Em segundo plano
+4909|Ele inicia discretamente em segundo plano, então os lembretes funcionam desde que o computador é ligado.
+4910|Manter o Orbital aberto ao fechar a janela
+4911|Próximo: {when}
+4912|Abrir o Orbital ao iniciar sessão no computador
+4913|Lembrete do Orbital
+4914|O Orbital fica na barra de menus para que os lembretes continuem chegando. Encerre-o pelo ícone na barra de menus.
+4915|O Orbital fica na bandeja do sistema para que os lembretes continuem chegando. Encerre-o pelo ícone na bandeja.
+4916|Lembre-me de… (em inglês, ex.: “call Sam Friday at 3” ou “pay rent every month on the 1st”)
+4917|Lembrete criado: {title} · {when}
+4918|Repetir
+4919|Recorrente
+4920|Parar de repetir
+4921|até {date}

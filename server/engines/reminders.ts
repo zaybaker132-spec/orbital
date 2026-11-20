@@ -1,6 +1,7 @@
 import { db } from "../db/client.js";
 import { emit } from "../lib/events.js";
 import { log } from "../lib/log.js";
+import { nextOccurrence, type RepeatRule } from "../../shared/recurrence.js";
 
 /**
  * Smart reminders.
@@ -53,11 +54,34 @@ export async function listReminders(workspaceId: string, userId: string) {
   return r.rows.map(({ task_project_id, ...x }) => ({ ...x, link: itemLink(x.item_type, x.item_id, { projectId: task_project_id }) }));
 }
 
+/**
+ * A repeating series came due: add a fired copy for the person to act on and move the series to its
+ * next occurrence after now (occurrences missed while Orbital was off fire once, not once each).
+ * The conditional update claims the occurrence, so two servers never both fire it.
+ */
+async function advanceSeries(s: any): Promise<any | null> {
+  const now = Date.now();
+  let next: number | null = null;
+  try { next = nextOccurrence(s.repeat as RepeatRule, new Date(s.due_at).getTime(), now, s.time_zone || "UTC", s.anchor_day ?? undefined); }
+  catch (e) { log.error("reminder repeat failed", { err: e, id: s.id }); }
+  const claimed = await db().query(
+    `UPDATE reminders SET due_at=COALESCE($3, due_at), status=CASE WHEN $3::timestamptz IS NULL THEN 'done' ELSE 'scheduled' END, updated_at=now()
+     WHERE id=$1 AND due_at=$2 AND status='scheduled' RETURNING id`, [s.id, s.due_at, next ? new Date(next).toISOString() : null]);
+  if (!claimed.rows[0]) return null;
+  const copy = await db().query<any>(
+    `INSERT INTO reminders(workspace_id, user_id, title, note, due_at, item_type, item_id, status, fired_at, series_id)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,'fired',now(),$8) RETURNING id, workspace_id, user_id, title, note, item_type, item_id, due_at`,
+    [s.workspace_id, s.user_id, s.title, s.note, s.due_at, s.item_type, s.item_id, s.id]);
+  return copy.rows[0];
+}
+
 /** Fire every reminder whose time has come and tell its owner's open windows. */
 export async function tickReminders() {
   const due = await db().query<any>(
-    `UPDATE reminders SET status='fired', fired_at=now(), updated_at=now() WHERE status='scheduled' AND due_at <= now()
+    `UPDATE reminders SET status='fired', fired_at=now(), updated_at=now() WHERE status='scheduled' AND due_at <= now() AND repeat IS NULL
      RETURNING id, workspace_id, user_id, title, note, item_type, item_id, due_at`);
+  const series = await db().query<any>("SELECT * FROM reminders WHERE status='scheduled' AND due_at <= now() AND repeat IS NOT NULL ORDER BY due_at LIMIT 500");
+  for (const s of series.rows) { const c = await advanceSeries(s); if (c) due.rows.push(c); }
   for (const r of due.rows) {
     let projectId: string | null = null;
     if (r.item_type === "task") projectId = (await db().query<any>("SELECT project_id FROM tasks WHERE id=$1", [r.item_id])).rows[0]?.project_id ?? null;

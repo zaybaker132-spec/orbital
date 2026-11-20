@@ -85,7 +85,12 @@ function handle(e: any) {
       invalidate("/reminders");
       toast(t("Reminder: {title}", { title: e.title }), { sticky: true, action: { label: e.link ? "Open" : "View", to: e.link ?? "/reminders" } });
       try {
-        if (!useQuiet.getState().on && "Notification" in window && Notification.permission === "granted" && document.visibilityState !== "visible") {
+        const desk = window.orbitalDesktop;
+        // Desktop app: it shows a native notification unless Orbital's window is open and in front
+        // (a hidden window can't tell from in here that it's hidden).
+        if (!useQuiet.getState().on && desk?.notify) {
+          void desk.notify({ title: t("Orbital reminder"), body: e.note ? `${e.title}\n${e.note}` : e.title, link: e.link ?? "/reminders" });
+        } else if (!useQuiet.getState().on && !desk && "Notification" in window && Notification.permission === "granted" && document.visibilityState !== "visible") {
           const n = new Notification("Orbital reminder", { body: e.note ? `${e.title}\n${e.note}` : e.title, tag: `reminder-${e.id}` });
           n.onclick = () => { window.focus(); location.assign(e.link ?? "/reminders"); };
         }

@@ -1,7 +1,7 @@
 // Orbital desktop shell (Electron).
 // Runs the real Orbital server in a Node utility process (embedded PostgreSQL in the user's
 // app-data folder, bound to 127.0.0.1) and shows it in a hardened window.
-const { app, BrowserWindow, Menu, clipboard, desktopCapturer, dialog, ipcMain, nativeTheme, safeStorage, shell, utilityProcess } = require("electron");
+const { app, BrowserWindow, Menu, Notification, Tray, clipboard, desktopCapturer, dialog, ipcMain, nativeImage, nativeTheme, safeStorage, shell, utilityProcess } = require("electron");
 const fs = require("node:fs");
 const net = require("node:net");
 const path = require("node:path");
@@ -20,6 +20,7 @@ const dataDir = path.join(userData, "data");
 const logDir = path.join(userData, "logs");
 const keyFile = path.join(userData, "ai-key.bin");
 const stateFile = path.join(userData, "window-state.json");
+const settingsFile = path.join(userData, "desktop-settings.json");
 fs.mkdirSync(logDir, { recursive: true });
 
 const appRoot = path.join(__dirname, "..");
@@ -30,6 +31,29 @@ let win = null;
 let server = null;
 let port = 0;
 let quitting = false;
+let tray = null;
+let dueCount = 0;
+
+// ── Desktop settings: keep running in the background (so reminders arrive), open at login ──
+const DEFAULT_SETTINGS = { background: true, openAtLogin: false, toldAboutBackground: false };
+function readSettings() {
+  try { return { ...DEFAULT_SETTINGS, ...JSON.parse(fs.readFileSync(settingsFile, "utf8")) }; } catch { return { ...DEFAULT_SETTINGS }; }
+}
+let settings = readSettings();
+function saveSettings(patch) {
+  settings = { ...settings, ...patch };
+  try { fs.writeFileSync(settingsFile, JSON.stringify(settings)); } catch { /* ignore */ }
+}
+const loginSupported = process.platform === "darwin" || process.platform === "win32";
+function applyLoginItem() {
+  if (!loginSupported || !app.isPackaged) return;
+  app.setLoginItemSettings({ openAtLogin: !!settings.openAtLogin, args: ["--hidden"] });
+}
+/** Started by the computer at login: stay in the menu bar / tray instead of opening a window. */
+function startedHidden() {
+  if (process.argv.includes("--hidden")) return true;
+  try { return isMac && app.getLoginItemSettings().wasOpenedAtLogin; } catch { return false; }
+}
 
 // ── API key: encrypted with the OS keychain (safeStorage), never sent over HTTP ──
 function readApiKey() {
@@ -119,6 +143,16 @@ function saveWindowState() {
 
 const origin = () => `http://127.0.0.1:${port}`;
 
+let hiddenStart = false;
+function showWindow(pathname) {
+  if (!win) createWindow();
+  hiddenStart = false;
+  if (win.isMinimized()) win.restore();
+  win.show();
+  win.focus();
+  if (typeof pathname === "string" && pathname.startsWith("/") && !pathname.startsWith("//")) win.webContents.send("orbital:navigate", pathname);
+}
+
 function createWindow() {
   const st = loadWindowState();
   win = new BrowserWindow({
@@ -136,8 +170,19 @@ function createWindow() {
     },
   });
   if (st.maximized) win.maximize();
-  win.once("ready-to-show", () => win.show());
-  win.on("close", saveWindowState);
+  win.once("ready-to-show", () => { if (!hiddenStart) win.show(); });
+  win.on("close", (e) => {
+    saveWindowState();
+    // Closing the window keeps Orbital running in the menu bar / tray, so reminders still arrive.
+    if (!quitting && settings.background) {
+      e.preventDefault();
+      win.hide();
+      if (!settings.toldAboutBackground && Notification.isSupported()) {
+        saveSettings({ toldAboutBackground: true });
+        new Notification({ title: "Orbital is still running", body: `Reminders will still reach you. Quit from the ${isMac ? "menu bar" : "tray"} icon, or turn this off in Settings.`, silent: true }).show();
+      }
+    }
+  });
   win.on("closed", () => { win = null; });
 
   // Only the local Orbital origin loads in the window; everything else opens in the browser.
@@ -209,6 +254,73 @@ ipcMain.handle("orbital:set-api-key", async (e, key) => {
 });
 ipcMain.handle("orbital:open-data-folder", () => shell.openPath(userData));
 
+const fromApp = (e) => typeof e.senderFrame?.url === "string" && e.senderFrame.url.startsWith(origin());
+const clip = (v, n) => (typeof v === "string" ? v.slice(0, n) : "");
+// A system notification (the web Notification API isn't allowed in the window); clicking it opens the page.
+ipcMain.handle("orbital:notify", (e, n) => {
+  if (!fromApp(e) || !n || !Notification.isSupported()) return false;
+  // You're looking at Orbital: the in-app toast is enough.
+  if (win && win.isVisible() && !win.isMinimized() && win.isFocused()) return false;
+  const note = new Notification({ title: clip(n.title, 120) || "Orbital", body: clip(n.body, 400), silent: false });
+  const link = clip(n.link, 300);
+  note.on("click", () => showWindow(link.startsWith("/") ? link : "/reminders"));
+  note.show();
+  return true;
+});
+// Reminders due: the dock / taskbar badge, and the count beside the menu bar icon.
+ipcMain.handle("orbital:set-badge", (e, n) => {
+  if (!fromApp(e)) return;
+  dueCount = Math.max(0, Math.min(999, Math.floor(Number(n) || 0)));
+  try { app.setBadgeCount(dueCount); } catch { /* not supported here */ }
+  if (process.platform === "win32" && win) {
+    win.setOverlayIcon(dueCount ? nativeImage.createFromPath(path.join(__dirname, "tray", "badge.png")) : null, dueCount ? `${dueCount} reminders due` : "");
+  }
+  updateTray();
+});
+ipcMain.handle("orbital:get-settings", () => ({ background: !!settings.background, openAtLogin: !!settings.openAtLogin, loginSupported }));
+ipcMain.handle("orbital:set-settings", (e, patch) => {
+  if (!fromApp(e) || !patch || typeof patch !== "object") throw new Error("Not allowed");
+  const next = {};
+  if (typeof patch.background === "boolean") next.background = patch.background;
+  if (typeof patch.openAtLogin === "boolean") next.openAtLogin = patch.openAtLogin;
+  saveSettings(next);
+  applyLoginItem();
+  updateTray();
+  return { background: !!settings.background, openAtLogin: !!settings.openAtLogin, loginSupported };
+});
+
+// ── Menu bar (macOS) / system tray (Windows, Linux) ──
+function trayIcon() {
+  if (isMac) { const i = nativeImage.createFromPath(path.join(__dirname, "tray", "trayTemplate.png")); i.setTemplateImage(true); return i; }
+  const file = process.platform === "win32" && !nativeTheme.shouldUseDarkColorsForSystemUI ? "tray-dark.png" : "tray.png";
+  return nativeImage.createFromPath(path.join(__dirname, "tray", file)).resize({ width: 16, height: 16 });
+}
+function updateTray() {
+  if (!tray) return;
+  const due = dueCount ? `${dueCount} reminder${dueCount === 1 ? "" : "s"} due` : "No reminders due";
+  tray.setToolTip(`Orbital · ${due}`);
+  if (isMac) tray.setTitle(dueCount ? String(dueCount) : "");
+  tray.setContextMenu(Menu.buildFromTemplate([
+    { label: "Open Orbital", click: () => showWindow() },
+    { label: due, enabled: dueCount > 0, click: () => showWindow("/reminders") },
+    { label: "New Reminder…", click: () => showWindow("/reminders") },
+    { type: "separator" },
+    { label: "Keep Running When Window Is Closed", type: "checkbox", checked: !!settings.background, click: (i) => { saveSettings({ background: i.checked }); updateTray(); } },
+    ...(loginSupported && app.isPackaged ? [{ label: "Open at Login", type: "checkbox", checked: !!settings.openAtLogin, click: (i) => { saveSettings({ openAtLogin: i.checked }); applyLoginItem(); updateTray(); } }] : []),
+    { type: "separator" },
+    { label: "Quit Orbital", click: () => app.quit() },
+  ]));
+}
+function createTray() {
+  try {
+    tray = new Tray(trayIcon());
+    // Windows and Linux: a click opens Orbital (the menu is on right-click). macOS shows the menu.
+    if (!isMac) tray.on("click", () => showWindow());
+    nativeTheme.on("updated", () => tray?.setImage(trayIcon()));
+    updateTray();
+  } catch { tray = null; /* no tray on this desktop */ }
+}
+
 function buildMenu() {
   const template = [
     ...(isMac ? [{ role: "appMenu" }] : []),
@@ -249,12 +361,14 @@ function checkForUpdates() {
   } catch { /* updater unavailable */ }
 }
 
-app.on("second-instance", () => {
-  if (win) { if (win.isMinimized()) win.restore(); win.focus(); }
-});
+app.on("second-instance", () => showWindow());
+
+if (process.platform === "win32") app.setAppUserModelId("app.orbital.desktop");
 
 app.whenReady().then(async () => {
   buildMenu();
+  hiddenStart = startedHidden();
+  applyLoginItem();
   try {
     await startServer();
   } catch (e) {
@@ -263,10 +377,12 @@ app.whenReady().then(async () => {
     return;
   }
   createWindow();
+  createTray();
   checkForUpdates();
-  app.on("activate", () => { if (!win) createWindow(); });
+  app.on("activate", () => showWindow());
 });
 
+// With "keep running" off, closing the window quits (on macOS the app stays in the Dock, as Mac apps do).
 app.on("window-all-closed", () => { if (!isMac) app.quit(); });
 app.on("before-quit", async (e) => {
   if (quitting) return;

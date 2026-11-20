@@ -55,6 +55,15 @@ Unsigned apps work, but macOS Gatekeeper and Windows SmartScreen warn users. Add
 
 `electron-updater` is wired in and checks for updates on launch in packaged builds. It activates once you set `publish` in `electron-builder.yml` to your GitHub repository (owner/repo); releases built by the workflow then become the update feed (`latest*.yml` files are included). Set `ORBITAL_DISABLE_UPDATES=1` to turn it off.
 
+## Running in the background
+
+- Closing the window hides it; Orbital keeps running in the menu bar (macOS) or system tray (Windows, Linux) so reminders still arrive. The first time, a notification says so.
+- Reminders arrive as native notifications (`orbital:notify`) unless Orbital's window is open and in front; clicking one opens the page it points at.
+- The Dock/taskbar badge and the menu-bar count show how many reminders are due (`orbital:set-badge`; Windows uses a taskbar overlay icon).
+- Tray menu: Open Orbital, the number due, New Reminder, Keep Running When Window Is Closed, Open at Login, Quit.
+- **Settings → Desktop** has the same two switches. They're stored in `desktop-settings.json` in the app-data folder. Open at Login (macOS, Windows, packaged builds) starts Orbital hidden in the menu bar or tray.
+- Quit with ⌘Q, File → Quit or the tray menu.
+
 ## How the desktop app is secured
 
 - The server binds to `127.0.0.1` on a random free port; it isn't reachable from the network.

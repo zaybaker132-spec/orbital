@@ -1,6 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { IntroScreen, type IntroKind } from "./components/IntroScreen";
 import { EnvironmentEffects, resolveEnvironment } from "./state/environment";
+import { useResource } from "./lib/resource";
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { useApp } from "./state/app";
@@ -186,8 +187,27 @@ export function App() {
   return (
     <>
       <EnvironmentEffects />
+      {user && <ReminderSignals />}
       <AppRoutes />
       {intro && <IntroScreen key={intro.kind + intro.at} kind={intro.kind} name={user?.displayName} leaving={intro.leaving} onGone={done} />}
     </>
   );
+}
+
+/**
+ * Reminders that are due show as a badge on the Dock / taskbar icon (desktop) or a count in the tab
+ * title (browser), and a notification or tray click opens the page it points at.
+ */
+function ReminderSignals() {
+  const navigate = useNavigate();
+  const { data } = useResource<any[]>("/reminders");
+  const due = data?.filter((r) => r.status === "fired").length ?? 0;
+  useEffect(() => {
+    const desk = window.orbitalDesktop;
+    if (desk?.setBadge) { void desk.setBadge(due).catch(() => {}); return; }
+    const base = document.title.replace(/^\(\d+\)\s+/, "");
+    document.title = due ? `(${due}) ${base}` : base;
+  }, [due]);
+  useEffect(() => window.orbitalDesktop?.onNavigate?.((p) => navigate(p)), [navigate]);
+  return null;
 }

@@ -1871,3 +1871,31 @@
 4891|{name} no es una imagen, un vídeo ni un audio.
 4892|{used} de {quota} usados
 4893|{used} usados
+4894|Al iniciar sesión
+4895|Eliminar recordatorio repetido
+4896|No se repite
+4897|Cada día
+4898|Cada mes
+4899|Cada semana
+4900|Cada día laborable
+4901|Cada año
+4902|Cada {days}
+4903|Cada {n} días
+4904|Cada {n} meses
+4905|Cada {n} semanas
+4906|Cada {n} semanas: {days}
+4907|Cada {n} años
+4908|En segundo plano
+4909|Se inicia discretamente en segundo plano, así los recordatorios funcionan desde que enciendes el ordenador.
+4910|Mantener Orbital abierto al cerrar la ventana
+4911|Próximo: {when}
+4912|Abrir Orbital al iniciar sesión en el ordenador
+4913|Recordatorio de Orbital
+4914|Orbital se queda en la barra de menús para que los recordatorios te sigan llegando. Ciérralo desde su icono en la barra de menús.
+4915|Orbital se queda en la bandeja del sistema para que los recordatorios te sigan llegando. Ciérralo desde su icono en la bandeja.
+4916|Recuérdame… (en inglés, p. ej. “call Sam Friday at 3” o “pay rent every month on the 1st”)
+4917|Recordatorio creado: {title} · {when}
+4918|Repetir
+4919|Se repite
+4920|Dejar de repetir
+4921|hasta el {date}

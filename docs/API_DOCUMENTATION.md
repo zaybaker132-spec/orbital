@@ -201,9 +201,9 @@ Prefix: `/api`
 
 | Method | Path | Role | Notes |
 |---|---|---|---|
-| GET | /reminders |  |  |
-| POST | /reminders |  |  |
-| PATCH | /reminders/:id |  |  |
+| GET | /reminders |  | Your reminders: scheduled, fired, and finished this week. Repeating series have `repeat` and `time_zone`; the reminders they create have `series_id`. |
+| POST | /reminders |  | `{ title?, note?, dueAt, itemType?, itemId?, repeat?: { freq: daily\|weekdays\|weekly\|monthly\|yearly, interval?: 1–99, days?: [0–6], until?: YYYY-MM-DD }, timeZone? }`. `timeZone` (IANA) is required with `repeat`. |
+| PATCH | /reminders/:id |  | `{ title?, note?, dueAt?, status?: done\|dismissed, repeat?: rule\|null, timeZone? }`. `repeat: null` stops a series (its next time stays as a one-off). |
 | DELETE | /reminders/:id |  |  |
 | GET | /nudges |  |  |
 | POST | /nudges/dismiss |  |  |

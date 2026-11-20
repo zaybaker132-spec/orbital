@@ -4,10 +4,10 @@ Orbital for Mac, Windows and Linux. Everything stays on your computer in Orbital
 
 | Your computer | File |
 |---|---|
-| Mac with Apple chip (M1–M4) | `Orbital-0.3.5-arm64.dmg` |
-| Mac with Intel chip | `Orbital-0.3.5.dmg` |
-| Windows | `Orbital-Setup-0.3.5.exe` |
-| Linux | `Orbital-0.3.5.AppImage` or `orbital_0.3.5_amd64.deb` |
+| Mac with Apple chip (M1–M4) | `Orbital-0.3.6-arm64.dmg` |
+| Mac with Intel chip | `Orbital-0.3.6.dmg` |
+| Windows | `Orbital-Setup-0.3.6.exe` |
+| Linux | `Orbital-0.3.6.AppImage` or `orbital_0.3.6_amd64.deb` |
 
 Not sure which Mac you have? Apple menu → About This Mac → "Chip".
 
@@ -25,7 +25,13 @@ Orbital works without an AI key: notes, Papers, projects, search, reminders, foc
 questions are answered from your own knowledge. For AI chat, research and writing help, add your own key in
 **Settings → AI & research**. It stays on your computer.
 
-## What's new in 0.3.5
+## What's new in 0.3.6
+
+- **Reminders keep working with the window closed:** Orbital stays in the menu bar (Mac) or system tray (Windows) and shows a system notification when a reminder is due. The Dock/taskbar icon shows how many are due. You can also have Orbital open when you log in (Settings → Desktop).
+- **Repeating reminders:** every day, every weekday, chosen days, every few weeks, monthly or yearly, with an optional end date.
+- **Just type it:** "call Sam friday at 3", "pay rent every month on the 1st", "standup every weekday at 9:30". Works on the Reminders page, in chat ("remind me to…", typed or spoken) and in ⌘K, with no AI key needed.
+
+New in 0.3.5:
 
 - **Media:** one place for screenshots, screen recordings, voice notes, camera recordings, uploads and meeting playbacks. Record right inside Orbital, watch or listen back, search, rename, download, and turn recordings into text.
 - **Record meetings:** the record button saves everyone's video and sound; everyone in the meeting can see when it's being recorded.

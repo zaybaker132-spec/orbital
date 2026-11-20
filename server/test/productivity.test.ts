@@ -328,6 +328,98 @@ test("reminders: personal, fire on time over the live stream, snooze and finish"
   assert.ok(!mine.some((r: any) => r.status === "scheduled"));
 });
 
+test("repeating reminders: each occurrence fires once as its own reminder, the series moves on, missed ones don't pile up", async () => {
+  const { tickReminders } = await import("../engines/reminders.js");
+  const { db } = await import("../db/client.js");
+  const tz = "America/New_York";
+  // Bad input is refused.
+  assert.equal((await owner.req("POST", "/api/reminders", { title: "x", dueAt: new Date().toISOString(), repeat: { freq: "daily" } })).status, 400, "needs a time zone");
+  assert.equal((await owner.req("POST", "/api/reminders", { title: "x", dueAt: new Date().toISOString(), repeat: { freq: "hourly" }, timeZone: tz })).status, 400);
+  assert.equal((await owner.req("POST", "/api/reminders", { title: "x", dueAt: new Date().toISOString(), repeat: { freq: "daily" }, timeZone: "Mars/Olympus" })).status, 400);
+  assert.equal((await owner.req("POST", "/api/reminders", { title: "x", dueAt: new Date().toISOString(), repeat: { freq: "daily", until: "2001-01-01" }, timeZone: tz })).status, 400, "ends before it starts");
+
+  const s = await owner.req("POST", "/api/reminders", { title: "Water the plants", dueAt: new Date(Date.now() + 3_600_000).toISOString(), repeat: { freq: "daily" }, timeZone: tz });
+  assert.equal(s.status, 201);
+  assert.deepEqual(s.data.repeat, { freq: "daily" });
+  // Pretend Orbital was closed for three days: the series was due 3 days ago.
+  const threeDaysAgo = Date.parse(s.data.due_at) - 3 * 86_400_000;
+  await db().query("UPDATE reminders SET due_at=$2 WHERE id=$1", [s.data.id, new Date(threeDaysAgo).toISOString()]);
+  await tickReminders();
+  await tickReminders();
+  const mine = (await owner.req("GET", "/api/reminders")).data;
+  const copies = mine.filter((r: any) => r.series_id === s.data.id);
+  assert.equal(copies.length, 1, "one reminder for the missed stretch, not one per day");
+  assert.equal(copies[0].status, "fired");
+  assert.equal(copies[0].repeat, null);
+  const series = mine.find((r: any) => r.id === s.data.id);
+  assert.equal(series.status, "scheduled", "the series keeps going");
+  assert.ok(Date.parse(series.due_at) > Date.now() && Date.parse(series.due_at) - Date.now() <= 86_400_000, "next occurrence is within the next day");
+  assert.equal(new Date(series.due_at).getUTCMinutes(), new Date(s.data.due_at).getUTCMinutes(), "same time of day");
+
+  // Completing the copy doesn't stop the series; stopping the repeat leaves one last reminder.
+  assert.equal((await owner.req("PATCH", `/api/reminders/${copies[0].id}`, { status: "done" })).data.status, "done");
+  const stopped = await owner.req("PATCH", `/api/reminders/${s.data.id}`, { repeat: null });
+  assert.equal(stopped.data.repeat, null);
+  assert.equal(stopped.data.status, "scheduled");
+
+  // A series with an end date finishes after its last occurrence.
+  const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+  const ending = await owner.req("POST", "/api/reminders", { title: "Last one", dueAt: new Date(Date.now() - 60_000).toISOString(), repeat: { freq: "weekly", until: new Date(Date.now() + 86_400_000).toISOString().slice(0, 10) }, timeZone: "UTC" });
+  assert.equal(ending.status, 201, yesterday);
+  const after = (await owner.req("GET", "/api/reminders")).data;
+  assert.equal(after.find((r: any) => r.id === ending.data.id).status, "done", "no occurrence left before the end date");
+  assert.equal(after.filter((r: any) => r.series_id === ending.data.id && r.status === "fired").length, 1);
+  // Someone else can't see or change it.
+  assert.equal((await other.req("PATCH", `/api/reminders/${s.data.id}`, { repeat: { freq: "daily" }, timeZone: tz })).status, 404);
+});
+
+test("repeat rules: the next occurrence keeps the local time across DST, month ends and chosen weekdays", async () => {
+  const { nextOccurrence, fromWallTime, wallTime, describeRepeat } = await import("../../shared/recurrence.js");
+  const tz = "America/New_York";
+  const at = (y: number, mo: number, d: number, h: number, mi = 0) => fromWallTime(y, mo, d, h, mi, tz);
+  const local = (ms: number) => { const w = wallTime(ms, tz); return `${w.y}-${w.mo}-${w.d} ${w.h}:${String(w.mi).padStart(2, "0")}`; };
+  // Daily at 9:00 across the November DST change stays at 9:00 local.
+  const sat = at(2026, 10, 31, 9);
+  assert.equal(local(nextOccurrence({ freq: "daily" }, sat, sat, tz)!), "2026-11-1 9:00");
+  assert.equal(local(nextOccurrence({ freq: "daily" }, at(2026, 11, 1, 9), at(2026, 11, 1, 9), tz)!), "2026-11-2 9:00");
+  // Weekdays skip the weekend.
+  assert.equal(local(nextOccurrence({ freq: "weekdays" }, at(2026, 11, 20, 8), at(2026, 11, 20, 8), tz)!), "2026-11-23 8:00");
+  // Monthly on the 31st: the last day of short months, back to the 31st after.
+  const jan31 = at(2027, 1, 31, 10);
+  const feb = nextOccurrence({ freq: "monthly" }, jan31, jan31, tz, 31)!;
+  assert.equal(local(feb), "2027-2-28 10:00");
+  assert.equal(local(nextOccurrence({ freq: "monthly" }, feb, feb, tz, 31)!), "2027-3-31 10:00");
+  // Mon/Wed/Fri, every other week.
+  const mon = at(2026, 11, 23, 7);
+  const r = { freq: "weekly" as const, days: [1, 3, 5], interval: 2 };
+  const seq = [mon]; for (let i = 0; i < 4; i++) seq.push(nextOccurrence(r, seq[seq.length - 1], seq[seq.length - 1], tz)!);
+  assert.deepEqual(seq.map(local), ["2026-11-23 7:00", "2026-11-25 7:00", "2026-11-27 7:00", "2026-12-7 7:00", "2026-12-9 7:00"]);
+  // Until: no occurrence after the end date.
+  assert.equal(nextOccurrence({ freq: "daily", until: "2026-11-20" }, at(2026, 11, 20, 9), at(2026, 11, 20, 9), tz), null);
+  // Catching up skips to the first occurrence after "now".
+  assert.equal(local(nextOccurrence({ freq: "daily" }, at(2026, 11, 1, 9), at(2026, 11, 10, 12), tz)!), "2026-11-11 9:00");
+  assert.equal(describeRepeat(r), "Every 2 weeks on Mon, Wed, Fri");
+});
+
+test("typed reminders: plain English becomes a title, a time and a repeat", async () => {
+  const { parseReminder } = await import("../../shared/reminderText.js");
+  const now = new Date(2026, 10, 20, 10, 0); // Friday 20 Nov 2026, 10:00 local
+  const p = (s: string) => { const r = parseReminder(s, now); return [r.title, r.when && `${r.when.getMonth() + 1}/${r.when.getDate()} ${r.when.getHours()}:${String(r.when.getMinutes()).padStart(2, "0")}`, r.repeat?.freq ?? null, r.repeat?.days ?? null, r.repeat?.interval ?? null]; };
+  assert.deepEqual(p("remind me to call Sam friday at 3"), ["Call Sam", "11/20 15:00", null, null, null]);
+  assert.deepEqual(p("call Sam friday at 9"), ["Call Sam", "11/27 9:00", null, null, null], "today's 9am has passed");
+  assert.deepEqual(p("stretch in 20 minutes"), ["Stretch", "11/20 10:20", null, null, null]);
+  assert.deepEqual(p("dentist March 5 at 2pm"), ["Dentist", "3/5 14:00", null, null, null]);
+  assert.deepEqual(p("pay rent every month on the 1st"), ["Pay rent", "12/1 9:00", "monthly", null, null]);
+  assert.deepEqual(p("standup every weekday at 9:30"), ["Standup", "11/23 9:30", "weekdays", null, null]);
+  assert.deepEqual(p("bins mondays and thursdays at 7pm"), ["Bins", "11/23 19:00", "weekly", [1, 4], null]);
+  assert.deepEqual(p("review every other friday"), ["Review", "11/27 9:00", "weekly", [5], 2]);
+  assert.deepEqual(p("check email at 9"), ["Check email", "11/21 9:00", null, null, null]);
+  assert.deepEqual(p("lunch with Jo on the 28th at noon"), ["Lunch with Jo", "11/28 12:00", null, null, null]);
+  assert.deepEqual(p("buy milk"), ["Buy milk", null, null, null, null], "no time: the caller asks");
+  assert.equal(parseReminder("gym every mon, wed and fri at 6:30am until dec 31", now).repeat?.until, "2026-12-31");
+  assert.equal(parseReminder("go for a walk in the sun at 4", now).title, "Go for a walk in the sun", "'sun' isn't Sunday");
+});
+
 // ── Focus ──────────────────────────────────────────────────────────────────
 test("focus: one session at a time, notes saved to Knowledge, tasks finished are counted", async () => {
   const first = await owner.req("POST", "/api/focus", { objective: "Warm-up", plannedMinutes: 25 });

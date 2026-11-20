@@ -15,6 +15,7 @@ import { useSpeechInput } from "@/lib/voice";
 import { useCan } from "@/state/app";
 import { NotFoundPage } from "./NotFound";
 import { tn, tx } from "@/i18n";
+import { createReminder, describeReminder, isReminderRequest, readReminder } from "@/lib/reminders";
 
 export const MODES = [
   { id: "standard", label: "Standard", hint: "Everyday questions with your context" },
@@ -81,6 +82,15 @@ export function ChatPage() {
   }, [messages]);
 
   const send = useCallback(async (text: string, attachments: { id: string; title: string }[]) => {
+    // "Remind me to call Sam friday at 3": set it straight away (works without an AI key, and by voice).
+    const rem = !attachments.length && isReminderRequest(text) ? readReminder(text) : null;
+    if (rem) {
+      try {
+        await createReminder({ title: rem.title, when: rem.when!, repeat: rem.repeat });
+        toast(tx("Reminder set: {title} · {when}", { title: rem.title, when: describeReminder(rem.when!, rem.repeat) }), { action: { label: "Reminders", to: "/reminders" } });
+      } catch (e) { toastError(e); }
+      return;
+    }
     let id = convId;
     try {
       if (!id) {

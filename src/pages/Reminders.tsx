@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Bell, BellRing, Check, Clock, Lightbulb, Trash2, X } from "lucide-react";
+import { Bell, BellRing, Check, Clock, Lightbulb, Repeat, Sparkles, Trash2, X } from "lucide-react";
 import { api } from "@/lib/api";
 import { useResource, invalidate } from "@/lib/resource";
 import { toast, toastError } from "@/state/ui";
@@ -8,6 +8,8 @@ import { Badge, Button, Empty, IconButton, Input, PageHeader, Pulse, cx } from "
 import { formatWhen, localToday, quickTimes, toLocalInput } from "@/lib/when";
 import { useApp } from "@/state/app";
 import { tx } from "@/i18n";
+import { createReminder, describeReminder, repeatLabel, type RepeatRule } from "@/lib/reminders";
+import { parseReminder } from "../../shared/reminderText";
 
 const NUDGE_LABEL: Record<string, string> = {
   overdue: "Overdue", due_soon: "Due soon", milestone: "Milestone", deadline: "Deadline", stalled_project: "Stalled",
@@ -58,7 +60,7 @@ export function RemindersPage() {
                     <div className="min-w-0 flex-1">
                       <div className="text-[0.92rem] text-white">{r.link ? <Link to={r.link} className="hover:underline">{r.title}</Link> : r.title}</div>
                       {r.note && <p className="mt-0.5 text-[0.82rem] text-mute-bright">{r.note}</p>}
-                      <div className="mt-1 text-[0.72rem] text-mute">{formatWhen(r.due_at)}</div>
+                      <div className="mt-1 flex items-center gap-1.5 text-[0.72rem] text-mute">{formatWhen(r.due_at)}{r.series_id && <><span>·</span><Repeat size={10} /> {tx("Repeats")}</>}</div>
                     </div>
                     <div className="flex shrink-0 items-center gap-1">
                       <Button size="sm" variant="ghost" onClick={() => snooze(r.id, 60 * 60_000)}>{tx("1 hour")}</Button>
@@ -106,10 +108,14 @@ export function RemindersPage() {
                   <Clock size={14} className="shrink-0 text-mute" />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-[0.88rem] text-white/90">{r.link ? <Link to={r.link} className="hover:underline">{r.title}</Link> : r.title}</div>
-                    {r.note && <div className="truncate text-[0.76rem] text-mute">{r.note}</div>}
+                    {(r.note || r.repeat) && <div className="flex items-center gap-1.5 truncate text-[0.76rem] text-mute">
+                      {r.repeat && <span className="inline-flex shrink-0 items-center gap-1 text-mute-bright"><Repeat size={11} /> {repeatLabel(r.repeat)}</span>}
+                      {r.repeat && r.note && <span>·</span>}{r.note && <span className="truncate">{r.note}</span>}
+                    </div>}
                   </div>
-                  <span className="shrink-0 text-[0.78rem] text-mute-bright">{formatWhen(r.due_at)}</span>
-                  <IconButton label={tx("Delete reminder")} className="opacity-0 group-hover:opacity-100 focus:opacity-100" onClick={async () => { await api.del(`/reminders/${r.id}`).catch(toastError); refresh(); }}><Trash2 size={13} /></IconButton>
+                  <span className="shrink-0 text-[0.78rem] text-mute-bright">{r.repeat ? tx("Next: {when}", { when: formatWhen(r.due_at) }) : formatWhen(r.due_at)}</span>
+                  {r.repeat && <Button size="sm" variant="ghost" className="hidden group-focus-within:inline-flex group-hover:inline-flex" onClick={() => patch(r.id, { repeat: null })}>{tx("Stop repeating")}</Button>}
+                  <IconButton label={r.repeat ? tx("Delete repeating reminder") : tx("Delete reminder")} className="opacity-0 group-hover:opacity-100 focus:opacity-100" onClick={async () => { await api.del(`/reminders/${r.id}`).catch(toastError); refresh(); }}><Trash2 size={13} /></IconButton>
                 </li>
               ))}
             </ul>
@@ -130,34 +136,62 @@ export function RemindersPage() {
   );
 }
 
+const REPEAT_CHOICES: { value: string; label: string; rule: RepeatRule | null }[] = [
+  { value: "", label: "Doesn't repeat", rule: null },
+  { value: "daily", label: "Every day", rule: { freq: "daily" } },
+  { value: "weekdays", label: "Every weekday", rule: { freq: "weekdays" } },
+  { value: "weekly", label: "Every week", rule: { freq: "weekly" } },
+  { value: "monthly", label: "Every month", rule: { freq: "monthly" } },
+  { value: "yearly", label: "Every year", rule: { freq: "yearly" } },
+];
+
+/** One line, typed the way you'd say it: "call Sam friday at 3", "pay rent every month on the 1st". */
 function NewReminder() {
-  const [title, setTitle] = useState("");
+  const [text, setText] = useState("");
   const [note, setNote] = useState("");
-  const [when, setWhen] = useState<Date>(quickTimes()[0].date);
+  // A chip or picked time overrides what was read from the text; so does choosing a repeat by hand.
+  const [picked, setPicked] = useState<Date | null>(null);
   const [custom, setCustom] = useState("");
+  const [repeatPick, setRepeatPick] = useState<string | null>(null);
+  const parsed = useMemo(() => (text.trim() ? parseReminder(text) : null), [text]);
+  const fromText = !!parsed?.when && !picked && !custom;
+  const at = custom ? new Date(custom) : picked ?? parsed?.when ?? quickTimes()[0].date;
+  const repeat: RepeatRule | null = repeatPick !== null ? REPEAT_CHOICES.find((c) => c.value === repeatPick)!.rule : parsed?.repeat ?? null;
+  const title = (fromText || parsed?.repeat ? parsed?.title : text.trim()) || text.trim();
+
   const create = async () => {
-    if (!title.trim()) return;
+    if (!title || Number.isNaN(at.getTime())) return;
     try {
-      await api.post("/reminders", { title: title.trim(), note: note.trim(), dueAt: (custom ? new Date(custom) : when).toISOString() });
-      setTitle(""); setNote(""); setCustom("");
-      invalidate("/reminders");
-      toast(tx("Reminder set"));
+      await createReminder({ title, note: note.trim(), when: at, repeat });
+      setText(""); setNote(""); setCustom(""); setPicked(null); setRepeatPick(null);
+      toast(tx("Reminder set for {v0}", { v0: describeReminder(at, repeat) }));
     } catch (e) { toastError(e); }
   };
-  const at = custom ? new Date(custom) : when;
   return (
     <form className="grid gap-3 rounded-xl border border-line p-4" onSubmit={(e) => { e.preventDefault(); create(); }} aria-label={tx("New reminder")}>
       <div className="flex gap-2">
-        <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={tx("Remind me to…")} aria-label={tx("Reminder")} className="flex-1" />
-        <Button variant="primary" type="submit" disabled={!title.trim() || Number.isNaN(at.getTime())}>{tx("Set reminder")}</Button>
+        <Input value={text} onChange={(e) => setText(e.target.value)} placeholder={tx("Remind me to… (try “call Sam Friday at 3” or “pay rent every month on the 1st”)")} aria-label={tx("Reminder")} className="flex-1" />
+        <Button variant="primary" type="submit" disabled={!title || Number.isNaN(at.getTime())}>{tx("Set reminder")}</Button>
       </div>
-      {title.trim() && <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder={tx("Note (optional)")} aria-label={tx("Note")} />}
+      {fromText || parsed?.repeat ? (
+        <p className="flex flex-wrap items-center gap-1.5 text-[0.8rem] text-mute-bright" aria-live="polite">
+          <Sparkles size={12} className="text-white" />
+          <span className="text-white">{title}</span>
+          <span className="text-mute">·</span> {formatWhen(at.toISOString())}
+          {repeat && <><span className="text-mute">·</span> <Repeat size={12} /> {repeatLabel(repeat)}</>}
+        </p>
+      ) : null}
+      {text.trim() && <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder={tx("Note (optional)")} aria-label={tx("Note")} />}
       <div className="flex flex-wrap items-center gap-1.5">
         {quickTimes().map((q) => (
-          <button key={q.label} type="button" onClick={() => { setWhen(q.date); setCustom(""); }}
-            className={cx("rounded-full border px-3 py-1 text-[0.78rem]", !custom && when.getTime() === q.date.getTime() ? "border-white bg-white text-black" : "border-line text-mute-bright hover:text-white")}>{tx(q.label)}</button>
+          <button key={q.label} type="button" onClick={() => { setPicked(q.date); setCustom(""); }}
+            className={cx("rounded-full border px-3 py-1 text-[0.78rem]", !custom && !fromText && at.getTime() === q.date.getTime() ? "border-white bg-white text-black" : "border-line text-mute-bright hover:text-white")}>{tx(q.label)}</button>
         ))}
         <input type="datetime-local" aria-label={tx("Or pick a time")} value={custom} min={toLocalInput(new Date())} onChange={(e) => setCustom(e.target.value)} className="input h-8 w-auto py-0 text-[0.8rem]" />
+        <select aria-label={tx("Repeat")} value={repeatPick ?? (repeat ? "__text" : "")} onChange={(e) => setRepeatPick(e.target.value)} className="input h-8 w-auto py-0 text-[0.8rem]">
+          {repeat && repeatPick === null && <option value="__text">{repeatLabel(repeat)}</option>}
+          {REPEAT_CHOICES.map((c) => <option key={c.value} value={c.value}>{tx(c.label)}</option>)}
+        </select>
         <span className="ml-auto text-[0.76rem] text-mute">{Number.isNaN(at.getTime()) ? "" : formatWhen(at.toISOString())}</span>
       </div>
     </form>

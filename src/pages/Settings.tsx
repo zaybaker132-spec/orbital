@@ -522,7 +522,12 @@ function DeleteAccount({ open, onClose }: { open: boolean; onClose: () => void }
 }
 
 declare global {
-  interface Window { orbitalDesktop?: { isDesktop: true; status(): Promise<{ version: string; platform: string; hasApiKey: boolean; secureStorage: boolean; dataDir: string }>; setApiKey(key: string | null): Promise<{ ok: boolean }>; openDataFolder(): Promise<void> } }
+  interface OrbitalDesktopSettings { background: boolean; openAtLogin: boolean; loginSupported: boolean }
+  interface Window { orbitalDesktop?: {
+    isDesktop: true; status(): Promise<{ version: string; platform: string; hasApiKey: boolean; secureStorage: boolean; dataDir: string }>; setApiKey(key: string | null): Promise<{ ok: boolean }>; openDataFolder(): Promise<void>;
+    notify?(n: { title: string; body?: string; link?: string }): Promise<boolean>; setBadge?(count: number): Promise<void>; onNavigate?(cb: (pathname: string) => void): () => void;
+    getSettings?(): Promise<OrbitalDesktopSettings>; setSettings?(patch: Partial<Pick<OrbitalDesktopSettings, "background" | "openAtLogin">>): Promise<OrbitalDesktopSettings>;
+  } }
 }
 
 /** Desktop app: API key in the OS keychain-backed store. Web: link to download the desktop app. */
@@ -559,8 +564,37 @@ function DesktopGroup() {
         )}
         <p className="mt-1.5 text-[0.76rem] text-mute">{status?.secureStorage === false ? tx("Secure storage isn't available on this system, so the key can't be saved.") : tx("Encrypted with your operating system's keychain and given only to the local Orbital server. Get a key at console.anthropic.com.")}</p>
       </Row>
+      <BackgroundRows />
       <Row label={tx("Data")}><Button size="sm" icon={<FolderOpen size={13} />} onClick={() => bridge.openDataFolder()}>{tx("Open data folder")}</Button></Row>
     </Group>
+  );
+}
+
+/** Keep running in the menu bar / tray so reminders arrive with the window closed; open at login. */
+function BackgroundRows() {
+  const bridge = window.orbitalDesktop;
+  const [st, setSt] = useState<OrbitalDesktopSettings | null>(null);
+  useEffect(() => { bridge?.getSettings?.().then(setSt).catch(() => {}); }, [bridge]);
+  if (!bridge?.setSettings || !st) return null;
+  const set = async (patch: Partial<OrbitalDesktopSettings>) => { try { setSt(await bridge.setSettings!(patch)); } catch (e) { toastError(e); } };
+  const mac = navigator.platform.toLowerCase().includes("mac");
+  return (
+    <>
+      <Row label={tx("In the background")}>
+        <label className="flex items-start gap-2.5">
+          <input type="checkbox" className="mt-1 accent-white" checked={st.background} onChange={(e) => set({ background: e.target.checked })} />
+          <span>{tx("Keep Orbital running when the window is closed")}<span className="block text-[0.76rem] text-mute">{mac ? tx("Orbital stays in the menu bar so reminders still reach you. Quit from its menu-bar icon.") : tx("Orbital stays in the system tray so reminders still reach you. Quit from its tray icon.")}</span></span>
+        </label>
+      </Row>
+      {st.loginSupported && (
+        <Row label={tx("At login")}>
+          <label className="flex items-start gap-2.5">
+            <input type="checkbox" className="mt-1 accent-white" checked={st.openAtLogin} onChange={(e) => set({ openAtLogin: e.target.checked })} />
+            <span>{tx("Open Orbital when you log in to your computer")}<span className="block text-[0.76rem] text-mute">{tx("It starts quietly in the background, so reminders work from the moment your computer is on.")}</span></span>
+          </label>
+        </Row>
+      )}
+    </>
   );
 }
 
