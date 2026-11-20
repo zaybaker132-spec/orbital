@@ -1796,3 +1796,11 @@
 4804|O clima não está disponível agora
 4805|Local do clima
 4806|{place} · mude pelo clima na barra lateral
+4810|Não foi possível encontrar sua localização. Digite uma cidade.
+4811|Não foi possível obter sua localização exata, então o Orbital usou a cidade do seu fuso horário ({place}).
+4812|Procurando você…
+4813|Estimado pelo seu fuso horário. Digite um local ou use sua localização para ser exato.
+4814|Minha localização
+4815|Usar minha localização
+4816|Sua localização
+4817|aproximado

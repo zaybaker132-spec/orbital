@@ -1796,3 +1796,11 @@
 4804|El tiempo no está disponible ahora mismo
 4805|Ubicación del tiempo
 4806|{place} · cámbialo desde el tiempo en la barra lateral
+4810|No se pudo encontrar tu ubicación. Escribe una ciudad o pueblo.
+4811|No se pudo obtener tu ubicación exacta, así que Orbital usó la ciudad de tu zona horaria ({place}).
+4812|Buscando tu ubicación…
+4813|Estimado a partir de tu zona horaria. Escribe un lugar o usa tu ubicación para más precisión.
+4814|Mi ubicación
+4815|Usar mi ubicación
+4816|Tu ubicación
+4817|aproximado

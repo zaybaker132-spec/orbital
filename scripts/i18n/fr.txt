@@ -1796,3 +1796,11 @@
 4804|La météo n'est pas disponible pour le moment
 4805|Lieu de la météo
 4806|{place} · modifiez-le depuis la météo dans la barre latérale
+4810|Impossible de trouver votre position. Saisissez plutôt une ville.
+4811|Impossible d'obtenir votre position exacte : Orbital utilise la ville de votre fuseau horaire ({place}).
+4812|Recherche de votre position…
+4813|Déduit de votre fuseau horaire. Saisissez un lieu ou utilisez votre position pour plus de précision.
+4814|Ma position
+4815|Utiliser ma position
+4816|Votre position
+4817|approximatif

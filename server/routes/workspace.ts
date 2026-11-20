@@ -547,6 +547,9 @@ workspace.put("/preferences", ah(async (req, res) => {
     weather: z.object({
       place: z.object({ name: z.string().trim().min(1).max(80), region: z.string().max(80), country: z.string().max(80), lat: z.number().min(-90).max(90), lon: z.number().min(-180).max(180) }).strict().nullable(),
       unit: z.enum(["c", "f"]),
+      // How the place was chosen: typed in, the device's location, or guessed from the time zone (tz).
+      source: z.enum(["typed", "device", "timezone"]).optional(),
+      tz: z.string().max(64).optional(),
     }).strict().optional(),
   }), req.body);
   const r = await db().query("INSERT INTO user_preferences(user_id, settings) VALUES ($1,$2) ON CONFLICT (user_id) DO UPDATE SET settings = user_preferences.settings || $2, updated_at=now() RETURNING settings", [actor(req), JSON.stringify(b)]);

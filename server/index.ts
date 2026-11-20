@@ -62,8 +62,8 @@ export async function createApp(opts: { jobs?: boolean } = {}) {
     res.setHeader("referrer-policy", "same-origin");
     res.setHeader("x-frame-options", "DENY");
     res.setHeader("cross-origin-opener-policy", "same-origin");
-    // Camera and microphone are for Meetings and voice, on Orbital's own pages only.
-    res.setHeader("permissions-policy", "camera=(self), microphone=(self), display-capture=(self), geolocation=(), payment=(), usb=()");
+    // Camera and microphone are for Meetings and voice; location only for "Use my location" (weather). Orbital's own pages only.
+    res.setHeader("permissions-policy", "camera=(self), microphone=(self), display-capture=(self), geolocation=(self), payment=(), usb=()");
     if (config.forceHttps) {
       res.setHeader("strict-transport-security", "max-age=31536000; includeSubDomains");
       if (!req.secure && req.path !== "/api/health" && req.path !== "/api/health/ready") {

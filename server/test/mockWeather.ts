@@ -5,8 +5,9 @@ import http from "node:http";
  * the weather proxy can be exercised without network access. Never used by the application at runtime.
  */
 export const PLACES = [
-  { name: "Lisbon", admin1: "Lisbon", country: "Portugal", latitude: 38.71667, longitude: -9.13333 },
-  { name: "Lisbon", admin1: "Maine", country: "United States", latitude: 44.0312, longitude: -70.1045 },
+  { name: "Lisbon", admin1: "Lisbon", country: "Portugal", latitude: 38.71667, longitude: -9.13333, timezone: "Europe/Lisbon" },
+  { name: "Lisbon", admin1: "Maine", country: "United States", latitude: 44.0312, longitude: -70.1045, timezone: "America/New_York" },
+  { name: "New York", admin1: "New York", country: "United States", latitude: 40.71427, longitude: -74.00597, timezone: "America/New_York" },
 ];
 
 export function startMockWeather(): Promise<{ url: string; calls: string[]; fail: (on: boolean) => void; close: () => void }> {

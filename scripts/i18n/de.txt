@@ -1796,3 +1796,11 @@
 4804|Das Wetter ist gerade nicht verfügbar
 4805|Wetterort
 4806|{place} · ändere ihn über das Wetter in der Seitenleiste
+4810|Dein Standort wurde nicht gefunden. Gib stattdessen eine Stadt ein.
+4811|Dein genauer Standort war nicht verfügbar, daher nutzt Orbital die Stadt deiner Zeitzone ({place}).
+4812|Standort wird ermittelt…
+4813|Aus deiner Zeitzone geschätzt. Gib einen Ort ein oder nutze deinen Standort für mehr Genauigkeit.
+4814|Mein Standort
+4815|Meinen Standort verwenden
+4816|Dein Standort
+4817|ungefähr

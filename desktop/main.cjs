@@ -175,7 +175,8 @@ function createWindow() {
   // Only Orbital's own pages get camera, microphone and screen access (for Meetings); everything else is denied.
   const ses = win.webContents.session;
   const fromOrbital = (url) => typeof url === "string" && url.startsWith(origin());
-  const ALLOWED = new Set(["clipboard-sanitized-write", "media", "display-capture", "mediaKeySystem"]);
+  // geolocation: only when someone clicks "Use my location" for the sidebar weather (the OS may still ask).
+  const ALLOWED = new Set(["clipboard-sanitized-write", "media", "display-capture", "mediaKeySystem", "geolocation"]);
   ses.setPermissionRequestHandler((wc, permission, cb) => cb(ALLOWED.has(permission) && fromOrbital(wc.getURL())));
   ses.setPermissionCheckHandler((_wc, permission, requestingOrigin) => ALLOWED.has(permission) && fromOrbital(requestingOrigin + "/"));
   // Screen sharing: the system picker where available (macOS 15+), otherwise the primary screen.

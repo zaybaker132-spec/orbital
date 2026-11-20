@@ -45,7 +45,7 @@ weather.get("/weather/places", rateLimit({ windowMs: 60_000, max: 30, key: "user
       getJson(`${config.weather.geocodeUrl}/v1/search?name=${encodeURIComponent(q)}&count=6&language=${lang}&format=json`));
     res.json((data.results ?? []).map((p: any) => ({
       name: String(p.name ?? "").slice(0, 80), region: String(p.admin1 ?? "").slice(0, 80), country: String(p.country ?? "").slice(0, 80),
-      lat: Number(p.latitude), lon: Number(p.longitude),
+      lat: Number(p.latitude), lon: Number(p.longitude), timezone: typeof p.timezone === "string" ? p.timezone.slice(0, 64) : "",
     })).filter((p: any) => p.name && Number.isFinite(p.lat) && Number.isFinite(p.lon)));
   } catch (e) { throw unavailable(e); }
 }));

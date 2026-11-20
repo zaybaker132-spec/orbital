@@ -49,7 +49,7 @@ after(async () => {
 test("weather: place search returns tidy places, cached, validated", async () => {
   const r = await me.req("GET", "/api/weather/places?q=Lisb&lang=pt");
   assert.equal(r.status, 200);
-  assert.deepEqual(r.data[0], { name: "Lisbon", region: "Lisbon", country: "Portugal", lat: 38.71667, lon: -9.13333 });
+  assert.deepEqual(r.data[0], { name: "Lisbon", region: "Lisbon", country: "Portugal", lat: 38.71667, lon: -9.13333, timezone: "Europe/Lisbon" });
   assert.equal(r.data.length, 2);
   assert.match(mock.calls.at(-1)!, /language=pt/);
   const before = mock.calls.length;

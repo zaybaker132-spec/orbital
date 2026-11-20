@@ -18,7 +18,7 @@ export interface Preferences {
 }
 export interface ClockPrefs { show: boolean; hour12: "auto" | "12" | "24" }
 export interface WeatherPlace { name: string; region: string; country: string; lat: number; lon: number }
-export interface WeatherPrefs { place: WeatherPlace | null; unit: "c" | "f" }
+export interface WeatherPrefs { place: WeatherPlace | null; unit: "c" | "f"; source?: "typed" | "device" | "timezone"; tz?: string }
 export interface ServerInfo { version: string; database: "embedded" | "postgres"; transcription: boolean; turn: boolean; maxParticipants: number }
 
 interface AppStore {

@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudMoon, CloudRain, CloudSun, MapPin, Moon, Search, Snowflake, Sun, X } from "lucide-react";
+import { Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudMoon, CloudRain, CloudSun, LocateFixed, MapPin, Moon, Search, Snowflake, Sun, X } from "lucide-react";
 import { language, locale, tx } from "@/i18n";
 import { api } from "@/lib/api";
 import { invalidate, useResource } from "@/lib/resource";
 import { useApp, type ClockPrefs, type WeatherPlace, type WeatherPrefs } from "@/state/app";
-import { toastError } from "@/state/ui";
+import { toast, toastError } from "@/state/ui";
 
 /** The sidebar's small clock and weather. Click the weather (or "Add weather") to choose a place. */
 export function ClockWeather({ collapsed }: { collapsed: boolean }) {
@@ -13,6 +13,7 @@ export function ClockWeather({ collapsed }: { collapsed: boolean }) {
   const wx: WeatherPrefs = prefs.weather ?? { place: null, unit: defaultUnit() };
   const now = useNow();
   const [open, setOpen] = useState(false);
+  useAutoLocation(prefs.weather);
   if (!clock.show && !wx.place) return collapsed ? null : <AddWeather onOpen={() => setOpen(true)} open={open} onClose={() => setOpen(false)} wx={wx} />;
 
   const hour12 = clock.hour12 === "auto" ? undefined : clock.hour12 === "12";
@@ -94,6 +95,7 @@ function WeatherPicker({ wx, onClose }: { wx: WeatherPrefs; onClose: () => void 
   const [results, setResults] = useState<WeatherPlace[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState("");
+  const [locating, setLocating] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   const save = (w: WeatherPrefs) => setPrefs({ weather: w }).catch(toastError);
 
@@ -133,13 +135,17 @@ function WeatherPicker({ wx, onClose }: { wx: WeatherPrefs; onClose: () => void 
         <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={tx("Type a city or town")} aria-label={tx("Type a city or town")}
           className="h-8 min-w-0 flex-1 bg-transparent text-[0.82rem] text-white placeholder:text-mute-soft focus:outline-none" />
       </label>
-      <ul className="mt-1.5 max-h-52 overflow-y-auto">
+      <button onClick={async () => { setLocating(true); await locateMe(wx); setLocating(false); onClose(); }} disabled={locating}
+        className="mt-1.5 flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[0.8rem] text-white hover:bg-white/[0.06] disabled:opacity-60">
+        <LocateFixed size={13} className="shrink-0 text-mute" /> {locating ? tx("Finding you…") : tx("Use my location")}
+      </button>
+      <ul className="mt-0.5 max-h-52 overflow-y-auto">
         {busy && <li className="px-2 py-1.5 text-[0.76rem] text-mute">{tx("Searching…")}</li>}
         {!busy && problem && <li className="px-2 py-1.5 text-[0.76rem] text-amber-300">{problem}</li>}
         {!busy && results?.length === 0 && <li className="px-2 py-1.5 text-[0.76rem] text-mute">{tx("No places found. Try another spelling, or add the country.")}</li>}
         {results?.map((p, i) => (
           <li key={`${p.lat},${p.lon},${i}`}>
-            <button onClick={() => { save({ ...wx, place: p }); onClose(); }} className="flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left hover:bg-white/[0.06]">
+            <button onClick={() => { save({ unit: wx.unit, place: { name: p.name, region: p.region, country: p.country, lat: p.lat, lon: p.lon }, source: "typed" }); onClose(); }} className="flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left hover:bg-white/[0.06]">
               <MapPin size={13} className="mt-0.5 shrink-0 text-mute" />
               <span className="min-w-0"><span className="block truncate text-[0.82rem] text-white">{p.name}</span><span className="block truncate text-[0.7rem] text-mute">{[p.region, p.country].filter(Boolean).join(", ")}</span></span>
             </button>
@@ -153,11 +159,62 @@ function WeatherPicker({ wx, onClose }: { wx: WeatherPrefs; onClose: () => void 
               className={wx.unit === u ? "bg-white px-2 py-0.5 text-[0.72rem] text-black" : "px-2 py-0.5 text-[0.72rem] text-mute hover:text-white"}>°{u.toUpperCase()}</button>
           ))}
         </div>
-        {wx.place && <span className="min-w-0 flex-1 truncate text-[0.72rem] text-mute">{tx("Now: {place}", { place: wx.place.name })}</span>}
+        {wx.place && <span className="min-w-0 flex-1 truncate text-[0.72rem] text-mute" title={wx.source === "timezone" ? tx("Guessed from your time zone. Type a place or use your location to be exact.") : undefined}>{tx("Now: {place}", { place: wx.place.name })}{wx.source === "timezone" ? ` · ${tx("approximate")}` : ""}</span>}
         {wx.place && <button onClick={() => { save({ ...wx, place: null }); onClose(); }} className="ml-auto text-[0.72rem] text-mute hover:text-red-300">{tx("Remove")}</button>}
       </div>
     </div>
   );
+}
+
+/** The computer's time zone, e.g. "Europe/Lisbon". */
+const timeZone = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch { return ""; } };
+/** The city a time zone is named after ("America/Los_Angeles" → "Los Angeles"); none for UTC and the like. */
+const tzCity = (tz: string) => (!tz.includes("/") || /^(Etc|SystemV)\//.test(tz) ? null : tz.split("/").pop()!.replace(/_/g, " "));
+
+/** Weather for the time zone's city, picking the match that is actually in that time zone. */
+async function placeFromTimeZone(tz: string): Promise<WeatherPlace | null> {
+  const city = tzCity(tz);
+  if (!city) return null;
+  const found = await api.get<(WeatherPlace & { timezone?: string })[]>(`/weather/places?q=${encodeURIComponent(city)}&lang=${language()}`);
+  const p = found.find((x) => x.timezone === tz) ?? found[0];
+  return p ? { name: p.name, region: p.region, country: p.country, lat: p.lat, lon: p.lon } : null;
+}
+
+/**
+ * Detect the weather location without asking: when nobody has chosen one yet, use the time zone's city;
+ * when it was guessed that way and the time zone has changed (travel), guess again. A place someone typed,
+ * their device location, or removing the weather stops the guessing.
+ */
+let autoTried = false;
+function useAutoLocation(current: WeatherPrefs | undefined) {
+  useEffect(() => {
+    if (autoTried) return;
+    const tz = timeZone();
+    const guess = current === undefined || (current.source === "timezone" && current.tz !== tz);
+    if (!guess || !tz) return;
+    autoTried = true;
+    placeFromTimeZone(tz).then((place) => {
+      if (place) return useApp.getState().setPrefs({ weather: { place, unit: current?.unit ?? defaultUnit(), source: "timezone", tz } });
+    }).catch(() => { /* no weather until someone picks a place */ });
+  }, [current]);
+}
+
+/** Precise location from the device (it asks permission); falls back to the time zone's city. */
+async function locateMe(wx: WeatherPrefs) {
+  const save = (w: WeatherPrefs) => useApp.getState().setPrefs({ weather: w }).catch(toastError);
+  try {
+    const pos = await new Promise<GeolocationPosition>((ok, fail) => {
+      if (!navigator.geolocation) return fail(new Error("unsupported"));
+      navigator.geolocation.getCurrentPosition(ok, fail, { timeout: 12_000, maximumAge: 30 * 60_000, enableHighAccuracy: false });
+    });
+    const tz = timeZone();
+    await save({ unit: wx.unit, source: "device", tz, place: { name: tx("My location"), region: tx("Your location"), country: "", lat: pos.coords.latitude, lon: pos.coords.longitude } });
+  } catch {
+    const tz = timeZone();
+    const place = await placeFromTimeZone(tz).catch(() => null);
+    if (place) { await save({ unit: wx.unit, source: "timezone", tz, place }); toast(tx("Couldn't get your exact location, so Orbital used your time zone's city ({place}).", { place: place.name })); }
+    else toast(tx("Couldn't find your location. Type a city or town instead."), { tone: "error" });
+  }
 }
 
 /** The time, updated on the minute. */
