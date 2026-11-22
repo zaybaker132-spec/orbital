@@ -11,6 +11,7 @@ import { Badge, Button, Dialog, Input, PageHeader, Select, cx } from "@/componen
 import { modKey } from "@/lib/format";
 import { MODES } from "./Chat";
 import { LANGUAGES, language, locale, resolveLanguage, setLanguage, tn, tx } from "@/i18n";
+import { localSpeechSupported } from "@/lib/localSpeech";
 import { setThemePref, useThemePref, type ThemePref } from "@/lib/theme";
 import { saveEnvironment, useEnvironment } from "@/state/environment";
 import { NAV } from "@/components/Shell";
@@ -397,7 +398,7 @@ function AiFeatures() {
     ["Knowledge extraction", on ? true : "basic (dates, figures, key terms)"],
     ["Source credibility", on ? true : "from address, dates and keywords"],
     ["Live web research", ai?.webSearch ?? false],
-    ["Voice input", browserSpeech ? "this browser's speech recognition" : server?.transcription ? "server transcription" : false],
+    ["Voice input", browserSpeech ? "this browser's speech recognition" : server?.transcription ? "server transcription" : localSpeechSupported ? "on this computer (private, works offline)" : false],
   ];
   return (
     <div className="rounded-lg border border-line px-4 py-3">
@@ -406,7 +407,7 @@ function AiFeatures() {
         {rows.map(([label, v]) => (
           <li key={label} className="flex items-start gap-2">
             <span className={cx("mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full", v === true ? "bg-emerald-300" : v ? "bg-amber-200" : "bg-white/20")} />
-            <span className={v ? "text-white/85" : "text-mute"}>{label}{typeof v === "string" && <span className="text-mute">: {v}</span>}{v === false && <span className="text-mute">: {label === "Voice input" ? tx("needs Chrome, Edge or Safari, or server transcription") : label === "Live web research" ? tx("needs the Anthropic provider") : tx("needs an AI provider")}</span>}</span>
+            <span className={v ? "text-white/85" : "text-mute"}>{label}{typeof v === "string" && <span className="text-mute">: {v}</span>}{v === false && <span className="text-mute">: {label === "Voice input" ? tx("needs a newer browser") : label === "Live web research" ? tx("needs the Anthropic provider") : tx("needs an AI provider")}</span>}</span>
           </li>
         ))}
       </ul>

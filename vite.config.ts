@@ -1,9 +1,20 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "node:path";
+import fs from "node:fs";
+
+// On-device speech recognition runs ONNX Runtime as WebAssembly. Serve its files from the app itself
+// (public/ort) instead of a CDN, so it works offline and within the app's content security policy.
+const ortDir = path.resolve(import.meta.dirname, "node_modules/onnxruntime-web/dist");
+const ortOut = path.resolve(import.meta.dirname, "public/ort");
+if (fs.existsSync(ortDir)) {
+  fs.mkdirSync(ortOut, { recursive: true });
+  for (const f of fs.readdirSync(ortDir)) if (/^ort-wasm-simd-threaded\.asyncify\.(mjs|wasm)$/.test(f)) fs.copyFileSync(path.join(ortDir, f), path.join(ortOut, f));
+}
 
 export default defineConfig({
   plugins: [react()],
+  worker: { format: "es" },
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "src"),

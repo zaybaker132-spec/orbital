@@ -74,8 +74,10 @@ export function VoiceMode({ messages, streaming, onSend, onClose, onRemember, ca
   useEffect(() => { if (!speech.listening && !speech.transcribing && phase === "listening" && engine !== "none") { const t = setTimeout(() => { if (phaseRef.current === "listening" && !heard) setPhase("paused"); }, 400); return () => clearTimeout(t); } }, [speech.listening, speech.transcribing]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const last = [...messages].reverse().find((m) => m.role === "assistant");
-  const status = speech.error ?? (engine === "none" ? "Voice input isn't available in this browser." :
-    phase === "listening" ? (speech.transcribing ? "Transcribing…" : speech.listening ? "Listening…" : "Starting…") :
+  // On-device speech: the first time, the speech model downloads once (shown as a percentage).
+  const preparing = engine === "local" && speech.model.state === "downloading" && (speech.transcribing || phase === "listening");
+  const status = speech.error ?? (engine === "none" ? "Voice input needs a newer browser. Try Chrome, Edge or Safari." :
+    phase === "listening" ? (speech.transcribing ? (preparing ? tx("Getting voice ready (one-time download) · {pct}%", { pct: Math.round(speech.model.progress * 100) }) : "Transcribing…") : speech.listening ? "Listening…" : "Starting…") :
     phase === "thinking" ? "Thinking…" : phase === "speaking" ? "Speaking · Space to interrupt" : "Paused · Space or tap the mic to talk");
 
   return (
@@ -96,7 +98,7 @@ export function VoiceMode({ messages, streaming, onSend, onClose, onRemember, ca
       <div className="mx-auto w-full max-w-[720px] px-6 pb-8 text-center">
         <p className="min-h-[1.5em] text-[1.05rem] text-white/90">{phase === "listening" ? interim || heard : heard}</p>
         {phase !== "listening" && last?.content && <p className="mx-auto mt-3 line-clamp-3 max-w-[60ch] text-[0.88rem] leading-relaxed text-mute-bright">{speakable(last.content)}</p>}
-        <p className={cx("mt-4 text-[0.78rem]", speech.error ? "text-red-300" : "text-mute")} aria-live="polite">{status}</p>
+        <p className={cx("mt-4 text-[0.78rem]", speech.error ? "text-red-300" : "text-mute")} aria-live="polite">{tx(status)}</p>
         <div className="mt-5 flex items-center justify-center gap-3">
           {phase === "speaking" ? (
             <button onClick={() => { stopSpeaking.current(); listen(); }} aria-label={tx("Stop speaking")} className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-black"><Square size={16} fill="currentColor" /></button>

@@ -1899,3 +1899,13 @@
 4919|Recorrente
 4920|Parar de repetir
 4921|até {date}
+4922|Não foi possível abrir a gravação.
+4923|Preparando a voz (download único) · {pct}%
+4924|Gravações de até 60 minutos podem ser transcritas neste computador.
+4925|Transcrevendo neste computador… gravações longas demoram um pouco.
+4926|A entrada de voz precisa de um navegador mais recente. Experimente Chrome, Edge ou Safari.
+4927|Escrevendo o que você disse…
+4928|precisa de um navegador mais recente
+4929|Não foi possível baixar o modelo de voz (download único de cerca de 80 MB). Verifique sua conexão com a internet e tente novamente.
+4930|O reconhecimento de voz não pôde iniciar neste computador.
+4931|neste computador (privado, funciona offline)

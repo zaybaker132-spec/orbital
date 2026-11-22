@@ -4,10 +4,10 @@ Orbital for Mac, Windows and Linux. Everything stays on your computer in Orbital
 
 | Your computer | File |
 |---|---|
-| Mac with Apple chip (M1–M4) | `Orbital-0.3.6-arm64.dmg` |
-| Mac with Intel chip | `Orbital-0.3.6.dmg` |
-| Windows | `Orbital-Setup-0.3.6.exe` |
-| Linux | `Orbital-0.3.6.AppImage` or `orbital_0.3.6_amd64.deb` |
+| Mac with Apple chip (M1–M4) | `Orbital-0.3.7-arm64.dmg` |
+| Mac with Intel chip | `Orbital-0.3.7.dmg` |
+| Windows | `Orbital-Setup-0.3.7.exe` |
+| Linux | `Orbital-0.3.7.AppImage` or `orbital_0.3.7_amd64.deb` |
 
 Not sure which Mac you have? Apple menu → About This Mac → "Chip".
 
@@ -25,7 +25,11 @@ Orbital works without an AI key: notes, Papers, projects, search, reminders, foc
 questions are answered from your own knowledge. For AI chat, research and writing help, add your own key in
 **Settings → AI & research**. It stays on your computer.
 
-## What's new in 0.3.6
+## What's new in 0.3.7
+
+- **Voice now works in the desktop app:** talk to Orbital, dictate in Papers, and turn recordings in Media into text. Speech recognition runs privately on your computer. The first time, it downloads a speech model once (about 80 MB); after that it works offline.
+
+New in 0.3.6:
 
 - **Reminders keep working with the window closed:** Orbital stays in the menu bar (Mac) or system tray (Windows) and shows a system notification when a reminder is due. The Dock/taskbar icon shows how many are due. You can also have Orbital open when you log in (Settings → Desktop).
 - **Repeating reminders:** every day, every weekday, chosen days, every few weeks, monthly or yearly, with an optional end date.

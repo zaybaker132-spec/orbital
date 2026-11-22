@@ -1899,3 +1899,13 @@
 4919|Wiederholt sich
 4920|Nicht mehr wiederholen
 4921|bis {date}
+4922|Die Aufnahme konnte nicht geöffnet werden.
+4923|Sprache wird vorbereitet (einmaliger Download) · {pct}%
+4924|Aufnahmen bis 60 Minuten können auf diesem Computer transkribiert werden.
+4925|Wird auf diesem Computer transkribiert … lange Aufnahmen dauern etwas.
+4926|Spracheingabe braucht einen neueren Browser. Versuche Chrome, Edge oder Safari.
+4927|Schreibe, was du gesagt hast …
+4928|braucht einen neueren Browser
+4929|Das Sprachmodell konnte nicht heruntergeladen werden (einmalig etwa 80 MB). Prüfe deine Internetverbindung und versuche es erneut.
+4930|Die Spracherkennung konnte auf diesem Computer nicht starten.
+4931|auf diesem Computer (privat, funktioniert offline)

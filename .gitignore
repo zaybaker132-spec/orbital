@@ -5,3 +5,4 @@ dist
 *.log
 release
 desktop-build
+public/ort

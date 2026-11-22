@@ -483,6 +483,43 @@ test("search: finds words inside conversations, notes, files, clips and research
 });
 
 // ── Voice and memory ───────────────────────────────────────────────────────
+test("voice: the on-device speech model is fetched once, cached, and nothing else gets through", async () => {
+  const { SPEECH_MODEL } = await import("../routes/productivity.js");
+  assert.equal((await owner.req("GET", "/api/voice/config")).data.localModel, SPEECH_MODEL);
+  const hits: string[] = [];
+  const hf = http.createServer((q, r) => {
+    hits.push(q.url!);
+    if (q.url === `/${SPEECH_MODEL}/resolve/main/config.json`) { r.writeHead(200, { "content-type": "application/json" }); return r.end('{"model_type":"whisper"}'); }
+    r.writeHead(404); r.end();
+  });
+  await new Promise<void>((ok) => hf.listen(0, "127.0.0.1", ok));
+  process.env.SPEECH_MODEL_HOST = `http://127.0.0.1:${(hf.address() as any).port}`;
+  try {
+    const url = `/api/voice/models/${SPEECH_MODEL}/resolve/main/config.json`;
+    const first = await owner.req("GET", url);
+    assert.equal(first.status, 200);
+    assert.equal(first.data.model_type, "whisper");
+    assert.equal((await owner.req("GET", url)).data.model_type, "whisper");
+    assert.equal(hits.filter((h) => h.endsWith("config.json")).length, 1, "downloaded once, then served from the data folder");
+    // A file the model doesn't have: 404, remembered.
+    assert.equal((await owner.req("GET", `/api/voice/models/${SPEECH_MODEL}/resolve/main/missing.json`)).status, 404);
+    assert.equal((await owner.req("GET", `/api/voice/models/${SPEECH_MODEL}/resolve/main/missing.json`)).status, 404);
+    assert.equal(hits.filter((h) => h.endsWith("missing.json")).length, 1);
+    // Only the speech model, only model-like files, no path tricks.
+    assert.equal((await owner.req("GET", "/api/voice/models/someone/other-model/resolve/main/config.json")).status, 404);
+    assert.equal((await owner.req("GET", `/api/voice/models/${SPEECH_MODEL}/resolve/main/..%2F..%2Fsecrets.json`)).status, 404);
+    assert.equal((await owner.req("GET", `/api/voice/models/${SPEECH_MODEL}/resolve/main/run.sh`)).status, 404);
+    assert.equal(hits.filter((h) => !h.startsWith(`/${SPEECH_MODEL}/`)).length, 0, "nothing else was requested upstream");
+    // Signed out: no access.
+    assert.equal((await new Client().req("GET", url)).status, 401);
+    // Offline: a clear error, not a crash.
+    process.env.SPEECH_MODEL_HOST = "http://127.0.0.1:9";
+    const off = await owner.req("GET", `/api/voice/models/${SPEECH_MODEL}/resolve/main/tokenizer.json`);
+    assert.equal(off.status, 502);
+    assert.match(off.data.error, /speech model/);
+  } finally { delete process.env.SPEECH_MODEL_HOST; hf.close(); }
+});
+
 test("voice: server transcription and saving a conversation to memory", async () => {
   assert.equal((await owner.req("GET", "/api/voice/config")).data.serverTranscription, true);
   const r = await owner.upload("/api/voice/transcribe", "speech.webm", new Uint8Array(4000).fill(7), "audio/webm", "audio");

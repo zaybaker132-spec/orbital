@@ -4,7 +4,7 @@ Eight features for daily use, on top of the five engines. Each one runs on Orbit
 
 | Feature | Where | Needs |
 |---|---|---|
-| [Voice](#voice) | Chat: mic and **Talk** buttons, or `⌘K` → "Talk to Orbital" | Chrome, Edge or Safari for speech recognition, **or** a transcription service on the server |
+| [Voice](#voice) | Chat: mic and **Talk** buttons, or `⌘K` → "Talk to Orbital" | Works everywhere: the browser's recogniser in Chrome, Edge and Safari; on-device Whisper in the desktop app and Firefox |
 | [Universal search](#universal-search) | `/search`, or `⌘K` → "Search everything" | — |
 | [File intelligence](#file-intelligence) | Knowledge → **Import**, or the paperclip in chat | An AI provider only for images and scanned PDFs |
 | [Project tracking](#project-tracking) | Projects | — |
@@ -26,9 +26,13 @@ Eight features for daily use, on top of the five engines. Each one runs on Orbit
   - With an AI provider, Orbital also turns the facts you stated into memories, using the same evidence checks as automatic memory extraction.
   - "Remember that…" always works, even without AI.
 
-**Speech recognition** comes from one of two places:
+**Speech recognition** comes from one of three places:
 1. **The browser's own recogniser**, in Chrome, Edge and Safari. In Chrome and Edge, audio goes to the browser vendor's speech service.
-2. **A transcription service on the server.** This is used where the browser has no recogniser: the desktop app and Firefox. Orbital records a clip, stops after about a second of silence, and sends it to any OpenAI-compatible `/audio/transcriptions` endpoint. Audio is never stored.
+2. **On this computer (default where the browser has no recogniser: the desktop app, Firefox).** Orbital records a clip, stops after about a second of silence, and turns it into text with Whisper (`onnx-community/whisper-base`) running inside the app (Transformers.js, ONNX Runtime WebAssembly, in a background worker). It's free, private (audio never leaves the computer) and works offline.
+   - The first time, the model downloads once (about 80 MB), with a progress percentage. Orbital's server fetches it from Hugging Face and keeps it in the data folder (`models/`), so the app only ever talks to its own server. Only that one model can be fetched (`GET /api/voice/models/...`).
+   - The same engine handles voice typing in Papers and **Transcribe** in Media (recordings up to 60 minutes).
+   - It understands Orbital's languages; it's told which one you use.
+3. **A transcription service on the server**, if you configure one. It then takes priority over on-device recognition (for example on a hosted server where you'd rather not have each browser download the model). Orbital sends the clip to any OpenAI-compatible `/audio/transcriptions` endpoint. Audio is never stored.
 
 | Variable | Default | |
 |---|---|---|

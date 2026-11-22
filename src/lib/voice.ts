@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "./api";
 import { language, locale } from "@/i18n";
+import { localSpeechSupported, prepareLocalSpeech, transcribeLocally, useModelStatus } from "./localSpeech";
 
 /**
  * Voice in and out.
- *  - Speech to text: the browser's own recogniser when it has one (Chrome, Edge, Safari); otherwise
- *    record with the microphone and send the clip to the server's transcription endpoint (desktop
- *    app, Firefox), which needs TRANSCRIPTION_BASE_URL or OPENAI_API_KEY on the server.
+ *  - Speech to text: the browser's own recogniser when it has one (Chrome, Edge, Safari). Otherwise
+ *    record with the microphone and transcribe the clip: with the server's transcription service if
+ *    one is configured, or else on this computer with Whisper (localSpeech.ts) — the desktop app,
+ *    Firefox. On-device needs a one-time model download and then works offline, for free.
  *  - Text to speech: the system voices through speechSynthesis.
  */
 
-type Engine = "browser" | "server" | "none";
+type Engine = "browser" | "server" | "local" | "none";
 const SR: any = typeof window !== "undefined" ? (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition : null;
 /** Electron exposes webkitSpeechRecognition but it can't reach a recognition service. */
 const isElectron = typeof navigator !== "undefined" && /Electron\//.test(navigator.userAgent);
@@ -20,7 +22,8 @@ let serverConfig: Promise<boolean> | null = null;
 const serverTranscription = () => (serverConfig ??= api.get("/voice/config").then((c) => !!c.serverTranscription).catch(() => false));
 
 export function useSpeechInput(opts: { onFinal: (text: string) => void; onInterim?: (text: string) => void; continuous?: boolean }) {
-  const [engine, setEngine] = useState<Engine>(browserRecognition ? "browser" : "none");
+  const [engine, setEngine] = useState<Engine>(browserRecognition ? "browser" : localSpeechSupported ? "local" : "none");
+  const model = useModelStatus();
   const [listening, setListening] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const [level, setLevel] = useState(0);
@@ -29,7 +32,7 @@ export function useSpeechInput(opts: { onFinal: (text: string) => void; onInteri
   cb.current = opts;
   const stopRef = useRef<() => void>(() => {});
 
-  useEffect(() => { if (!browserRecognition) serverTranscription().then((ok) => setEngine(ok ? "server" : "none")); }, []);
+  useEffect(() => { if (!browserRecognition) serverTranscription().then((ok) => setEngine(ok ? "server" : localSpeechSupported ? "local" : "none")); }, []);
 
   const start = useCallback(async () => {
     setError(null);
@@ -63,7 +66,9 @@ export function useSpeechInput(opts: { onFinal: (text: string) => void; onInteri
       try { rec.start(); setListening(true); } catch { setError("Couldn't start listening."); }
       return;
     }
-    if (engine === "server") {
+    if (engine === "server" || engine === "local") {
+      // On this computer: start getting the speech model ready while the person talks.
+      if (engine === "local") void prepareLocalSpeech().catch(() => {});
       let stream: MediaStream;
       try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); }
       catch { setError("Microphone access was blocked. Allow it in your system or browser settings."); return; }
@@ -97,13 +102,19 @@ export function useSpeechInput(opts: { onFinal: (text: string) => void; onInteri
         setLevel(0);
         if (!spoke || !chunks.length) return;
         setTranscribing(true);
+        const clip = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
+        const lang = language();
         try {
-          const fd = new FormData();
-          fd.append("audio", new Blob(chunks, { type: recorder.mimeType || "audio/webm" }), "speech");
-          const lang = language();
-          if (/^[a-z]{2}$/.test(lang)) fd.append("language", lang);
-          const r = await api.upload("/voice/transcribe", fd);
-          if (r.text) cb.current.onFinal(r.text);
+          if (engine === "local") {
+            const text = await transcribeLocally(clip, /^[a-z]{2}$/.test(lang) ? lang : undefined, 5 * 60);
+            if (text) cb.current.onFinal(text);
+          } else {
+            const fd = new FormData();
+            fd.append("audio", clip, "speech");
+            if (/^[a-z]{2}$/.test(lang)) fd.append("language", lang);
+            const r = await api.upload("/voice/transcribe", fd);
+            if (r.text) cb.current.onFinal(r.text);
+          }
         } catch (e: any) { setError(e?.message ?? "Couldn't transcribe that."); }
         finally { setTranscribing(false); }
       };
@@ -112,12 +123,12 @@ export function useSpeechInput(opts: { onFinal: (text: string) => void; onInteri
       setListening(true);
       return;
     }
-    setError("Voice input isn't available here. Use Chrome, Edge or Safari, or ask the server admin to set up transcription.");
+    setError("Voice input needs a newer browser. Try Chrome, Edge or Safari.");
   }, [engine]);
 
   const stop = useCallback(() => stopRef.current(), []);
   useEffect(() => () => stopRef.current(), []);
-  return { engine, listening, transcribing, level, error, start, stop, available: engine !== "none" };
+  return { engine, listening, transcribing, level, error, start, stop, available: engine !== "none", model };
 }
 
 /** Markdown answer → something pleasant to hear: no code, URLs, citation markers or symbols. */

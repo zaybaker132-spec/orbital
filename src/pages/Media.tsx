@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Camera, Circle, Download, FileAudio, FileVideo, Image as ImageIcon, Mic, MonitorUp, Pencil, Search, Square, Trash2, Upload, Video, X } from "lucide-react";
-import { locale, tx } from "@/i18n";
+import { language, locale, tx } from "@/i18n";
+import { localSpeechSupported, transcribeLocally, useModelStatus } from "@/lib/localSpeech";
 import { api } from "@/lib/api";
 import { invalidate, useResource } from "@/lib/resource";
 import { timeAgo } from "@/lib/format";
@@ -209,6 +210,7 @@ function MediaDetail({ id }: { id: string }) {
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState("");
   const [busy, setBusy] = useState(false);
+  const model = useModelStatus();
   if (error) return <div className="p-10"><Empty title={tx("This media is gone")}><Link to="/media" className="underline">{tx("Back to Media")}</Link></Empty></div>;
   if (!m) return <div className="p-10"><Pulse /></div>;
   const src = `/api/media/${m.id}/file`;
@@ -219,9 +221,21 @@ function MediaDetail({ id }: { id: string }) {
     if (!t || t === m.title) return;
     try { await api.patch(`/media/${m.id}`, { title: t }); invalidate("/media"); } catch (e) { toastError(e); }
   };
+  // The server's transcription service if it has one; otherwise on this computer (free, private).
+  const onDevice = !usage?.transcription && localSpeechSupported;
+  const canTranscribe = usage?.transcription ? Number(m.size) <= 25 * 1024 * 1024 : onDevice && (m.duration_ms ?? 0) <= 60 * 60_000;
   const transcribe = async () => {
     setBusy(true);
-    try { await api.post(`/media/${m.id}/transcribe`, {}); invalidate(`/media/${m.id}`, "/media?"); toast(tx("Transcript added")); } catch (e) { toastError(e); } finally { setBusy(false); }
+    try {
+      if (usage?.transcription) await api.post(`/media/${m.id}/transcribe`, {});
+      else {
+        const file = await fetch(src, { credentials: "same-origin" }).then((r) => { if (!r.ok) throw new Error(tx("Couldn't open the recording.")); return r.blob(); });
+        const lang = language();
+        const text = await transcribeLocally(file, /^[a-z]{2}$/.test(lang) ? lang : undefined);
+        await api.patch(`/media/${m.id}`, { transcript: text || "" });
+      }
+      invalidate(`/media/${m.id}`, "/media?"); toast(tx("Transcript added"));
+    } catch (e) { toastError(e); } finally { setBusy(false); }
   };
   const saveNote = async () => {
     try { const d = await api.post("/documents", { title: m.title, body: m.transcript ?? "" }); invalidate("/documents"); navigate(`/knowledge/${d.id}`); } catch (e) { toastError(e); }
@@ -260,13 +274,14 @@ function MediaDetail({ id }: { id: string }) {
           <section className="mt-6">
             <div className="flex items-center gap-3">
               <h2 className="label">{tx("Transcript")}</h2>
-              {canEdit && usage?.transcription && Number(m.size) <= 25 * 1024 * 1024 && (
+              {canEdit && canTranscribe && (
                 <Button size="sm" variant="ghost" onClick={transcribe} loading={busy}>{m.transcript ? tx("Transcribe again") : tx("Transcribe")}</Button>
               )}
+              {busy && onDevice && <span className="text-[0.76rem] text-mute" aria-live="polite">{model.state === "downloading" ? tx("Getting voice ready (one-time download) · {pct}%", { pct: Math.round(model.progress * 100) }) : tx("Transcribing on this computer… long recordings take a while.")}</span>}
               {m.transcript && <Button size="sm" variant="ghost" onClick={saveNote}>{tx("Save as a note")}</Button>}
             </div>
             {m.transcript ? <p className="mt-2 whitespace-pre-wrap text-[0.9rem] leading-relaxed text-white/90">{m.transcript}</p>
-              : <p className="mt-2 text-[0.82rem] text-mute">{usage?.transcription ? (Number(m.size) > 25 * 1024 * 1024 ? tx("Transcription works on recordings up to 25 MB.") : tx("No transcript yet.")) : tx("Turning speech into text needs a transcription service on the server (TRANSCRIPTION_BASE_URL or an OpenAI key).")}</p>}
+              : <p className="mt-2 text-[0.82rem] text-mute">{canTranscribe ? tx("No transcript yet.") : usage?.transcription ? tx("Transcription works on recordings up to 25 MB.") : onDevice ? tx("Recordings up to 60 minutes can be transcribed on this computer.") : tx("Voice input needs a newer browser. Try Chrome, Edge or Safari.")}</p>}
           </section>
         )}
       </div>

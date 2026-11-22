@@ -1899,3 +1899,13 @@
 4919|Récurrent
 4920|Arrêter la répétition
 4921|jusqu'au {date}
+4922|Impossible d'ouvrir l'enregistrement.
+4923|Préparation de la voix (téléchargement unique) · {pct}%
+4924|Les enregistrements de 60 minutes maximum peuvent être transcrits sur cet ordinateur.
+4925|Transcription sur cet ordinateur… les longs enregistrements prennent du temps.
+4926|La saisie vocale nécessite un navigateur plus récent. Essayez Chrome, Edge ou Safari.
+4927|Écriture de ce que vous avez dit…
+4928|nécessite un navigateur plus récent
+4929|Impossible de télécharger le modèle vocal (téléchargement unique d'environ 80 Mo). Vérifiez votre connexion internet et réessayez.
+4930|La reconnaissance vocale n'a pas pu démarrer sur cet ordinateur.
+4931|sur cet ordinateur (privé, fonctionne hors ligne)

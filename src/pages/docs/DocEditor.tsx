@@ -265,7 +265,7 @@ function DocWorkspace({ initial }: { initial: any }) {
     onInterim: setInterim,
     onFinal: (text) => { setInterim(""); editor?.chain().focus().insertContent(`${text} `).run(); },
   });
-  const toggleVoice = () => { if (voice.listening) voice.stop(); else if (!voice.available) toast(tx("Voice typing isn't available in this browser. Try Chrome, Edge or Safari.")); else void voice.start(); };
+  const toggleVoice = () => { if (voice.listening) voice.stop(); else if (!voice.available) toast(tx("Voice input needs a newer browser. Try Chrome, Edge or Safari.")); else void voice.start(); };
   useEffect(() => { if (voice.error) toast(tx(voice.error), { tone: "error" }); }, [voice.error]);
 
   // ── Keyboard ──────────────────────────────────────────────────────────────
@@ -444,6 +444,12 @@ function DocWorkspace({ initial }: { initial: any }) {
           <div className="absolute bottom-3 left-1/2 flex max-w-[60%] -translate-x-1/2 items-center gap-2 rounded-full border border-red-400/40 bg-black/80 px-4 py-1.5 text-[0.8rem] text-white backdrop-blur">
             <Mic size={14} className="animate-pulse text-red-400" /><span className="truncate">{interim || tx("Listening… speak, then press the microphone again to insert.")}</span>
             <button onClick={() => voice.stop()} className="ml-1 text-[0.74rem] text-mute-bright underline">{tx("Stop")}</button>
+          </div>
+        )}
+        {!voice.listening && voice.transcribing && (
+          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full border border-line bg-black/80 px-4 py-1.5 text-[0.8rem] text-white backdrop-blur" aria-live="polite">
+            <Mic size={14} className="text-mute-bright" />
+            {voice.model.state === "downloading" ? tx("Getting voice ready (one-time download) · {pct}%", { pct: Math.round(voice.model.progress * 100) }) : tx("Writing what you said…")}
           </div>
         )}
       </div>

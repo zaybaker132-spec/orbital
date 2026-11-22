@@ -14,6 +14,10 @@ import { getLLM, describeAiError } from "../ai/provider.js";
 import { extractMemories } from "../engines/memory.js";
 import { contributionCalendar } from "../engines/calendar.js";
 import { transcribeAudio } from "../lib/transcribe.js";
+import fs from "node:fs";
+import path from "node:path";
+import { Readable } from "node:stream";
+import { pipeline } from "node:stream/promises";
 import { REPEAT_FREQS, firstOccurrence, validTimeZone, wallTime, type RepeatRule } from "../../shared/recurrence.js";
 
 /** Personal productivity: reminders, nudges and focus sessions. Each person sees only their own. */
@@ -195,8 +199,49 @@ productivity.post("/focus/:id/end", ah(async (req, res) => {
 const audioUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024, files: 1 } });
 
 productivity.get("/voice/config", (_req, res) => {
-  res.json({ serverTranscription: !!config.transcription.baseUrl });
+  res.json({ serverTranscription: !!config.transcription.baseUrl, localModel: SPEECH_MODEL });
 });
+
+/**
+ * On-device speech recognition (Whisper, run inside the app with Transformers.js) needs its model files.
+ * This route fetches them once from Hugging Face, keeps them in Orbital's data folder, and serves them
+ * from there, so the app only ever talks to its own server and the model works offline afterwards.
+ * Only the one speech model is allowed through; nothing else is proxied.
+ */
+export const SPEECH_MODEL = "onnx-community/whisper-base";
+const MODEL_FILE = /^[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)?\.(?:json|onnx|onnx_data|txt|model)$/;
+const modelHost = () => (process.env.SPEECH_MODEL_HOST || "https://huggingface.co").replace(/\/$/, "");
+const downloads = new Map<string, Promise<boolean>>();
+async function fetchModelFile(file: string, dest: string): Promise<boolean> {
+  const unavailable = () => new HttpError(502, "Couldn't download the speech model. Check your internet connection and try again.", "model_unavailable");
+  let r: Response;
+  try { r = await fetch(`${modelHost()}/${SPEECH_MODEL}/resolve/main/${file}`, { redirect: "follow", signal: AbortSignal.timeout(10 * 60_000) }); }
+  catch { throw unavailable(); }
+  if (r.status === 404) return false;
+  if (!r.ok || !r.body) throw unavailable();
+  await fs.promises.mkdir(path.dirname(dest), { recursive: true });
+  const tmp = `${dest}.${process.pid}.${Date.now()}.part`;
+  try { await pipeline(Readable.fromWeb(r.body as any), fs.createWriteStream(tmp)); }
+  catch { await fs.promises.rm(tmp, { force: true }); throw unavailable(); }
+  await fs.promises.rename(tmp, dest);
+  return true;
+}
+productivity.get(/^\/voice\/models\/([^/]+\/[^/]+)\/resolve\/main\/(.+)$/, ah(async (req, res) => {
+  const model = (req.params as any)[0] as string, file = (req.params as any)[1] as string;
+  if (model !== SPEECH_MODEL || !MODEL_FILE.test(file) || file.includes("..")) throw notFound("Model file");
+  const dest = path.join(config.dataDir, "models", ...SPEECH_MODEL.split("/"), ...file.split("/"));
+  const missing = `${dest}.missing`;
+  if (fs.existsSync(missing)) throw notFound("Model file");
+  if (!fs.existsSync(dest)) {
+    // One download per file, however many requests ask for it at once.
+    let p = downloads.get(dest);
+    if (!p) { p = fetchModelFile(file, dest).finally(() => downloads.delete(dest)); downloads.set(dest, p); }
+    if (!(await p)) { await fs.promises.mkdir(path.dirname(missing), { recursive: true }); await fs.promises.writeFile(missing, ""); throw notFound("Model file"); }
+  }
+  res.setHeader("cache-control", "private, max-age=31536000, immutable");
+  // The data folder can be a dot-folder (.orbital-data); allow it explicitly.
+  res.sendFile(dest, { dotfiles: "allow" });
+}));
 
 /** Speech to text through the configured transcription endpoint (audio is not stored). */
 productivity.post("/voice/transcribe", rateLimit({ windowMs: 60_000, max: 40, key: "user", name: "transcribe" }), audioUpload.single("audio"), ah(async (req, res) => {

@@ -1,6 +1,6 @@
 {
   "name": "orbital",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "description": "Orbital — personal and business intelligence environment",
   "scripts": {
     "dev": "concurrently -k -n api,web -c gray,white \"tsx watch server/main.ts\" \"vite\"",
@@ -23,6 +23,7 @@
     "@electric-sql/pglite": "^0.5.16",
     "@electric-sql/pglite-pgvector": "^0.0.17",
     "@fontsource/outfit": "^5.3.0",
+    "@huggingface/transformers": "^4.3.2",
     "cookie-parser": "^1.4.7",
     "electron-updater": "^6.8.11",
     "express": "^4.22.3",
