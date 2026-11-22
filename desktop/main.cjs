@@ -2,6 +2,7 @@
 // Runs the real Orbital server in a Node utility process (embedded PostgreSQL in the user's
 // app-data folder, bound to 127.0.0.1) and shows it in a hardened window.
 const { app, BrowserWindow, Menu, Notification, Tray, clipboard, desktopCapturer, dialog, ipcMain, nativeImage, nativeTheme, safeStorage, shell, utilityProcess } = require("electron");
+const crypto = require("node:crypto");
 const fs = require("node:fs");
 const net = require("node:net");
 const path = require("node:path");
@@ -32,6 +33,9 @@ let server = null;
 let port = 0;
 let quitting = false;
 let tray = null;
+// Lets this app (and only this app) start a password reset on the local server: there's no email or
+// administrator on a desktop install. Never sent to the window.
+const desktopToken = crypto.randomBytes(32).toString("hex");
 let dueCount = 0;
 
 // ── Desktop settings: keep running in the background (so reminders arrive), open at login ──
@@ -95,6 +99,7 @@ async function startServer() {
       NODE_ENV: "production",
       PORT: String(port),
       ORBITAL_DESKTOP: "1",
+      ORBITAL_DESKTOP_TOKEN: desktopToken,
       ORBITAL_DATA_DIR: dataDir,
       ORBITAL_STATIC_DIR: staticDir,
       COOKIE_SECURE: "false",
@@ -276,6 +281,19 @@ ipcMain.handle("orbital:set-badge", (e, n) => {
     win.setOverlayIcon(dueCount ? nativeImage.createFromPath(path.join(__dirname, "tray", "badge.png")) : null, dueCount ? `${dueCount} reminders due` : "");
   }
   updateTray();
+});
+// Forgot password: everything is on this computer, so reset it here. Opens "choose a new password".
+ipcMain.handle("orbital:reset-password", async (e, email) => {
+  if (!fromApp(e) || typeof email !== "string" || email.length > 200) throw new Error("Not allowed");
+  const r = await fetch(`${origin()}/api/auth/password/desktop-reset`, {
+    method: "POST",
+    headers: { "content-type": "application/json", "x-orbital-request": "1", "x-orbital-desktop-token": desktopToken },
+    body: JSON.stringify({ email }),
+  });
+  const body = await r.json().catch(() => ({}));
+  if (!r.ok || typeof body.path !== "string" || !body.path.startsWith("/reset-password?token=")) return { error: body.error || "Couldn't reset the password." };
+  win?.loadURL(origin() + body.path);
+  return { ok: true };
 });
 ipcMain.handle("orbital:get-settings", () => ({ background: !!settings.background, openAtLogin: !!settings.openAtLogin, loginSupported }));
 ipcMain.handle("orbital:set-settings", (e, patch) => {

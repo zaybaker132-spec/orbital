@@ -47,8 +47,9 @@ function FocusSetup({ week, recent }: { week: { seconds: number; sessions: numbe
   return (
     <div className="h-full overflow-y-auto pb-16">
       <PageHeader title={tx("Focus")} subtitle={tx("One objective, a timer and nothing else. Orbital holds notifications until you're done.")} />
-      <div className="grid gap-10 px-8 lg:grid-cols-[minmax(0,560px)_1fr]">
-        <form className="grid gap-4" onSubmit={(e) => { e.preventDefault(); start(); }}>
+      {/* Two columns only when there's room for both; otherwise the history goes under the form. */}
+      <div className="flex flex-wrap items-start gap-10 px-8">
+        <form className="grid min-w-0 max-w-[560px] flex-[1_1_420px] content-start gap-4" onSubmit={(e) => { e.preventDefault(); start(); }}>
           <label className="grid gap-2"><span className="label">{tx("What's the one thing?")}</span>
             <Input autoFocus value={objective} onChange={(e) => setObjective(e.target.value)} placeholder={tx("e.g. Draft the pricing page")} className="h-11 text-[1rem]" aria-label={tx("Objective")} /></label>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -63,7 +64,7 @@ function FocusSetup({ week, recent }: { week: { seconds: number; sessions: numbe
           </div>
           <Button variant="primary" type="submit" icon={<Target size={14} />} loading={busy} disabled={!objective.trim()} className="h-11 justify-self-start px-6">{tx("Start focus")}</Button>
         </form>
-        <div className="space-y-6">
+        <div className="min-w-[260px] flex-[1_1_300px] space-y-6">
           <div className="grid grid-cols-2 gap-2">
             <div className="glow-card rounded-xl border border-line px-4 py-3"><div className="text-[1.4rem] font-light">{minutes(week.seconds)}</div><div className="text-[0.74rem] text-mute">{tx("focused this week")}</div></div>
             <div className="glow-card rounded-xl border border-line px-4 py-3"><div className="text-[1.4rem] font-light">{week.sessions}</div><div className="text-[0.74rem] text-mute">{week.sessions === 1 ? tx("session this week") : tx("sessions this week")}</div></div>

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
@@ -32,7 +33,9 @@ export const Markdown = memo(function Markdown({ text, onRef, sources }: { text:
               return <a href={s?.url} target="_blank" rel="noreferrer noopener" title={s?.title} className="!no-underline font-mono text-[0.72rem] text-sky-200/80 hover:text-sky-100">[{children}]</a>;
             }
             const safe = href && /^(https?:|mailto:|\/)/i.test(href) ? href : undefined;
-            return <a href={safe} target={safe?.startsWith("/") ? undefined : "_blank"} rel="noreferrer noopener">{children}</a>;
+            // Links inside Orbital open in place (no reload); everything else in a new tab.
+            if (safe?.startsWith("/") && !safe.startsWith("//")) return <Link to={safe}>{children}</Link>;
+            return <a href={safe} target="_blank" rel="noreferrer noopener">{children}</a>;
           },
           img: () => null, // no remote images from model output or documents
         }}

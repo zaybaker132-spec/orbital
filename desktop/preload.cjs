@@ -16,6 +16,8 @@ contextBridge.exposeInMainWorld("orbitalDesktop", {
     return () => ipcRenderer.removeListener("orbital:navigate", h);
   },
   // Keep running when the window is closed; open at login.
+  // Forgot password on this computer: opens "choose a new password" for that account.
+  resetPassword: (email) => ipcRenderer.invoke("orbital:reset-password", email),
   getSettings: () => ipcRenderer.invoke("orbital:get-settings"),
   setSettings: (patch) => ipcRenderer.invoke("orbital:set-settings", patch),
 });

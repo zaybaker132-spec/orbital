@@ -29,6 +29,8 @@ interface AppStore {
   workspaces: Workspace[];
   workspace: Workspace | null;
   desktop: boolean;
+  /** Desktop app with no accounts yet. */
+  firstRun: boolean;
   downloadUrl: string;
   serverAdmin: boolean;
   server: ServerInfo | null;
@@ -59,6 +61,7 @@ export const useApp = create<AppStore>((set, get) => ({
   workspaces: [],
   workspace: null,
   desktop: false,
+  firstRun: false,
   downloadUrl: "",
   serverAdmin: false,
   server: null,
@@ -75,7 +78,7 @@ export const useApp = create<AppStore>((set, get) => ({
     // The account's language wins over this device's: switch and reload once if they differ (e.g. a new device).
     const lang = me.preferences?.language;
     if (lang && lang !== languagePref()) { setLanguage(lang); location.reload(); return; }
-    set({ loaded: true, user: me.user, ai: me.ai, prefs: me.preferences ?? {}, signupAllowed: me.signupAllowed, workspaces, workspace: current, desktop: !!me.desktop, downloadUrl: me.downloadUrl ?? "", serverAdmin: !!me.serverAdmin, server: me.server ?? null });
+    set({ loaded: true, user: me.user, ai: me.ai, prefs: me.preferences ?? {}, signupAllowed: me.signupAllowed, workspaces, workspace: current, desktop: !!me.desktop, firstRun: !!me.firstRun, downloadUrl: me.downloadUrl ?? "", serverAdmin: !!me.serverAdmin, server: me.server ?? null });
   },
   async setPrefs(p) {
     set({ prefs: { ...get().prefs, ...p } });

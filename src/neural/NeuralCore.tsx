@@ -431,5 +431,6 @@ function FallbackCore({ className, reducedMotion, framing, label }: { className:
     raf = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(raf);
   }, [reducedMotion, framing]);
-  return <canvas ref={ref} className={`block ${className}`} role="img" aria-label={label} />;
+  // A canvas keeps its default 300×150 size unless told to fill its box.
+  return <canvas ref={ref} className={`block h-full w-full ${className}`} role="img" aria-label={label} />;
 }

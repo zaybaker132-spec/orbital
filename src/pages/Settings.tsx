@@ -27,6 +27,11 @@ export function SettingsPage() {
   const { ai, prefs, setPrefs, serverAdmin } = useApp();
   const [deleting, setDeleting] = useState(false);
   const save = (p: any) => setPrefs(p).then(() => toast(tx("Saved"))).catch(toastError);
+  // Links like /settings#ai open on that section.
+  useEffect(() => {
+    const id = location.hash.slice(1);
+    if (id) setTimeout(() => document.getElementById(id)?.scrollIntoView({ block: "start" }), 150);
+  }, []);
   return (
     <div className="h-full overflow-y-auto">
       <PageHeader title={tx("Settings")} />
@@ -43,7 +48,8 @@ export function SettingsPage() {
           <AccountGroup />
           <WorkspaceGroup />
 
-          <Group id="ai" title={tx("AI & research")} description={tx("Orbital's AI runs on your server. API keys live in server environment variables (or the desktop app's keychain) and are never sent to the browser.")}>
+          <Group id="ai" title={tx("AI & research")} description={window.orbitalDesktop ? tx("AI is optional. Notes, projects, reminders, search and meetings all work without it.") : tx("Orbital's AI runs on your server. API keys live in server environment variables (or the desktop app's keychain) and are never sent to the browser.")}>
+            {window.orbitalDesktop && <DesktopApiKey />}
             <Row label={tx("Provider")}>{ai?.provider === "none" ? <Badge tone="warn">{tx("Not configured")}</Badge> : <span>{ai?.provider} · <span className="font-mono text-[0.82rem]">{ai?.model}</span></span>}</Row>
             <Row label={tx("Web search")}>{ai?.webSearch ? <Badge tone="ok">{tx("enabled")}</Badge> : <span className="text-mute">{tx("Not available: research uses Wikipedia and OpenAlex")}</span>}</Row>
             <Row label={tx("Embeddings")}>{ai?.embeddings}</Row>
@@ -527,8 +533,46 @@ declare global {
   interface Window { orbitalDesktop?: {
     isDesktop: true; status(): Promise<{ version: string; platform: string; hasApiKey: boolean; secureStorage: boolean; dataDir: string }>; setApiKey(key: string | null): Promise<{ ok: boolean }>; openDataFolder(): Promise<void>;
     notify?(n: { title: string; body?: string; link?: string }): Promise<boolean>; setBadge?(count: number): Promise<void>; onNavigate?(cb: (pathname: string) => void): () => void;
-    getSettings?(): Promise<OrbitalDesktopSettings>; setSettings?(patch: Partial<Pick<OrbitalDesktopSettings, "background" | "openAtLogin">>): Promise<OrbitalDesktopSettings>;
+    getSettings?(): Promise<OrbitalDesktopSettings>; resetPassword?(email: string): Promise<{ ok?: true; error?: string }>; setSettings?(patch: Partial<Pick<OrbitalDesktopSettings, "background" | "openAtLogin">>): Promise<OrbitalDesktopSettings>;
   } }
+}
+
+/** Desktop app: your own Anthropic API key, kept in the OS keychain-backed store, with how to get one. */
+function DesktopApiKey() {
+  const bridge = window.orbitalDesktop!;
+  const [status, setStatus] = useState<Awaited<ReturnType<typeof bridge.status>> | null>(null);
+  const [key, setKey] = useState("");
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { bridge.status().then(setStatus).catch(() => {}); }, [bridge]);
+  const save = async (value: string | null) => {
+    setBusy(true);
+    try { await bridge.setApiKey(value); toast(value ? tx("Key saved — Orbital restarted with AI enabled") : tx("Key removed")); } catch (e) { toastError(e); setBusy(false); }
+  };
+  return (
+    <>
+      <Row label={tx("Your API key")}>
+        {status?.hasApiKey ? (
+          <div className="flex items-center gap-3"><Badge tone="ok">{tx("saved securely")}</Badge><Button size="sm" variant="ghost" disabled={busy} onClick={() => save(null)}>{tx("Remove")}</Button></div>
+        ) : (
+          <div className="flex gap-2">
+            <Input type="password" placeholder={tx("sk-ant-…")} value={key} onChange={(e) => setKey(e.target.value)} aria-label={tx("Anthropic API key")} autoComplete="off" />
+            <Button variant="primary" loading={busy} disabled={key.trim().length < 20 || status?.secureStorage === false} onClick={() => save(key)}>{tx("Save")}</Button>
+          </div>
+        )}
+        <p className="mt-1.5 text-[0.76rem] text-mute">{status?.secureStorage === false ? tx("Secure storage isn't available on this system, so the key can't be saved.") : tx("Encrypted with your operating system's keychain and given only to the local Orbital server.")}</p>
+      </Row>
+      {status && !status.hasApiKey && (
+        <div className="rounded-lg border border-line bg-white/[0.02] p-4 text-[0.84rem] leading-relaxed text-mute-bright">
+          <p className="text-white">{tx("Turn on AI chat, research and writing help with your own key:")}</p>
+          <ol className="mt-2 list-decimal space-y-1 pl-5">
+            <li>{tx("Go to")} <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noreferrer noopener" className="underline decoration-white/30 underline-offset-2 hover:text-white">console.anthropic.com</a> {tx("and create a free account.")}</li>
+            <li>{tx("Add a little credit under Billing (you pay Anthropic only for what you use).")}</li>
+            <li>{tx("Under API Keys, click Create Key, copy it, and paste it above.")}</li>
+          </ol>
+        </div>
+      )}
+    </>
+  );
 }
 
 /** Desktop app: API key in the OS keychain-backed store. Web: link to download the desktop app. */
@@ -536,8 +580,6 @@ function DesktopGroup() {
   const bridge = window.orbitalDesktop;
   const downloadUrl = useApp((s) => s.downloadUrl);
   const [status, setStatus] = useState<Awaited<ReturnType<NonNullable<typeof bridge>["status"]>> | null>(null);
-  const [key, setKey] = useState("");
-  const [busy, setBusy] = useState(false);
   useEffect(() => { bridge?.status().then(setStatus).catch(() => {}); }, [bridge]);
   if (!bridge) {
     return (
@@ -548,23 +590,8 @@ function DesktopGroup() {
       </Group>
     );
   }
-  const save = async (value: string | null) => {
-    setBusy(true);
-    try { await bridge.setApiKey(value); toast(value ? tx("Key saved — Orbital restarted with AI enabled") : tx("Key removed")); } catch (e) { toastError(e); setBusy(false); }
-  };
   return (
     <Group title={tx("Desktop")} description={tx("Orbital {v0} · your data lives only on this computer.", { v0: status?.version ?? "" })}>
-      <Row label={tx("Anthropic API key")}>
-        {status?.hasApiKey ? (
-          <div className="flex items-center gap-3"><Badge tone="ok">{tx("saved securely")}</Badge><Button size="sm" variant="ghost" disabled={busy} onClick={() => save(null)}>{tx("Remove")}</Button></div>
-        ) : (
-          <div className="flex gap-2">
-            <Input type="password" placeholder={tx("sk-ant-…")} value={key} onChange={(e) => setKey(e.target.value)} aria-label={tx("Anthropic API key")} autoComplete="off" />
-            <Button variant="primary" loading={busy} disabled={key.trim().length < 20 || status?.secureStorage === false} onClick={() => save(key)}>{tx("Save")}</Button>
-          </div>
-        )}
-        <p className="mt-1.5 text-[0.76rem] text-mute">{status?.secureStorage === false ? tx("Secure storage isn't available on this system, so the key can't be saved.") : tx("Encrypted with your operating system's keychain and given only to the local Orbital server. Get a key at console.anthropic.com.")}</p>
-      </Row>
       <BackgroundRows />
       <Row label={tx("Data")}><Button size="sm" icon={<FolderOpen size={13} />} onClick={() => bridge.openDataFolder()}>{tx("Open data folder")}</Button></Row>
     </Group>

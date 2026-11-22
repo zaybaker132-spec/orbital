@@ -45,7 +45,8 @@ export function RemindersPage() {
   return (
     <div className="h-full overflow-y-auto pb-16">
       <PageHeader title={tx("Reminders")} subtitle={tx("Things you asked Orbital to bring back, and what it noticed you might be letting slip.")}
-        actions={perm === "default" ? <Button icon={<BellRing size={14} />} onClick={() => Notification.requestPermission().then(setPerm)}>{tx("Turn on notifications")}</Button>
+        actions={window.orbitalDesktop ? undefined /* the desktop app sends system notifications itself */
+          : perm === "default" ? <Button icon={<BellRing size={14} />} onClick={() => Notification.requestPermission().then(setPerm)}>{tx("Turn on notifications")}</Button>
           : perm === "denied" ? <span className="text-[0.74rem] text-mute-soft">{tx("Notifications are blocked for this site: reminders show inside Orbital.")}</span> : undefined} />
       <div className="mx-auto max-w-[880px] space-y-8 px-8">
         <NewReminder />

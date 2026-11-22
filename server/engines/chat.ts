@@ -1,3 +1,4 @@
+import { config } from "../config.js";
 import * as z from "zod/v4";
 import { db } from "../db/client.js";
 import { getLLM, type ChatMsg } from "../ai/provider.js";
@@ -187,7 +188,9 @@ function offlineAnswer(ctx: RetrievedContext) {
   if (ctx.connected.length) lines.push("**Connected concepts**", ...ctx.connected.map((n) => `- ${n.title} _(${n.via})_`), "");
   if (ctx.chunks.length) lines.push("**From your documents**", ...ctx.chunks.map((c) => `- _${c.title}_: ${c.content.slice(0, 200)}…`), "");
   if (lines.length === 2) lines.push("_Nothing related was found yet._", "");
-  lines.push("Set `ANTHROPIC_API_KEY` on the server to enable answers — see Settings → AI.");
+  lines.push(config.desktop
+    ? "To get full answers, add your own Anthropic API key in [Settings → AI & research](/settings#ai). It takes a couple of minutes and stays on this computer."
+    : "To get full answers, the person who runs this Orbital needs to connect an AI provider (see Settings → AI & research).");
   return lines.join("\n");
 }
 

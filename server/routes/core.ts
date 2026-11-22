@@ -1,4 +1,5 @@
 import { Router } from "express";
+import crypto from "node:crypto";
 import * as z from "zod/v4";
 import { db } from "../db/client.js";
 import { config } from "../config.js";
@@ -92,6 +93,25 @@ export async function createResetLink(userId: string, base: string) {
 }
 
 /**
+ * Desktop app: there's no email and no administrator, and everything is on the person's own computer,
+ * so the app itself can start a password reset. Only the desktop shell can call this: it holds a random
+ * secret (ORBITAL_DESKTOP_TOKEN) that it gave this server at start-up and that web pages never see.
+ * Returns the address of the usual "choose a new password" page.
+ */
+authRouter.post("/password/desktop-reset", resetLimit, ah(async (req, res) => {
+  const secret = process.env.ORBITAL_DESKTOP_TOKEN ?? "";
+  const given = String(req.get("x-orbital-desktop-token") ?? "");
+  const ok = config.desktop && secret.length >= 32 && given.length === secret.length && crypto.timingSafeEqual(Buffer.from(given), Buffer.from(secret));
+  if (!ok) throw new HttpError(403, "Not allowed", "forbidden");
+  const { email } = parse(z.object({ email: z.string().trim().toLowerCase().max(200).pipe(z.email()) }), req.body);
+  const u = (await db().query<{ id: string }>("SELECT id FROM users WHERE email=$1", [email])).rows[0];
+  if (!u) throw new HttpError(404, "No account on this computer uses that email.", "not_found");
+  await authEvent("password_reset_requested", { req, userId: u.id, email });
+  const link = await createResetLink(u.id, "");
+  res.json({ path: link });
+}));
+
+/**
  * Ask for a reset link. The answer is the same whether or not an account exists (no account discovery),
  * except that a failure to send is reported honestly rather than claimed as sent.
  */
@@ -152,7 +172,11 @@ function describeAgent(ua: string | null) {
 }
 
 authRouter.get("/me", ah(async (req, res) => {
-  if (!req.user) return res.json({ user: null, signupAllowed: config.allowSignup, passwordReset: emailConfigured(), ai: aiStatus(), desktop: config.desktop });
+  if (!req.user) {
+    // A fresh desktop install has no accounts yet: open on "Create your Orbital", not "Welcome back".
+    const firstRun = config.desktop && !(await db().query("SELECT 1 FROM users LIMIT 1")).rows.length;
+    return res.json({ user: null, signupAllowed: config.allowSignup, passwordReset: emailConfigured(), ai: aiStatus(), desktop: config.desktop, firstRun });
+  }
   const prefs = (await db().query<{ settings: any }>("SELECT settings FROM user_preferences WHERE user_id=$1", [req.user.id])).rows[0]?.settings ?? {};
   const workspaces = (await db().query(
     `SELECT w.id, w.name, w.kind, m.role FROM workspaces w JOIN workspace_members m ON m.workspace_id=w.id

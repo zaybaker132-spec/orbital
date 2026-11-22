@@ -11,10 +11,14 @@ import { Wordmark } from "@/components/Wordmark";
 
 export function AuthPage() {
   const signupAllowed = useApp((s) => s.signupAllowed);
+  const desktop = useApp((s) => s.desktop);
+  const firstRun = useApp((s) => s.firstRun);
+  // The desktop app can reset a password itself (no email or administrator on a single computer).
+  const localReset = desktop && !!window.orbitalDesktop?.resetPassword;
   const load = useApp((s) => s.load);
   // /reset-password?token=… opens straight into choosing a new password.
   const resetToken = location.pathname === "/reset-password" ? new URLSearchParams(location.search).get("token") : null;
-  const [mode, setMode] = useState<"login" | "signup" | "forgot" | "reset">(resetToken ? "reset" : "login");
+  const [mode, setMode] = useState<"login" | "signup" | "forgot" | "reset">(resetToken ? "reset" : firstRun ? "signup" : "login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
@@ -27,7 +31,10 @@ export function AuthPage() {
     e.preventDefault();
     setBusy(true); setError(null); setInfo(null);
     try {
-      if (mode === "forgot") {
+      if (mode === "forgot" && localReset) {
+        const r = await window.orbitalDesktop!.resetPassword!(email);
+        if (r.error) setError(tx(r.error)); // on success the app opens "choose a new password"
+      } else if (mode === "forgot") {
         await api.post("/auth/password/forgot", { email });
         setInfo(tx("If an account exists for that address, a reset link is on its way. It expires in an hour."));
       } else if (mode === "reset") {
@@ -57,7 +64,7 @@ export function AuthPage() {
         <motion.form initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} onSubmit={submit} className="w-full max-w-[340px]" aria-label={mode === "signup" ? tx("Create account") : mode === "forgot" ? tx("Reset your password") : mode === "reset" ? tx("Choose a new password") : tx("Sign in")}>
           <OrbitalMark size={26} />
           <h1 className="mt-6 text-[1.3rem] font-light tracking-[-0.015em]">{mode === "login" ? tx("Welcome back") : mode === "signup" ? tx("Create your Orbital") : mode === "forgot" ? tx("Reset your password") : tx("Choose a new password")}</h1>
-          <p className="mt-1 text-[0.85rem] text-mute">{mode === "login" ? tx("Sign in to continue.") : mode === "signup" ? tx("A private knowledge system that grows with you.") : mode === "forgot" ? tx("We'll email you a link to choose a new password.") : tx("Every device signed in to your account will be signed out.")}</p>
+          <p className="mt-1 text-[0.85rem] text-mute">{mode === "login" ? tx("Sign in to continue.") : mode === "signup" ? tx("A private knowledge system that grows with you.") : mode === "forgot" ? (localReset ? tx("Everything is on this computer, so you can choose a new password right here.") : tx("We'll email you a link to choose a new password.")) : tx("Every device signed in to your account will be signed out.")}</p>
           <div className="mt-7 space-y-3">
             {mode === "signup" && <Input placeholder={tx("Name (optional)")} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" aria-label={tx("Name")} />}
             {mode !== "reset" && <Input type="email" placeholder={tx("Email")} value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required aria-label={tx("Email")} autoFocus />}
@@ -65,7 +72,7 @@ export function AuthPage() {
             {mode === "reset" && <Input type="password" placeholder={tx("Repeat new password")} value={password2} onChange={(e) => setPassword2(e.target.value)} autoComplete="new-password" required minLength={10} aria-label={tx("Repeat new password")} />}
             <ErrorNote error={error} />
             {info && <p className="rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-[0.82rem] text-emerald-100" role="status">{info}</p>}
-            <Button type="submit" variant="primary" className="w-full" loading={busy}>{mode === "login" ? tx("Sign in") : mode === "signup" ? tx("Create account") : mode === "forgot" ? tx("Send reset link") : tx("Save and sign in")}</Button>
+            <Button type="submit" variant="primary" className="w-full" loading={busy}>{mode === "login" ? tx("Sign in") : mode === "signup" ? tx("Create account") : mode === "forgot" ? (localReset ? tx("Choose a new password") : tx("Send reset link")) : tx("Save and sign in")}</Button>
             {mode === "login" && <button type="button" className="w-full text-center text-[0.78rem] text-mute hover:text-white" onClick={() => go("forgot")}>{tx("Forgot your password?")}</button>}
           </div>
           {mode === "signup" && !signupAllowed && <p className="mt-3 text-[0.76rem] leading-relaxed text-mute">{tx("Orbital is invite-only for now. Use the email you joined the waitlist with once you've been let in.")}</p>}
@@ -75,8 +82,8 @@ export function AuthPage() {
               {mode === "login" ? tx("Create an account") : tx("Sign in")}
             </button>
           </p>
-          <p className="mt-6 text-center text-[0.8rem] text-mute"><a href="/waitlist" className="text-white underline decoration-white/30 underline-offset-2 hover:decoration-white">{tx("Join the waitlist")}</a> {tx("for early access")}</p>
-          <p className="mt-10 text-center text-[0.72rem] leading-relaxed text-mute-soft">{tx("Your data stays on this server and is never used to answer anyone else's questions.")}</p>
+          {!desktop && <p className="mt-6 text-center text-[0.8rem] text-mute"><a href="/waitlist" className="text-white underline decoration-white/30 underline-offset-2 hover:decoration-white">{tx("Join the waitlist")}</a> {tx("for early access")}</p>}
+          <p className="mt-10 text-center text-[0.72rem] leading-relaxed text-mute-soft">{desktop ? tx("Everything stays on this computer, in Orbital's own private database.") : tx("Your data stays on this server and is never used to answer anyone else's questions.")}</p>
           <div className="mt-4 flex justify-center"><LanguagePicker /></div>
         </motion.form>
       </div>

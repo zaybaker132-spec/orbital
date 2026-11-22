@@ -1909,3 +1909,13 @@
 4929|Das Sprachmodell konnte nicht heruntergeladen werden (einmalig etwa 80 MB). Prüfe deine Internetverbindung und versuche es erneut.
 4930|Die Spracherkennung konnte auf diesem Computer nicht starten.
 4931|auf diesem Computer (privat, funktioniert offline)
+4932|KI ist optional. Notizen, Projekte, Erinnerungen, Suche und Meetings funktionieren auch ohne.
+4933|Lade unter Billing etwas Guthaben auf (du zahlst Anthropic nur, was du nutzt).
+4934|Mit dem Schlüsselbund deines Betriebssystems verschlüsselt und nur an den lokalen Orbital-Server übergeben.
+4935|Alles liegt auf diesem Computer, daher kannst du hier direkt ein neues Passwort wählen.
+4936|Alles bleibt auf diesem Computer, in Orbitals eigener privater Datenbank.
+4937|Schalte KI-Chat, Recherche und Schreibhilfe mit deinem eigenen Schlüssel ein:
+4938|Klicke unter API Keys auf Create Key, kopiere ihn und füge ihn oben ein.
+4939|Dein API-Schlüssel
+4940|und erstelle ein kostenloses Konto.
+4941|Kein Konto auf diesem Computer nutzt diese E-Mail.

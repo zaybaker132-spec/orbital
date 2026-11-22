@@ -1909,3 +1909,13 @@
 4929|No se pudo descargar el modelo de voz (una descarga única de unos 80 MB). Revisa tu conexión a internet e inténtalo de nuevo.
 4930|El reconocimiento de voz no pudo iniciarse en este ordenador.
 4931|en este ordenador (privado, funciona sin conexión)
+4932|La IA es opcional. Las notas, proyectos, recordatorios, la búsqueda y las reuniones funcionan sin ella.
+4933|Añade un poco de saldo en Billing (solo pagas a Anthropic lo que uses).
+4934|Cifrada con el llavero de tu sistema operativo y entregada solo al servidor local de Orbital.
+4935|Todo está en este ordenador, así que puedes elegir una contraseña nueva aquí mismo.
+4936|Todo se queda en este ordenador, en la base de datos privada de Orbital.
+4937|Activa el chat con IA, la investigación y la ayuda para escribir con tu propia clave:
+4938|En API Keys, haz clic en Create Key, cópiala y pégala arriba.
+4939|Tu clave de API
+4940|y crea una cuenta gratuita.
+4941|Ninguna cuenta de este ordenador usa ese correo.

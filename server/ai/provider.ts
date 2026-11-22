@@ -41,7 +41,7 @@ export interface LLMProvider {
 export class AIUnavailableError extends Error {
   noRetry = true;
   constructor() {
-    super("No AI provider is configured. Set ANTHROPIC_API_KEY (or an OpenAI-compatible endpoint) on the server — see README.");
+    super(config.desktop ? "AI isn't turned on yet. Add your Anthropic API key in Settings → AI & research." : "No AI provider is configured. Set ANTHROPIC_API_KEY (or an OpenAI-compatible endpoint) on the server — see README.");
   }
 }
 

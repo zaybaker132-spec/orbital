@@ -4,10 +4,10 @@ Orbital for Mac, Windows and Linux. Everything stays on your computer in Orbital
 
 | Your computer | File |
 |---|---|
-| Mac with Apple chip (M1–M4) | `Orbital-0.3.7-arm64.dmg` |
-| Mac with Intel chip | `Orbital-0.3.7.dmg` |
-| Windows | `Orbital-Setup-0.3.7.exe` |
-| Linux | `Orbital-0.3.7.AppImage` or `orbital_0.3.7_amd64.deb` |
+| Mac with Apple chip (M1–M4) | `Orbital-0.3.8-arm64.dmg` |
+| Mac with Intel chip | `Orbital-0.3.8.dmg` |
+| Windows | `Orbital-Setup-0.3.8.exe` |
+| Linux | `Orbital-0.3.8.AppImage` or `orbital_0.3.8_amd64.deb` |
 
 Not sure which Mac you have? Apple menu → About This Mac → "Chip".
 
@@ -25,7 +25,14 @@ Orbital works without an AI key: notes, Papers, projects, search, reminders, foc
 questions are answered from your own knowledge. For AI chat, research and writing help, add your own key in
 **Settings → AI & research**. It stays on your computer.
 
-## What's new in 0.3.7
+## What's new in 0.3.8
+
+- **Forgot your password? Reset it right in the app.** Everything is on your computer, so no email is needed.
+- **A new install opens on "Create your Orbital"** instead of "Welcome back".
+- **Clearer AI setup:** chat tells you where to add your AI key, and Settings → AI & research has the key box with 3 simple steps to get one.
+- **Fixes:** the Focus page layout, a wrong "notifications are blocked" note on the Reminders page, the waitlist link and "this server" wording on the sign-in screen, and the orb not filling its space on computers without 3D graphics.
+
+New in 0.3.7:
 
 - **Voice now works in the desktop app:** talk to Orbital, dictate in Papers, and turn recordings in Media into text. Speech recognition runs privately on your computer. The first time, it downloads a speech model once (about 80 MB); after that it works offline.
 
