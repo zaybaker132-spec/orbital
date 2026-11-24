@@ -1,4 +1,5 @@
 import { Router, type Request } from "express";
+import { requirePro } from "../lib/plan.js";
 import * as z from "zod/v4";
 import { db } from "../db/client.js";
 import { config } from "../config.js";
@@ -212,7 +213,7 @@ business.get("/automations", ah(async (req, res) => {
   res.json((await db().query(
     `SELECT a.*, u.email AS created_by_email FROM automations a LEFT JOIN users u ON u.id=a.created_by WHERE a.workspace_id=$1 ORDER BY a.created_at`, [ws(req)])).rows);
 }));
-business.post("/automations", requireRole("admin"), ah(async (req, res) => {
+business.post("/automations", requireRole("admin"), requirePro("automations"), ah(async (req, res) => {
   const b = parse(AutomationInput, req.body);
   await checkAutomation(req, b);
   const r = await db().query<{ id: string }>(
@@ -238,7 +239,7 @@ business.delete("/automations/:id", requireRole("admin"), ah(async (req, res) =>
   await audit(ws(req), who(req), "automation.deleted", { type: "automation", id: idParam(req) });
   res.json({ ok: true });
 }));
-business.post("/automations/:id/run", requireRole("admin"), rateLimit({ windowMs: 60 * 60_000, max: 30, key: "user", name: "automation-run" }), ah(async (req, res) => {
+business.post("/automations/:id/run", requireRole("admin"), rateLimit({ windowMs: 60 * 60_000, max: 30, key: "user", name: "automation-run" }), requirePro("automations"), ah(async (req, res) => {
   if (!(await runNow(ws(req), idParam(req)))) throw notFound("Automation");
   res.status(202).json({ ok: true });
 }));

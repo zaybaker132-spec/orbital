@@ -1919,3 +1919,45 @@
 4939|Tu clave de API
 4940|y crea una cuenta gratuita.
 4941|Ninguna cuenta de este ordenador usa ese correo.
+4942|Activar
+4943|¿Ya compraste Pro? Pega la clave de tu página de compra.
+4944|Cancelada · Pro hasta el {date}
+4945|El pago se abre en tu navegador (Stripe). Cancela cuando quieras.
+4946|Todo lo que ya hiciste se queda aquí.
+4947|Gratis
+4948|Obtener Pro · {price}
+4949|Ya tengo una clave de licencia
+4950|Clave de licencia
+4951|Gestionar suscripción
+4952|Mensual
+4953|=
+4954|=
+4955|Plan
+4956|Prueba de Pro
+4957|Pro desbloquea la investigación profunda, las reuniones, la biblioteca multimedia y más. Todo lo demás en Orbital es gratis.
+4958|Quitar de este ordenador
+4959|¿Quitar la licencia de este ordenador? Tu suscripción no se cancela; puedes volver a añadir la clave cuando quieras.
+4960|Se renueva el {date}
+4961|Suscripción
+4962|Desbloquea todo en Orbital.
+4963|Mejorar
+4964|Pasar a Pro
+4965|¡Bienvenido a Orbital Pro!
+4966|Anual
+4967|Tu prueba de Pro ha terminado.
+4968|Tu plan
+4969|termina el {date}
+4970|{feature}: forma parte de Orbital Pro. Tu prueba gratuita ha terminado.
+4971|=
+4972|Queda 1 día
+4973|Prueba de Pro · queda 1 día
+4974|Prueba de Pro · quedan {n} días
+4975|10 $/mes
+4976|96 $/año
+4977|2 meses gratis
+4978|Investigación profunda, el laboratorio de contradicciones y la prueba de hipótesis
+4979|Videorreuniones y grabaciones de reuniones
+4980|La biblioteca multimedia: grabaciones de pantalla, voz y cámara
+4981|Descubrimiento de oportunidades
+4982|Revisiones de salud del conocimiento
+4983|Eso forma parte de Orbital Pro y tu prueba gratuita ha terminado.

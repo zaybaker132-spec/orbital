@@ -107,6 +107,14 @@ export const config = {
     timeoutMs: Number(process.env.ANTHROPIC_TIMEOUT_MS || 10 * 60_000),
     maxRetries: Number(process.env.ANTHROPIC_MAX_RETRIES || 2),
   },
+  /**
+   * Orbital Pro (desktop app only): a 14-day trial, then Pro features need a subscription, checked
+   * with the license service (license-server/, on Cloudflare). Off for self-hosted servers.
+   */
+  billing: {
+    enabled: bool(process.env.ORBITAL_DESKTOP, false) && bool(process.env.ORBITAL_BILLING, true),
+    licenseUrl: (process.env.ORBITAL_LICENSE_URL || "https://license.orbitalai.us").replace(/\/$/, ""),
+  },
   research: {
     webSearch: bool(process.env.RESEARCH_WEB_SEARCH, true),
     wikipedia: bool(process.env.RESEARCH_WIKIPEDIA, true),

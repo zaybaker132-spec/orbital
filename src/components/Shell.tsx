@@ -19,6 +19,7 @@ import { Wordmark } from "@/components/Wordmark";
 import { navVisible, useEnvironment } from "@/state/environment";
 import type { NavKey } from "../../shared/environment";
 import { ClockWeather } from "./ClockWeather";
+import { PlanBadge } from "./Plan";
 import { BookmarkButton, SidebarTrail, useTrackViews } from "./Trail";
 
 export const NAV: { id: NavKey; to: string; label: string; icon: typeof Brain; key: string }[] = [
@@ -197,6 +198,7 @@ function Sidebar({ width, collapsed, onResize }: { width: number; collapsed: boo
         </div>
       )}
       {collapsed && <div className="flex-1" />}
+      <PlanBadge collapsed={collapsed} />
       <ClockWeather collapsed={collapsed} />
       <div className={cx("flex items-center gap-1 border-t border-line px-2.5 py-2", collapsed && "flex-col px-2")}>
         <NavLink to="/settings" title={tx("Settings (g s)")} className={({ isActive }) => cx("flex h-8 min-w-0 flex-1 items-center gap-2.5 rounded-lg px-2.5 text-[0.84rem] transition-colors", collapsed && "w-full justify-center px-0", isActive ? "bg-white/[0.07] text-white" : "text-mute hover:bg-white/[0.04] hover:text-white")}>

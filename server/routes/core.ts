@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { assertPro } from "../lib/plan.js";
 import crypto from "node:crypto";
 import * as z from "zod/v4";
 import { db } from "../db/client.js";
@@ -251,6 +252,7 @@ api.post("/conversations/:id/messages", chatLimit, ah(async (req, res) => {
   const workspaceId = ws(req);
   const owned = await db().query("SELECT 1 FROM conversations WHERE id=$1 AND workspace_id=$2 AND created_by=$3", [id, workspaceId, actor(req)]);
   if (!owned.rows.length) throw notFound("Conversation");
+  if (b.mode === "deep_research") await assertPro("research");
   res.writeHead(200, { "content-type": "text/event-stream", "cache-control": "no-cache, no-transform", connection: "keep-alive", "x-accel-buffering": "no" });
   const ac = new AbortController();
   res.on("close", () => { if (!res.writableFinished) ac.abort(); });

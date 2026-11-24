@@ -16,6 +16,10 @@ files:
 # PGlite loads its WASM/data files from disk; keep them outside the asar archive.
 asarUnpack:
   - node_modules/@electric-sql/**
+# orbital:// links ("Activate in Orbital" after buying Pro).
+protocols:
+  - name: Orbital
+    schemes: [orbital]
 extraMetadata:
   main: desktop/main.cjs
 mac:

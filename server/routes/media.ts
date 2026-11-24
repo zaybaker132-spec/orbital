@@ -1,4 +1,5 @@
 import { Router, type Request, type Response } from "express";
+import { requirePro } from "../lib/plan.js";
 import { z } from "zod/v4";
 import { db } from "../db/client.js";
 import { config } from "../config.js";
@@ -53,7 +54,7 @@ media.get("/media/:id", ah(async (req, res) => { res.json(await own(ws(req), idP
  * Upload: the request body is the file itself (Content-Type = its type); details in the query string.
  * Streams into the database a piece at a time, enforcing the size limit and the workspace's storage.
  */
-media.post("/media", rateLimit({ windowMs: 60_000, max: 30, key: "user", name: "media-upload" }), ah(async (req: Request, res: Response) => {
+media.post("/media", rateLimit({ windowMs: 60_000, max: 30, key: "user", name: "media-upload" }), requirePro("media"), ah(async (req: Request, res: Response) => {
   const mime = baseMime(req.get("content-type"));
   if (!MIME.test(mime)) throw new HttpError(415, "That kind of file can't go in the media library. Images (PNG, JPEG, WebP, GIF), video (WebM, MP4, MOV) and audio (WebM, MP3, M4A, WAV, OGG, FLAC) can.", "unsupported_media");
   const meta = parse(z.object({

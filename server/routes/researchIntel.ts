@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { requirePro } from "../lib/plan.js";
 import * as z from "zod/v4";
 import { db } from "../db/client.js";
 import { ah, HttpError, idParam, notFound, parse, ws, actor } from "../lib/http.js";
@@ -47,7 +48,7 @@ researchIntel.post("/research/:id/freshness", ah(async (req, res) => {
   res.json(f);
 }));
 
-researchIntel.post("/research/:id/refresh", rateLimit({ windowMs: 60 * 60_000, max: 20, key: "user", name: "refresh" }), ah(async (req, res) => {
+researchIntel.post("/research/:id/refresh", rateLimit({ windowMs: 60 * 60_000, max: 20, key: "user", name: "refresh" }), requirePro("research"), ah(async (req, res) => {
   const b = parse(z.object({ items: z.array(z.object({ section: z.enum(["finding", "statistic"]), index: z.number().int().min(0) })).min(1).max(8) }), req.body);
   const r = await own(ws(req), idParam(req));
   if (r.status !== "completed" || r.report?.mode !== "synthesized") throw new HttpError(409, "Only finished, synthesized reports can be refreshed.");
@@ -76,7 +77,7 @@ researchIntel.get("/hypotheses", ah(async (req, res) => {
 
 const HypothesisInput = z.object({ statement: z.string().trim().min(8).max(1000), rationale: z.string().max(4000).default(""), projectId: z.uuid().nullish() });
 
-researchIntel.post("/hypotheses", ah(async (req, res) => {
+researchIntel.post("/hypotheses", requirePro("research"), ah(async (req, res) => {
   const b = parse(HypothesisInput, req.body);
   if (b.projectId) await ownProject(ws(req), b.projectId);
   res.status(201).json((await db().query("INSERT INTO hypotheses(workspace_id, created_by, statement, rationale, project_id) VALUES ($1,$2,$3,$4,$5) RETURNING *",
@@ -113,7 +114,7 @@ researchIntel.delete("/hypotheses/:id", ah(async (req, res) => {
 }));
 
 /** Run a test: evidence for and against, the person's own knowledge, a verdict and next tests. */
-researchIntel.post("/hypotheses/:id/test", rateLimit({ windowMs: 60 * 60_000, max: 30, key: "user", name: "research" }), ah(async (req, res) => {
+researchIntel.post("/hypotheses/:id/test", rateLimit({ windowMs: 60 * 60_000, max: 30, key: "user", name: "research" }), requirePro("research"), ah(async (req, res) => {
   const h = (await db().query<any>("SELECT * FROM hypotheses WHERE id=$1 AND workspace_id=$2", [idParam(req), ws(req)])).rows[0];
   if (!h) throw notFound("Hypothesis");
   if (h.status === "testing") throw new HttpError(409, "A test is already running.");
@@ -161,7 +162,7 @@ researchIntel.get("/maintenance", ah(async (req, res) => {
   res.json({ health: h, suggestions: open.rows, recent: recent.rows });
 }));
 
-researchIntel.post("/maintenance/scan", rateLimit({ windowMs: 60_000, max: 6, key: "user", name: "maintenance" }), ah(async (req, res) => {
+researchIntel.post("/maintenance/scan", rateLimit({ windowMs: 60_000, max: 6, key: "user", name: "maintenance" }), requirePro("maintenance"), ah(async (req, res) => {
   res.json(await scan(ws(req)));
 }));
 

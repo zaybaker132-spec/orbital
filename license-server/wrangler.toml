@@ -1,0 +1,16 @@
+# Orbital license service (Cloudflare Worker). See license-server/README.md.
+name = "orbital-license"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+
+[vars]
+SITE_URL = "https://orbitalai.us"
+# Stripe price ids for Orbital Pro (Stripe → Product catalog → Orbital Pro → the price → "price_…").
+PRICE_MONTHLY = ""
+PRICE_YEARLY = ""
+# "on" lets Stripe Tax add sales tax/VAT at checkout (turn on Stripe Tax first).
+STRIPE_AUTOMATIC_TAX = "off"
+
+# Secrets, set once and never written here:
+#   npx wrangler secret put STRIPE_SECRET_KEY
+#   npx wrangler secret put LICENSE_SECRET     (any long random text; keep it forever, keys depend on it)

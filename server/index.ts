@@ -32,6 +32,7 @@ import { startHousekeeping } from "./lib/housekeeping.js";
 import { weather } from "./routes/weather.js";
 import { trail } from "./routes/trail.js";
 import { media } from "./routes/media.js";
+import { plan } from "./routes/plan.js";
 
 export async function createApp(opts: { jobs?: boolean } = {}) {
   const database = await getDb();
@@ -109,6 +110,7 @@ export async function createApp(opts: { jobs?: boolean } = {}) {
   app.use("/api", weather);
   app.use("/api", trail);
   app.use("/api", media);
+  app.use("/api", plan);
   app.use("/api", (_req, _res, next) => next(new HttpError(404, "Not found", "not_found")));
 
   const dist = config.staticDir;
@@ -126,7 +128,7 @@ export async function createApp(opts: { jobs?: boolean } = {}) {
   }
 
   app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-    if (err instanceof HttpError) return res.status(err.status).json({ error: err.message, code: err.code });
+    if (err instanceof HttpError) return res.status(err.status).json({ error: err.message, code: err.code, ...((err as any).feature ? { feature: (err as any).feature } : {}) });
     if (err?.type === "entity.too.large" || err?.code === "LIMIT_FILE_SIZE") return res.status(413).json({ error: "That upload is too large.", code: "too_large" });
     if (err?.type === "entity.parse.failed") return res.status(400).json({ error: "The request body isn't valid JSON.", code: "invalid_json" });
     if (err?.code === "LIMIT_UNEXPECTED_FILE" || err?.code === "LIMIT_FILE_COUNT") return res.status(400).json({ error: "Send one file in the \"file\" field.", code: "invalid_upload" });

@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { requirePro } from "../lib/plan.js";
 import multer from "multer";
 import * as z from "zod/v4";
 import { db } from "../db/client.js";
@@ -209,7 +210,7 @@ workspace.get("/research", ah(async (req, res) => {
      FROM research_sessions r WHERE r.workspace_id=$1 ORDER BY r.created_at DESC LIMIT 200`, [ws(req)])).rows);
 }));
 
-workspace.post("/research", rateLimit({ windowMs: 60 * 60_000, max: 30, key: "user", name: "research" }), ah(async (req, res) => {
+workspace.post("/research", rateLimit({ windowMs: 60 * 60_000, max: 30, key: "user", name: "research" }), requirePro("research"), ah(async (req, res) => {
   const b = parse(z.object({ question: z.string().trim().min(8).max(2000), projectId: z.uuid().nullish(), kind: z.enum(["standard", "contradiction"]).default("standard") }), req.body);
   if (b.projectId) await ownProject(ws(req), b.projectId);
   res.status(201).json({ id: await startResearch(ws(req), b.question, { projectId: b.projectId, kind: b.kind }) });
@@ -414,7 +415,7 @@ workspace.get("/opportunities", ah(async (req, res) => {
      FROM opportunities o WHERE o.workspace_id=$1 ORDER BY (o.status='dismissed'), o.updated_at DESC`, [ws(req)]);
   res.json(r.rows);
 }));
-workspace.post("/opportunities/discover", rateLimit({ windowMs: 60 * 60_000, max: 10, key: "user", name: "discover" }), ah(async (req, res) => {
+workspace.post("/opportunities/discover", rateLimit({ windowMs: 60 * 60_000, max: 10, key: "user", name: "discover" }), requirePro("opportunities"), ah(async (req, res) => {
   const b = parse(z.object({ focus: z.string().max(500).optional() }), req.body ?? {});
   if (!(await getLLM())) throw new HttpError(503, "Opportunity discovery needs an AI provider. You can still add opportunities manually.", "ai_unavailable");
   await discoverOpportunities(ws(req), b.focus);

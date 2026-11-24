@@ -11,6 +11,7 @@ import { Badge, Button, Dialog, Input, PageHeader, Select, cx } from "@/componen
 import { modKey } from "@/lib/format";
 import { MODES } from "./Chat";
 import { LANGUAGES, language, locale, resolveLanguage, setLanguage, tn, tx } from "@/i18n";
+import { PlanSettings, usePlan } from "@/components/Plan";
 import { localSpeechSupported } from "@/lib/localSpeech";
 import { setThemePref, useThemePref, type ThemePref } from "@/lib/theme";
 import { saveEnvironment, useEnvironment } from "@/state/environment";
@@ -26,6 +27,7 @@ const SECTIONS = [
 export function SettingsPage() {
   const { ai, prefs, setPrefs, serverAdmin } = useApp();
   const [deleting, setDeleting] = useState(false);
+  const planEnabled = !!usePlan()?.enabled;
   const save = (p: any) => setPrefs(p).then(() => toast(tx("Saved"))).catch(toastError);
   // Links like /settings#ai open on that section.
   useEffect(() => {
@@ -38,13 +40,14 @@ export function SettingsPage() {
       <div className="flex gap-10 px-8 pb-20">
         <nav aria-label={tx("Settings sections")} className="sticky top-4 hidden h-fit w-44 shrink-0 lg:block">
           <ul className="space-y-px">
-            {[...SECTIONS, ...(serverAdmin ? [["waitlist", "Waitlist"] as const, ["server", "Server status"] as const] : [])].map(([id, label]) => (
+            {[...(planEnabled ? [["plan", "Plan"] as const] : []), ...SECTIONS, ...(serverAdmin ? [["waitlist", "Waitlist"] as const, ["server", "Server status"] as const] : [])].map(([id, label]) => (
               <li key={id}><a href={`#${id}`} onClick={(e) => { e.preventDefault(); document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }}
                 className="block rounded-lg px-3 py-1.5 text-[0.84rem] text-mute transition-colors hover:bg-white/[0.04] hover:text-white">{tx(label)}</a></li>
             ))}
           </ul>
         </nav>
         <div className="min-w-0 max-w-[760px] flex-1 space-y-12">
+          <PlanSettings Group={Group} Row={Row} />
           <AccountGroup />
           <WorkspaceGroup />
 

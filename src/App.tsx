@@ -2,6 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react"
 import { IntroScreen, type IntroKind } from "./components/IntroScreen";
 import { EnvironmentEffects, resolveEnvironment } from "./state/environment";
 import { useResource } from "./lib/resource";
+import { UpgradeDialog } from "./components/Plan";
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { useApp } from "./state/app";
@@ -188,6 +189,7 @@ export function App() {
     <>
       <EnvironmentEffects />
       {user && <ReminderSignals />}
+      {user && <UpgradeDialog />}
       <AppRoutes />
       {intro && <IntroScreen key={intro.kind + intro.at} kind={intro.kind} name={user?.displayName} leaving={intro.leaving} onGone={done} />}
     </>

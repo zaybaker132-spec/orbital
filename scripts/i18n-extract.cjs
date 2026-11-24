@@ -11,7 +11,7 @@ const FIELDS = new Set(["label", "hint", "description", "title", "sub", "group",
 const files = [];
 (function walk(d) { for (const f of fs.readdirSync(d)) { const p = path.join(d, f); if (fs.statSync(p).isDirectory()) walk(p); else if (/\.(tsx?|ts)$/.test(f) && !SKIP.some((r) => r.test(p))) files.push(p); } })(ROOT);
 // Shared definitions whose names and descriptions the app shows (widgets, dashboard templates).
-files.push(path.join(__dirname, "..", "shared", "environment.ts"));
+files.push(path.join(__dirname, "..", "shared", "environment.ts"), path.join(__dirname, "..", "shared", "plans.ts"));
 
 const keys = new Set();
 const isText = (s) => /[A-Za-z]{2}/.test(s) && !/^[a-z0-9_./:-]+$/.test(s) && !/^(https?:|\/|#|sk-ant)/.test(s) && !/^[A-Z0-9_]+(=.*)?$/.test(s) && !/^[a-z]+(-[a-z]+)+$/.test(s);

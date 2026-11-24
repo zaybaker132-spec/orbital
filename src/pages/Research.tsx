@@ -80,7 +80,7 @@ function NewResearch() {
       const r = await api.post("/research", { question: q, projectId: projectId || null, kind });
       invalidate("/research");
       navigate(`/research/${r.id}`);
-    } catch (e: any) { setErr(e.message); } finally { setBusy(false); }
+    } catch (e: any) { if (e.code !== "pro_required") setErr(e.message); /* the upgrade window explains it */ } finally { setBusy(false); }
   };
   return (
     <div className="mx-auto max-w-[680px] px-8 pt-16">

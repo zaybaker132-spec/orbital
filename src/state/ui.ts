@@ -25,7 +25,10 @@ export const toast = (message: string, extra: Partial<Omit<Toast, "id" | "messag
   if (useQuiet.getState().on && extra.tone !== "error") return useQuiet.getState().hold(message);
   useToasts.getState().push({ message, ...extra });
 };
-export const toastError = (e: unknown) => toast(t(e instanceof Error ? e.message : String(e)), { tone: "error" });
+export const toastError = (e: unknown) => {
+  if ((e as any)?.code === "pro_required") return; // the upgrade window explains it
+  toast(t(e instanceof Error ? e.message : String(e)), { tone: "error" });
+};
 
 /** Context shown in the right panel: the retrieval behind an answer, or page-provided content. */
 export interface AnswerContext {

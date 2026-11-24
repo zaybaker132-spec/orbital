@@ -1,4 +1,5 @@
 import { Router, type Response } from "express";
+import { requirePro } from "../lib/plan.js";
 import crypto from "node:crypto";
 import * as z from "zod/v4";
 import { db } from "../db/client.js";
@@ -57,7 +58,7 @@ meetings.get("/meetings/config", (_req, res) => {
 });
 type RTCIceServerLike = { urls: string[]; username?: string; credential?: string };
 
-meetings.post("/meetings", rateLimit({ windowMs: 60 * 60_000, max: 60, key: "user", name: "meeting-create" }), ah(async (req, res) => {
+meetings.post("/meetings", rateLimit({ windowMs: 60 * 60_000, max: 60, key: "user", name: "meeting-create" }), requirePro("meetings"), ah(async (req, res) => {
   const b = parse(z.object({ title: z.string().trim().max(120).default("") }), req.body ?? {});
   for (let attempt = 0; attempt < 5; attempt++) {
     const code = newCode();

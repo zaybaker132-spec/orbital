@@ -1919,3 +1919,45 @@
 4939|Dein API-Schlüssel
 4940|und erstelle ein kostenloses Konto.
 4941|Kein Konto auf diesem Computer nutzt diese E-Mail.
+4942|Aktivieren
+4943|Pro schon gekauft? Füge den Schlüssel von deiner Kaufseite ein.
+4944|Gekündigt · Pro bis {date}
+4945|Die Bezahlung öffnet sich in deinem Browser (Stripe). Jederzeit kündbar.
+4946|Alles, was du schon erstellt hast, bleibt hier.
+4947|Kostenlos
+4948|Pro holen · {price}
+4949|Ich habe schon einen Lizenzschlüssel
+4950|Lizenzschlüssel
+4951|Abo verwalten
+4952|Monatlich
+4953|=
+4954|=
+4955|Tarif
+4956|Pro-Testphase
+4957|Pro schaltet Tiefenrecherche, Meetings, die Medienbibliothek und mehr frei. Alles andere in Orbital ist kostenlos.
+4958|Von diesem Computer entfernen
+4959|Lizenz von diesem Computer entfernen? Dein Abo wird nicht gekündigt; du kannst den Schlüssel jederzeit wieder hinzufügen.
+4960|Verlängert sich am {date}
+4961|Abo
+4962|Schalte alles in Orbital frei.
+4963|Upgrade
+4964|Auf Pro upgraden
+4965|Willkommen bei Orbital Pro!
+4966|Jährlich
+4967|Deine Pro-Testphase ist vorbei.
+4968|Dein Tarif
+4969|endet am {date}
+4970|{feature}: gehört zu Orbital Pro. Deine kostenlose Testphase ist vorbei.
+4971|=
+4972|Noch 1 Tag
+4973|Pro-Testphase · noch 1 Tag
+4974|Pro-Testphase · noch {n} Tage
+4975|10 $/Monat
+4976|96 $/Jahr
+4977|2 Monate gratis
+4978|Tiefenrecherche, das Widerspruchslabor und Hypothesentests
+4979|Videomeetings und Meeting-Aufnahmen
+4980|Die Medienbibliothek: Bildschirm-, Sprach- und Kameraaufnahmen
+4981|Chancen-Entdeckung
+4982|Wissens-Checks
+4983|Das gehört zu Orbital Pro, und deine kostenlose Testphase ist vorbei.

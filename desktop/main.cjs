@@ -155,7 +155,24 @@ function showWindow(pathname) {
   if (win.isMinimized()) win.restore();
   win.show();
   win.focus();
-  if (typeof pathname === "string" && pathname.startsWith("/") && !pathname.startsWith("//")) win.webContents.send("orbital:navigate", pathname);
+  if (typeof pathname === "string" && pathname.startsWith("/") && !pathname.startsWith("//")) {
+    const send = () => win?.webContents.send("orbital:navigate", pathname);
+    if (win.webContents.isLoading()) win.webContents.once("did-finish-load", send); else send();
+  }
+}
+
+// ── orbital:// links: "Activate in Orbital" on the purchase page opens Settings → Plan with the key ──
+const LICENSE_KEY = /^ORB-[A-Za-z0-9_-]{8,120}-[A-Za-z0-9_-]{16,64}$/;
+let pendingLink = null;
+function handleLink(link) {
+  let u;
+  try { u = new URL(link); } catch { return; }
+  if (u.protocol !== "orbital:") return;
+  const key = u.searchParams.get("key") ?? "";
+  const target = (u.hostname === "activate" || u.pathname.replace(/^\/+/, "") === "activate") && LICENSE_KEY.test(key)
+    ? `/settings?license=${encodeURIComponent(key)}#plan` : "/";
+  if (!server || !port) { pendingLink = target; return; } // opened before Orbital finished starting
+  showWindow(target);
 }
 
 function createWindow() {
@@ -379,7 +396,14 @@ function checkForUpdates() {
   } catch { /* updater unavailable */ }
 }
 
-app.on("second-instance", () => showWindow());
+app.on("second-instance", (_e, argv) => {
+  const link = argv.find((a) => typeof a === "string" && a.startsWith("orbital://"));
+  if (link) handleLink(link); else showWindow();
+});
+// macOS delivers links here (also when the link starts Orbital).
+app.on("open-url", (e, link) => { e.preventDefault(); handleLink(link); });
+if (process.defaultApp && process.argv[1]) app.setAsDefaultProtocolClient("orbital", process.execPath, [path.resolve(process.argv[1])]);
+else app.setAsDefaultProtocolClient("orbital");
 
 if (process.platform === "win32") app.setAppUserModelId("app.orbital.desktop");
 
@@ -396,6 +420,10 @@ app.whenReady().then(async () => {
   }
   createWindow();
   createTray();
+  // Started by clicking an orbital:// link (Windows, Linux pass it as an argument).
+  const startLink = process.argv.find((a) => typeof a === "string" && a.startsWith("orbital://"));
+  if (startLink) handleLink(startLink);
+  if (pendingLink) { const t = pendingLink; pendingLink = null; showWindow(t); }
   checkForUpdates();
   app.on("activate", () => showWindow());
 });

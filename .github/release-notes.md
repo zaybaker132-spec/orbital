@@ -4,10 +4,10 @@ Orbital for Mac, Windows and Linux. Everything stays on your computer in Orbital
 
 | Your computer | File |
 |---|---|
-| Mac with Apple chip (M1–M4) | `Orbital-0.3.8-arm64.dmg` |
-| Mac with Intel chip | `Orbital-0.3.8.dmg` |
-| Windows | `Orbital-Setup-0.3.8.exe` |
-| Linux | `Orbital-0.3.8.AppImage` or `orbital_0.3.8_amd64.deb` |
+| Mac with Apple chip (M1–M4) | `Orbital-0.3.9-arm64.dmg` |
+| Mac with Intel chip | `Orbital-0.3.9.dmg` |
+| Windows | `Orbital-Setup-0.3.9.exe` |
+| Linux | `Orbital-0.3.9.AppImage` or `orbital_0.3.9_amd64.deb` |
 
 Not sure which Mac you have? Apple menu → About This Mac → "Chip".
 
@@ -25,7 +25,11 @@ Orbital works without an AI key: notes, Papers, projects, search, reminders, foc
 questions are answered from your own knowledge. For AI chat, research and writing help, add your own key in
 **Settings → AI & research**. It stays on your computer.
 
-## What's new in 0.3.8
+## What's new in 0.3.9
+
+- **Orbital Pro.** Every feature is free for 14 days. After that, the core of Orbital stays free forever, and Pro ($10/month or $96/year) unlocks deep research, meetings and recordings, the Media library, opportunity discovery, automations and knowledge health scans. Everything you've made stays yours either way. See Settings → Plan.
+
+New in 0.3.8:
 
 - **Forgot your password? Reset it right in the app.** Everything is on your computer, so no email is needed.
 - **A new install opens on "Create your Orbital"** instead of "Welcome back".

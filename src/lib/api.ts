@@ -16,6 +16,13 @@ export function setWorkspaceId(id: string | null) {
 }
 const wsHeader = (): Record<string, string> => (workspaceId ? { "x-orbital-workspace": workspaceId } : {});
 
+/** "This needs Orbital Pro" from the server opens the upgrade window (registered by components/Plan). */
+const proListeners = new Set<(feature: string | null) => void>();
+export const onProRequired = (fn: (feature: string | null) => void) => { proListeners.add(fn); return () => proListeners.delete(fn); };
+const proRequired = (status: number, code: string | undefined, feature: unknown) => {
+  if (status === 402 && code === "pro_required") proListeners.forEach((fn) => fn(typeof feature === "string" ? feature : null));
+};
+
 /** Called after any successful change (so views that summarise activity can refresh). */
 const mutationListeners = new Set<() => void>();
 export const onMutation = (fn: () => void) => { mutationListeners.add(fn); return () => mutationListeners.delete(fn); };
@@ -29,12 +36,14 @@ async function request<T>(method: string, url: string, body?: unknown, quiet = f
     body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
   });
   if (!res.ok) {
-    let msg = res.statusText, code: string | undefined;
+    let msg = res.statusText, code: string | undefined, feature: unknown;
     try {
       const j = await res.json();
       msg = j.error ?? msg;
       code = j.code;
+      feature = j.feature;
     } catch { /* not json */ }
+    proRequired(res.status, code, feature);
     throw new ApiError(res.status, msg, code);
   }
   if (method !== "GET" && !quiet) mutationListeners.forEach((fn) => fn());
@@ -64,9 +73,9 @@ export async function streamPost(url: string, body: unknown, onEvent: (event: st
     signal,
   });
   if (!res.ok || !res.body) {
-    let msg = res.statusText;
-    try { msg = (await res.json()).error ?? msg; } catch { /* ignore */ }
-    throw new ApiError(res.status, msg);
+    let msg = res.statusText, code: string | undefined;
+    try { const j = await res.json(); msg = j.error ?? msg; code = j.code; proRequired(res.status, code, j.feature); } catch { /* ignore */ }
+    throw new ApiError(res.status, msg, code);
   }
   const reader = res.body.getReader();
   const dec = new TextDecoder();
