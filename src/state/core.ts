@@ -75,3 +75,11 @@ export const useCore = create<CoreStore>((set, get) => ({
     return "idle";
   },
 }));
+
+/**
+ * Voice, as the orb sees it. Written many times a second by the voice screen and read by the orb
+ * every frame, so it's a plain object rather than store state (no re-renders).
+ *  level: microphone loudness 0..1 · listening/speaking/transcribing: what's happening now ·
+ *  speakKick: time (ms) of the last spoken word, for the per-word pulse.
+ */
+export const voiceSignal = { level: 0, listening: false, speaking: false, transcribing: false, speakKick: 0 };

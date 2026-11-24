@@ -1,0 +1,200 @@
+<title>Orbital Orb Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+  /* Layout: the orb fills a stage; a control rail sits to its right (below it on phones). Single dark look, like Orbital's voice screen. */
+  :root {
+    --bg: #000; --fg: #ededf0; --mute: #8e8e98; --soft: #5c5c66; --line: #1f1f24; --panel: #0a0a0c; --chip: #141418; --new: #7ee7c6;
+    --display: "Outfit", "Inter", system-ui, sans-serif; --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+    color-scheme: dark;
+  }
+  html, body { height: 100%; }
+  body { background: var(--bg); color: var(--fg); font: 14px/1.5 var(--body); }
+  .app { display: grid; grid-template-columns: minmax(0, 1fr) 340px; min-height: 100%; }
+  .stage { position: relative; min-height: 560px; }
+  #core { position: absolute; inset: 0; }
+  #core canvas { display: block; width: 100% !important; height: 100% !important; }
+  .caption { position: absolute; left: 0; right: 0; bottom: 28px; text-align: center; padding-inline: max(16px, env(safe-area-inset-left, 0px)); pointer-events: none; }
+  .caption .now { font: 400 13px var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--mute); }
+  .caption .what { margin-top: 6px; font-size: 15px; color: var(--fg); max-width: 52ch; margin-inline: auto; text-wrap: balance; }
+  .brand { position: absolute; top: 22px; left: max(22px, env(safe-area-inset-left, 0px)); font: 400 20px var(--display); letter-spacing: -0.01em; }
+  .brand b { font-weight: 700; }
+  .brand span { font: 400 11px var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--mute); margin-left: 10px; vertical-align: 3px; }
+  aside { border-left: 1px solid var(--line); background: var(--panel); padding: 22px max(20px, env(safe-area-inset-right, 0px)) 28px 20px; display: flex; flex-direction: column; gap: 22px; overflow-y: auto; }
+  h2 { margin: 0 0 10px; font: 400 11px var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--mute); display: flex; align-items: center; gap: 8px; }
+  h2 .tag { color: #000; background: var(--new); border-radius: 999px; padding: 1px 7px; font-size: 10px; letter-spacing: 0.08em; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  button { font: 500 13px var(--body); color: var(--fg); background: var(--chip); border: 1px solid var(--line); border-radius: 999px; padding: 7px 13px; cursor: pointer; transition: background .15s, border-color .15s, color .15s; }
+  button:hover { border-color: #3a3a42; }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--new); outline-offset: 2px; }
+  button[aria-pressed="true"] { background: var(--fg); color: #000; border-color: var(--fg); }
+  .voice { display: grid; gap: 10px; }
+  .row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 12px; }
+  .row.on { border-color: #3a3a42; background: #0f0f12; }
+  .row strong { font-weight: 500; display: block; }
+  .row p { margin: 2px 0 0; color: var(--mute); font-size: 12.5px; }
+  .slider { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; color: var(--mute); font-size: 12px; }
+  .slider input { flex: 1; accent-color: var(--new); }
+  .meter { height: 4px; border-radius: 4px; background: var(--line); overflow: hidden; grid-column: 1 / -1; }
+  .meter i { display: block; height: 100%; width: 0; background: var(--new); transition: width .08s linear; }
+  .play { width: 100%; padding: 11px; background: var(--fg); color: #000; border-color: var(--fg); font-size: 14px; }
+  .play[aria-pressed="true"] { background: transparent; color: var(--fg); }
+  .note { color: var(--soft); font-size: 12px; margin: 0; }
+  @media (max-width: 820px) {
+    .app { grid-template-columns: 1fr; }
+    .stage { min-height: 62vh; }
+    aside { border-left: 0; border-top: 1px solid var(--line); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  }
+  @media (prefers-reduced-motion: reduce) { button, .meter i { transition: none; } }
+</style>
+
+<div class="app">
+  <section class="stage" aria-label="Neural Core preview">
+    <div id="core"></div>
+    <div class="brand"><b>orb</b>ital<span>Orb lab</span></div>
+    <div class="caption" aria-live="polite"><div class="now" id="now">Idle</div><div class="what" id="what">A slow spin with a soft shimmer. Click the orb for a ripple.</div></div>
+  </section>
+
+  <aside>
+    <div>
+      <h2>Voice <span class="tag">New</span></h2>
+      <div class="voice">
+        <div class="row" id="row-listen">
+          <div><strong>Listening</strong><p>The orb breathes with your voice. Louder speech, bigger ripples.</p></div>
+          <button id="listen" aria-pressed="false">Talk</button>
+          <label class="slider" for="loud">Quiet <input id="loud" type="range" min="0.2" max="1" step="0.05" value="0.7"> Loud</label>
+          <div class="meter" aria-hidden="true"><i id="meter"></i></div>
+        </div>
+        <div class="row" id="row-transcribe">
+          <div><strong>Transcribing</strong><p>Particles swirl inward while your words become text.</p></div>
+          <button id="transcribe" aria-pressed="false">Swirl</button>
+        </div>
+        <div class="row" id="row-speak">
+          <div><strong>Speaking</strong><p>Orbital reads its answer aloud and the orb pulses with each word.</p></div>
+          <button id="speak" aria-pressed="false">Speak</button>
+        </div>
+        <button class="play" id="play" aria-pressed="false">Play a whole conversation</button>
+        <p class="note">Speaking uses your computer's own voice, so turn your sound on.</p>
+      </div>
+    </div>
+    <div>
+      <h2>What the orb already does</h2>
+      <div class="chips" id="states">
+        <button data-state="idle" aria-pressed="true">Idle</button>
+        <button data-state="thinking" aria-pressed="false">Thinking</button>
+        <button data-state="researching" aria-pressed="false">Researching</button>
+        <button data-state="learning" aria-pressed="false">Learning</button>
+        <button data-state="connecting" aria-pressed="false">Connecting</button>
+        <button data-state="opportunity" aria-pressed="false">Opportunity</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script src="neural-core.js"></script>
+<script>
+(() => {
+  const core = window.OrbitalCore && window.OrbitalCore.mountNeuralCore(document.getElementById("core"));
+  if (!core) { document.getElementById("what").textContent = "This browser can't show the 3D orb (WebGL is off)."; return; }
+  core.setTheme(false);
+
+  const $ = (id) => document.getElementById(id);
+  const now = $("now"), what = $("what"), meter = $("meter");
+  const DESCRIBE = {
+    idle: ["Idle", "A slow spin with a soft shimmer. Click the orb for a ripple."],
+    thinking: ["Thinking", "Waves of light roll through the particles while Orbital writes an answer."],
+    researching: ["Researching", "One region at a time flickers, like it's searching different areas."],
+    learning: ["Learning", "New particles sparkle as something new is saved."],
+    connecting: ["Connecting", "Beads of light travel along threads between ideas."],
+    opportunity: ["Opportunity", "A bright wave sweeps out from the centre."],
+    listening: ["Listening", "The orb breathes with your voice, with a soft halo round the edge."],
+    transcribing: ["Transcribing", "The particles swirl inward while your words become text."],
+    speaking: ["Speaking", "Each spoken word pushes a pulse out, with light rising like a voice meter."],
+  };
+  const show = (k) => { now.textContent = DESCRIBE[k][0]; what.textContent = DESCRIBE[k][1]; };
+
+  // ── App states ──
+  const stateBtns = [...document.querySelectorAll("#states button")];
+  const setState = (s) => {
+    core.setState(s);
+    stateBtns.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.state === s)));
+    if (s !== "idle") stopVoice();
+    show(s);
+  };
+  stateBtns.forEach((b) => b.addEventListener("click", () => { stopConversation(); setState(b.dataset.state); }));
+
+  // ── Voice ──
+  const press = (id, on) => { $(id).setAttribute("aria-pressed", String(on)); $("row-" + id).classList.toggle("on", on); };
+  let talking = false, talkTimer = 0, levelTimer = 0;
+  // A speech-like voice: syllables with small pauses between words, scaled by the loudness slider.
+  const fakeVoice = () => {
+    const t = performance.now() / 1000, loud = Number($("loud").value);
+    const syll = Math.abs(Math.sin(t * 7.3) * Math.sin(t * 2.1 + 0.7));
+    const pause = Math.sin(t * 0.9) > -0.55 ? 1 : 0.08;
+    return Math.min(1, loud * (0.25 + 0.75 * syll) * pause * (0.85 + Math.random() * 0.3));
+  };
+  const listen = (on, ms) => {
+    talking = on; press("listen", on);
+    clearInterval(levelTimer); clearTimeout(talkTimer);
+    if (on) {
+      core.setState("idle"); stateBtns.forEach((b) => b.setAttribute("aria-pressed", "false"));
+      core.setVoice({ listening: true }); show("listening");
+      levelTimer = setInterval(() => { const l = fakeVoice(); core.setVoice({ level: l }); meter.style.width = Math.round(l * 100) + "%"; }, 70);
+      if (ms) talkTimer = setTimeout(() => listen(false), ms);
+    } else { core.setVoice({ listening: false, level: 0 }); meter.style.width = "0%"; }
+  };
+  let swirlTimer = 0;
+  const transcribe = (on, ms = 2200) => {
+    clearTimeout(swirlTimer); press("transcribe", on); core.setVoice({ transcribing: on });
+    if (on) { show("transcribing"); swirlTimer = setTimeout(() => transcribe(false), ms); }
+  };
+  const SENTENCE = "Here's what I found. Your notes from last week mention three pricing ideas, and the yearly plan came up twice.";
+  let speakTimer = 0, wordTimer = 0, speaking = false;
+  const speak = (on, onDone) => {
+    clearTimeout(speakTimer); clearInterval(wordTimer); speaking = on; press("speak", on);
+    try { speechSynthesis.cancel(); } catch {}
+    core.setVoice({ speaking: on });
+    if (!on) return;
+    show("speaking");
+    let gotWords = false;
+    const finish = () => { if (speaking) { speak(false); onDone && onDone(); } };
+    try {
+      const u = new SpeechSynthesisUtterance(SENTENCE);
+      u.rate = 1.03;
+      u.onboundary = (e) => { if (e.name === "word") { gotWords = true; core.word(); } };
+      u.onend = finish;
+      speechSynthesis.speak(u);
+    } catch {}
+    // No voice (or no word timing): words keep a natural pace anyway, and it ends on its own.
+    wordTimer = setInterval(() => { if (!gotWords) core.word(); }, 260);
+    speakTimer = setTimeout(finish, 9000);
+  };
+  const stopVoice = () => { listen(false); transcribe(false); speak(false); };
+
+  $("listen").addEventListener("click", () => { stopConversation(); if (talking) listen(false); else { transcribe(false); speak(false); listen(true, 6000); } });
+  $("transcribe").addEventListener("click", () => { stopConversation(); listen(false); speak(false); transcribe($("transcribe").getAttribute("aria-pressed") !== "true"); });
+  $("speak").addEventListener("click", () => { stopConversation(); listen(false); transcribe(false); speak(!speaking, () => show("idle")); });
+
+  // ── A whole conversation: listen → transcribe → think → speak → back to listening ──
+  let convo = [], playing = false;
+  const later = (ms, fn) => convo.push(setTimeout(fn, ms));
+  function stopConversation() { if (!playing) return; playing = false; convo.forEach(clearTimeout); convo = []; $("play").setAttribute("aria-pressed", "false"); $("play").textContent = "Play a whole conversation"; stopVoice(); core.setState("idle"); }
+  $("play").addEventListener("click", () => {
+    if (playing) { stopConversation(); show("idle"); setState("idle"); return; }
+    playing = true; $("play").setAttribute("aria-pressed", "true"); $("play").textContent = "Stop";
+    stateBtns.forEach((b) => b.setAttribute("aria-pressed", "false"));
+    const round = (start) => {
+      later(start, () => listen(true, 3600));
+      later(start + 3700, () => transcribe(true, 1600));
+      later(start + 5400, () => { core.setState("thinking"); show("thinking"); });
+      later(start + 7800, () => { core.setState("idle"); speak(true, () => { if (playing) round(600); }); });
+    };
+    round(0); // each round starts the next one when speaking ends
+
+  });
+  // Click the stage to ripple (handled by the orb); keyboard: space toggles talking.
+  addEventListener("keydown", (e) => { if (e.code === "Space" && e.target === document.body) { e.preventDefault(); $("listen").click(); } });
+})();
+</script>

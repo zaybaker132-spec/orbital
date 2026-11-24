@@ -4,6 +4,7 @@ import { NeuralCore } from "@/neural/NeuralCore";
 import { useCore } from "@/state/core";
 import { useApp } from "@/state/app";
 import { canSpeak, speak, speakable, useSpeechInput } from "@/lib/voice";
+import { voiceSignal } from "@/state/core";
 import { Button, cx } from "./ui";
 import { tx } from "@/i18n";
 
@@ -44,12 +45,21 @@ export function VoiceMode({ messages, streaming, onSend, onClose, onRemember, ca
     if (streaming) { wasStreaming.current = true; return; }
     if (!wasStreaming.current || phaseRef.current !== "thinking") return;
     wasStreaming.current = false;
-    const last = [...messages].reverse().find((m) => m.role === "assistant");
+    // The orb listens, speaks and swirls with the conversation (see NeuralCore applyVoice).
+  useEffect(() => {
+    voiceSignal.listening = phase === "listening" && speech.listening;
+    voiceSignal.level = speech.listening ? speech.level : 0;
+    voiceSignal.transcribing = speech.transcribing;
+    voiceSignal.speaking = phase === "speaking";
+  }, [phase, speech.listening, speech.level, speech.transcribing]);
+  useEffect(() => () => { Object.assign(voiceSignal, { level: 0, listening: false, speaking: false, transcribing: false }); }, []);
+
+  const last = [...messages].reverse().find((m) => m.role === "assistant");
     const text = last?.error ? `Sorry, ${last.error}` : last?.metadata?.kind === "research_started" ? "I've started a research report. I'll let you know when it's ready." : speakable(last?.content ?? "");
     if (!text || !canSpeak() || prefs.speakAnswers === false) { listen(); return; }
     setPhase("speaking");
     useCore.getState().pulse("learning", 2600);
-    stopSpeaking.current = speak(text, { rate: prefs.voiceRate, voiceName: prefs.voiceName, onEnd: () => { if (phaseRef.current === "speaking") listen(); } });
+    stopSpeaking.current = speak(text, { rate: prefs.voiceRate, voiceName: prefs.voiceName, onWord: () => { voiceSignal.speakKick = Date.now(); }, onEnd: () => { if (phaseRef.current === "speaking") listen(); } });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [streaming]);
 
@@ -91,9 +101,6 @@ export function VoiceMode({ messages, streaming, onSend, onClose, onRemember, ca
       </div>
       <div className="relative min-h-0 flex-1">
         <NeuralCore framing="full" className="absolute inset-0" />
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="rounded-full transition-transform duration-150" style={{ width: 8, height: 8, transform: `scale(${1 + speech.level * 18})`, background: "rgb(var(--c-fg) / 0.08)" }} />
-        </div>
       </div>
       <div className="mx-auto w-full max-w-[720px] px-6 pb-8 text-center">
         <p className="min-h-[1.5em] text-[1.05rem] text-white/90">{phase === "listening" ? interim || heard : heard}</p>

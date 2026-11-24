@@ -3,7 +3,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { BRAIN_CENTER, buildPointCloud, CLUSTER_CENTROIDS, type PointCloud } from "./geometry";
 import { fragmentShader, lineFragmentShader, lineVertexShader, vertexShader } from "./shaders";
-import { useCore, type CoreState } from "@/state/core";
+import { useCore, voiceSignal, type CoreState } from "@/state/core";
+import { applyVoice } from "./voice";
 import { useMotionPrefs } from "@/state/app";
 import { isLight, useLightTheme } from "@/lib/theme";
 import { useEnvironment } from "@/state/environment";
@@ -199,6 +200,7 @@ function Particles({ cloud, framing, interactive, motion, onSlow, holdGraph, lig
           uConnecting: { value: 0 }, uOpportunity: { value: 0 }, uResearchPhase: { value: 0 },
           uConnectA: { value: new THREE.Vector3() }, uConnectB: { value: new THREE.Vector3() }, uPulseX: { value: -2 },
           uLobeGrowth: { value: new Array(8).fill(0) }, uHighlight: { value: new Array(8).fill(0) },
+          uVoice: { value: 0 }, uListening: { value: 0 }, uSpeaking: { value: 0 }, uSpeakLevel: { value: 0 }, uSwirl: { value: 0 },
         },
       }),
     [],
@@ -321,6 +323,7 @@ function Particles({ cloud, framing, interactive, motion, onSlow, holdGraph, lig
     u.uOpportunity.value = e.opportunity;
     u.uActivity.value = Math.min(1, e.thinking + e.researching * 0.8 + e.connecting * 0.6 + e.learning * 0.5 + e.opportunity * 0.6);
     u.uResearchPhase.value = (t * 0.9) % 6;
+    applyVoice(u, t, step, voiceSignal);
 
     // Knowledge growth per region (reveals reserve particles).
     for (let i = 0; i < 8; i++) {

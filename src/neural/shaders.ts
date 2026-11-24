@@ -26,6 +26,13 @@ uniform vec3 uConnectB;
 uniform float uPulseX;
 uniform float uLobeGrowth[8];
 uniform float uHighlight[8];
+// Voice: the live microphone level (0..1), whether Orbital is listening, speaking (with a per-word
+// level that kicks and decays) or turning speech into text.
+uniform float uVoice;
+uniform float uListening;
+uniform float uSpeaking;
+uniform float uSpeakLevel;
+uniform float uSwirl;
 
 attribute vec3 color;
 attribute float aSize;
@@ -135,6 +142,31 @@ void main() {
 
   // Learning: a soft shimmer, strongest on newly formed particles.
   glow += uLearning * isBrain * (aBirth > 0.0 ? 0.9 : 0.18) * (0.5 + 0.5 * sin(uTime * 5.0 + seed * 50.0));
+
+  // ── Voice ──────────────────────────────────────────────────────────────────
+  vec3 fromCore = p - coreCenter;
+  float coreR = max(length(fromCore), 1e-4);
+  vec3 outward = fromCore / coreR;
+  // Listening: an attentive halo round the rim, and the orb breathes with your voice: ripples roll
+  // from the front (where you are) towards the back, bigger and brighter the louder you speak.
+  float rim = 1.0 - abs(outward.z);
+  glow += uListening * smoothstep(0.55, 1.0, rim) * (0.35 + 0.15 * sin(uTime * 2.2));
+  float roll = sin(outward.z * 9.0 + uTime * 9.0 + seed * 1.5);
+  float noisy = 0.65 + 0.35 * sin(seed * 71.0 + uTime * 13.0);
+  p += outward * uVoice * (0.045 + 0.04 * roll) * noisy * uMotion;
+  glow += uVoice * (0.45 + 0.7 * smoothstep(0.2, 1.0, roll)) * noisy;
+  // Speaking: each word pushes a soft pulse out from the centre, with bands of light rising
+  // through the orb like a voice meter.
+  float band = smoothstep(0.55, 1.0, sin(fromCore.y * 13.0 - uTime * 7.5));
+  p += outward * uSpeakLevel * 0.06 * (0.6 + 0.4 * band) * uMotion;
+  glow += uSpeaking * (0.12 + band * 0.25) + uSpeakLevel * (0.35 + band * 0.9);
+  // Transcribing: the particles swirl round the vertical axis and draw in slightly, sparkling,
+  // while your words are turned into text.
+  float swirlA = uSwirl * (1.1 + 0.6 * sin(fromCore.y * 5.0 + uTime * 2.5)) * uMotion;
+  float sc = cos(swirlA), ss = sin(swirlA);
+  vec3 sw = vec3(fromCore.x * sc - fromCore.z * ss, fromCore.y, fromCore.x * ss + fromCore.z * sc);
+  p = mix(p, coreCenter + sw * (1.0 - 0.1 * uSwirl), uSwirl);
+  glow += uSwirl * (0.15 + pow(max(0.0, sin(uTime * 6.0 + seed * 90.0)), 12.0) * 1.4);
 
   // Idle neural firing: individual neurons flash briefly at random moments.
   glow += pow(max(0.0, sin(uTime * 0.8 + seed * 157.0)), 140.0) * 1.6 * isBrain * uMotion;

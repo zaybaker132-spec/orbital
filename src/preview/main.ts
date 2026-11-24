@@ -3,6 +3,7 @@
 import * as THREE from "three";
 import { BRAIN_CENTER, buildPointCloud, CLUSTER_CENTROIDS, type PointCloud } from "../neural/geometry";
 import { fragmentShader, lineFragmentShader, lineVertexShader, vertexShader } from "../neural/shaders";
+import { applyVoice, type VoiceSignal } from "../neural/voice";
 
 type State = "idle" | "thinking" | "researching" | "learning" | "connecting" | "opportunity";
 const STATES: Exclude<State, "idle">[] = ["thinking", "researching", "learning", "connecting", "opportunity"];
@@ -76,7 +77,9 @@ export function mountNeuralCore(container: HTMLElement) {
     uConnecting: { value: 0 }, uOpportunity: { value: 0 }, uResearchPhase: { value: 0 },
     uConnectA: { value: new THREE.Vector3() }, uConnectB: { value: new THREE.Vector3() }, uPulseX: { value: -2 },
     uLobeGrowth: { value: new Array(8).fill(0.55) }, uHighlight: { value: new Array(8).fill(0) },
+    uVoice: { value: 0 }, uListening: { value: 0 }, uSpeaking: { value: 0 }, uSpeakLevel: { value: 0 }, uSwirl: { value: 0 },
   };
+  const voice: VoiceSignal = { level: 0, listening: false, speaking: false, transcribing: false, speakKick: 0 };
   const common = { transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, uniforms };
   const material = new THREE.ShaderMaterial({ vertexShader, fragmentShader, ...common });
   const lineMaterial = new THREE.ShaderMaterial({ vertexShader: lineVertexShader, fragmentShader: lineFragmentShader, ...common });
@@ -156,6 +159,7 @@ export function mountNeuralCore(container: HTMLElement) {
     u.uConnecting.value = eased.connecting; u.uOpportunity.value = eased.opportunity;
     u.uActivity.value = Math.min(1, eased.thinking + eased.researching * 0.8 + eased.connecting * 0.6 + eased.learning * 0.5 + eased.opportunity * 0.6);
     u.uResearchPhase.value = (t * 0.9) % 6;
+    applyVoice(u, t, dt, voice);
     // Learning: more of the reserve particles emerge.
     const growTarget = state === "learning" ? 0.95 : 0.55;
     for (let i = 0; i < 8; i++) u.uLobeGrowth.value[i] += (growTarget - u.uLobeGrowth.value[i]) * Math.min(1, dt * 0.5);
@@ -196,6 +200,9 @@ export function mountNeuralCore(container: HTMLElement) {
 
   return {
     setState(s: State) { state = s; },
+    /** Voice animations: listening (with the mic level 0..1), speaking (word() on each spoken word), transcribing. */
+    setVoice(v: Partial<Omit<VoiceSignal, "speakKick">>) { Object.assign(voice, v); },
+    word() { voice.speakKick = Date.now(); },
     replay() { if (!reduced) { introStart = -1; uniforms.uMorph.value = 0; } },
     /** Dark: particles add light onto black. Light: see-through canvas, particles painted normally. */
     setTheme(light: boolean) {

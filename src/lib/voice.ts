@@ -62,8 +62,24 @@ export function useSpeechInput(opts: { onFinal: (text: string) => void; onInteri
         const t = finalText.trim();
         if (t) cb.current.onFinal(t);
       };
+      // The browser's recogniser doesn't say how loud you are: measure it alongside, for the orb.
+      let meter = null as (() => void) | null, ended = false;
+      navigator.mediaDevices?.getUserMedia({ audio: true }).then((s) => {
+        if (ended) { s.getTracks().forEach((t) => t.stop()); return; } // already finished listening
+        const ctx = new AudioContext(), an = ctx.createAnalyser();
+        an.fftSize = 1024; ctx.createMediaStreamSource(s).connect(an);
+        const buf = new Uint8Array(an.fftSize);
+        const timer = setInterval(() => {
+          an.getByteTimeDomainData(buf);
+          let sum = 0; for (const v of buf) sum += (v - 128) ** 2;
+          setLevel(Math.min(1, Math.sqrt(sum / buf.length) / 25));
+        }, 80);
+        meter = () => { clearInterval(timer); s.getTracks().forEach((t) => t.stop()); void ctx.close(); };
+      }).catch(() => { /* level is optional */ });
+      const prevEnd = rec.onend;
+      rec.onend = (ev: any) => { ended = true; meter?.(); meter = null; prevEnd?.(ev); };
       stopRef.current = () => { try { rec.stop(); } catch { /* already stopped */ } };
-      try { rec.start(); setListening(true); } catch { setError("Couldn't start listening."); }
+      try { rec.start(); setListening(true); } catch { ended = true; meter?.(); setError("Couldn't start listening."); }
       return;
     }
     if (engine === "server" || engine === "local") {
@@ -155,7 +171,7 @@ export function speakable(md: string) {
 export const canSpeak = () => typeof window !== "undefined" && "speechSynthesis" in window;
 
 /** Speak in sentence-sized pieces (long single utterances get cut off in some browsers). */
-export function speak(text: string, opts: { onEnd?: () => void; rate?: number; voiceName?: string } = {}) {
+export function speak(text: string, opts: { onEnd?: () => void; onWord?: () => void; rate?: number; voiceName?: string } = {}) {
   if (!canSpeak()) { opts.onEnd?.(); return () => {}; }
   const synth = window.speechSynthesis;
   synth.cancel();
@@ -172,6 +188,8 @@ export function speak(text: string, opts: { onEnd?: () => void; rate?: number; v
     if (voice) u.voice = voice;
     u.lang = voice?.lang ?? locale();
     u.rate = opts.rate ?? 1.03;
+    // Each word as it's spoken (the orb pulses with it). Not every system voice reports words.
+    u.onboundary = (e) => { if (e.name === "word") opts.onWord?.(); };
     if (i === chunks.length - 1) u.onend = () => { if (!cancelled) opts.onEnd?.(); };
     u.onerror = () => { if (i === chunks.length - 1 && !cancelled) opts.onEnd?.(); };
     synth.speak(u);
