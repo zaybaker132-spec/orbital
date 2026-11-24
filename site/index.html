@@ -16,7 +16,7 @@
 <meta property="og:image" content="https://orbitalai.us/media/orbital-intro-poster.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Orbital","applicationCategory":"ProductivityApplication","operatingSystem":"macOS, Windows, Linux","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"A desktop app that remembers what matters, connects your ideas and researches with cited sources. Your data stays on your computer.","url":"https://orbitalai.us/","downloadUrl":"https://github.com/zaybaker132-spec/orbital/releases/latest","image":"https://orbitalai.us/media/orbital-intro-poster.jpg"}
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Orbital","applicationCategory":"ProductivityApplication","operatingSystem":"macOS, Windows, Linux","offers":[{"@type":"Offer","name":"Free","price":"0","priceCurrency":"USD"},{"@type":"Offer","name":"Orbital Pro","price":"10","priceCurrency":"USD"}],"description":"A desktop app that remembers what matters, connects your ideas and researches with cited sources. Your data stays on your computer.","url":"https://orbitalai.us/","downloadUrl":"https://github.com/zaybaker132-spec/orbital/releases/latest","image":"https://orbitalai.us/media/orbital-intro-poster.jpg"}
 </script>
 <script>
   // Theme before first paint: the visitor's choice, or their computer's setting.
@@ -211,6 +211,17 @@
   .dl-started .row { display: flex; gap: 14px; margin-top: 10px; font-size: 12.5px; }
   .dl-started .row a { color: var(--mute); text-decoration: underline; text-underline-offset: 2px; }
   .dl-started .x { position: absolute; top: 8px; right: 10px; background: none; border: 0; color: var(--mute); font-size: 18px; cursor: pointer; padding: 4px 6px; }
+  /* Pricing */
+  .price-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 28px; }
+  .price-card { border: 1px solid var(--line); border-radius: 16px; padding: 24px; background: var(--panel); display: flex; flex-direction: column; gap: 14px; }
+  .price-card.pro { border-color: rgb(var(--fgc) / 0.45); box-shadow: 0 0 0 1px rgb(var(--fgc) / 0.12) inset; }
+  .price-card h3 { margin: 0; font-size: 18px; font-weight: 500; }
+  .price { font-size: 34px; font-weight: 300; letter-spacing: -0.02em; }
+  .price small { font-size: 14px; color: var(--mute); font-weight: 400; letter-spacing: 0; }
+  .price-card ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 7px; font-size: 14px; color: var(--mute); }
+  .price-card li::before { content: "✓"; margin-right: 8px; color: var(--fg); }
+  .price-card .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+  .price-note { margin-top: 14px; font-size: 13px; color: var(--soft); }
   .dl-card { border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 10px; background: var(--panel); }
   .dl-card.mine { border-color: rgb(var(--fgc) / 0.45); box-shadow: 0 0 0 1px rgb(var(--fgc) / 0.15) inset; }
   .dl-card h3 { margin: 0; font-size: 17px; font-weight: 400; }
@@ -254,6 +265,7 @@
       <a href="#everyday">Features</a>
       <a href="#business">For business</a>
       <a href="#film">Watch</a>
+      <a href="#pricing">Pricing</a>
       <a href="#download" class="nav-dl">Download</a>
     </nav>
     <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch between light and dark">
@@ -281,7 +293,7 @@
             Download for Windows
           </a>
         </div>
-        <p class="dl-sub"><span id="dl-version-hero">Free</span> · <a href="https://github.com/zaybaker132-spec/orbital/releases/latest/download/Orbital-Mac-Intel.dmg" data-asset="mac-intel" id="dl-intel">Intel Mac?</a> · <a href="#download">Linux and all downloads</a></p>
+        <p class="dl-sub"><span id="dl-version-hero">Free 14-day trial</span> · <a href="https://github.com/zaybaker132-spec/orbital/releases/latest/download/Orbital-Mac-Intel.dmg" data-asset="mac-intel" id="dl-intel">Intel Mac?</a> · <a href="#download">Linux and all downloads</a></p>
       </div>
       <div class="controls">
         <div class="states" role="group" aria-label="Neural Core state">
@@ -350,10 +362,50 @@
   </div>
 </section>
 
+<section id="pricing">
+  <div class="wrap">
+    <div class="label">Pricing</div>
+    <h2>Try everything free for 14 days.</h2>
+    <p class="lede">Download Orbital and every feature is unlocked for 14 days, no card needed. After that, the core of Orbital stays free forever, and Pro unlocks the rest.</p>
+    <div class="price-grid">
+      <div class="price-card">
+        <h3>Free</h3>
+        <div class="price">$0 <small>forever</small></div>
+        <ul>
+          <li>Chat with your knowledge (add your own AI key)</li>
+          <li>Notes, memory, files and web clips</li>
+          <li>Papers: documents you write</li>
+          <li>Projects, tasks and reminders</li>
+          <li>Focus mode, dashboards and search</li>
+          <li>Voice, on your own computer</li>
+        </ul>
+        <div class="btns"><a class="btn ghost" href="#download">Download free</a></div>
+      </div>
+      <div class="price-card pro">
+        <h3>Orbital Pro</h3>
+        <div class="price">$10 <small>/ month</small></div>
+        <ul>
+          <li>Everything in Free</li>
+          <li>Deep research, the contradiction lab and hypothesis testing</li>
+          <li>Video meetings and meeting recordings</li>
+          <li>The Media library: screen, voice and camera recordings</li>
+          <li>Opportunity discovery and automations</li>
+          <li>Knowledge health scans</li>
+        </ul>
+        <div class="btns">
+          <a class="btn" href="https://license.orbitalai.us/buy?plan=monthly">Get Pro monthly</a>
+          <a class="btn ghost" href="https://license.orbitalai.us/buy?plan=yearly">$96 / year · 2 months free</a>
+        </div>
+      </div>
+    </div>
+    <p class="price-note">Payments by Stripe. Cancel any time from Orbital (Settings → Plan → Manage subscription). Everything you make stays yours, even if you stop paying.</p>
+  </div>
+</section>
+
 <section id="download">
   <div class="wrap">
     <div class="label">Download</div>
-    <h2>Get Orbital. It's free.</h2>
+    <h2>Get Orbital. Free to start.</h2>
     <p class="lede">Everything you write and save stays in Orbital's own private database on your computer. AI is optional: Orbital works as your knowledge base without it, and you can add your own AI key in Settings any time.</p>
     <div class="dl-grid">
       <div class="dl-card" data-os="mac">
@@ -587,7 +639,7 @@
         const v = String(rel.tag_name || "").replace(/^v\.?/, "");
         if (v) document.getElementById("dl-version").firstChild.textContent = `Version ${v} · `;
         // On Windows and Linux the hero button downloads directly; Macs pick their chip below.
-        if (v) document.getElementById("dl-version-hero").textContent = `Free · version ${v}`;
+        if (v) document.getElementById("dl-version-hero").textContent = `Free 14-day trial · version ${v}`;
       })
       .catch(() => { /* the fixed latest links still work */ });
   })();
