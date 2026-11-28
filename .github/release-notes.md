@@ -27,6 +27,7 @@ questions are answered from your own knowledge. For AI chat, research and writin
 
 ## What's new in 0.3.9
 
+- **Updates from now on:** Orbital tells you when a new version is out. On Windows it downloads in the background and installs when you restart Orbital; on Mac, "Download" takes you to the new version. (This is the last version you need to download by hand on Windows.)
 - **The orb comes alive in voice conversations:** it breathes with your voice while listening, swirls while it turns your words into text, and pulses with each word when Orbital speaks.
 - **Voice works in the desktop app** (new since 0.3.6): talk to Orbital, dictate in Papers, and turn recordings into text. Speech recognition runs privately on your computer, after a one-time download of about 80 MB.
 - **Forgot your password? Reset it right in the app.** A new install opens on "Create your Orbital".

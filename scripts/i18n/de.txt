@@ -1961,3 +1961,6 @@
 4981|Chancen-Entdeckung
 4982|Wissens-Checks
 4983|Das gehört zu Orbital Pro, und deine kostenlose Testphase ist vorbei.
+4984|Orbital {v} ist bereit · Neu starten
+4985|Orbital {v} ist verfügbar · Herunterladen
+4986|Später

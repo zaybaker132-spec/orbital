@@ -51,9 +51,15 @@ Unsigned apps work, but macOS Gatekeeper and Windows SmartScreen warn users. Add
 | `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID` | macOS | Notarization (also set `mac.notarize: true` in `electron-builder.yml`) |
 | `CSC_LINK`, `CSC_KEY_PASSWORD` | Windows | Code-signing certificate (or switch to Azure Trusted Signing) |
 
-## Auto-update
+## Updates
 
-`electron-updater` is wired in and checks for updates on launch in packaged builds. It activates once you set `publish` in `electron-builder.yml` to your GitHub repository (owner/repo); releases built by the workflow then become the update feed (`latest*.yml` files are included). Set `ORBITAL_DISABLE_UPDATES=1` to turn it off.
+From 0.3.9 on, Orbital checks for a newer release 15 seconds after it starts, then every 6 hours. The feed is this repository's latest GitHub release: `publish` in `electron-builder.yml`, with the `latest*.yml` files the workflow attaches.
+
+- **Windows, and Linux AppImage:** `electron-updater` downloads the update in the background and installs it the next time Orbital quits. The sidebar shows "Orbital X is ready · Restart", and the tray shows "Restart to Update".
+- **macOS:** automatic installs need an Apple Developer ID signature. Until then (`MAC_SIGNED = false` in `desktop/main.cjs`), Orbital reads the latest release from the GitHub API and shows "Orbital X is available · Download", which opens orbitalai.us. Once builds are signed and notarized, set `MAC_SIGNED = true` and Macs update automatically too.
+- **Linux .deb and unpacked builds:** the same "available · Download" notice.
+- Installs from before 0.3.9 have no updater, so they need one manual download.
+- `ORBITAL_DISABLE_UPDATES=1` turns checks off. `ORBITAL_RELEASES_URL` points the Mac/notice check at another feed (used in tests).
 
 ## Running in the background
 

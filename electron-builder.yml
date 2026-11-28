@@ -58,9 +58,11 @@ linux:
   target: [AppImage, deb]
   category: Office
   maintainer: Orbital
-# Auto-updates: set a GitHub repo (owner/repo) to publish releases and enable in-app updates.
-# publish:
-#   provider: github
-#   owner: YOUR_GITHUB_ORG
-#   repo: orbital
-publish: null
+# Updates: the app checks this repository's latest GitHub release (latest.yml / latest-mac.yml /
+# latest-linux.yml, attached by .github/workflows/desktop.yml). The workflow builds with
+# --publish never and attaches the files itself.
+publish:
+  provider: github
+  owner: zaybaker132-spec
+  repo: orbital
+  releaseType: release

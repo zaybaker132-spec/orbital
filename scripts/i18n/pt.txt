@@ -1961,3 +1961,6 @@
 4981|Descoberta de oportunidades
 4982|Verificações de saúde do conhecimento
 4983|Isso faz parte do Orbital Pro, e seu teste grátis terminou.
+4984|Orbital {v} está pronto · Reiniciar
+4985|Orbital {v} disponível · Baixar
+4986|Mais tarde

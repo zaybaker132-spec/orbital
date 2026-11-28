@@ -343,6 +343,9 @@ function updateTray() {
     { label: "Open Orbital", click: () => showWindow() },
     { label: due, enabled: dueCount > 0, click: () => showWindow("/reminders") },
     { label: "New Reminder…", click: () => showWindow("/reminders") },
+    ...(update ? [{ type: "separator" }, update.state === "ready"
+      ? { label: `Restart to Update (${update.version})`, click: () => autoUpdater?.quitAndInstall() }
+      : { label: `Download Orbital ${update.version}…`, click: () => shell.openExternal(update.url) }] : []),
     { type: "separator" },
     { label: "Keep Running When Window Is Closed", type: "checkbox", checked: !!settings.background, click: (i) => { saveSettings({ background: i.checked }); updateTray(); } },
     ...(loginSupported && app.isPackaged ? [{ label: "Open at Login", type: "checkbox", checked: !!settings.openAtLogin, click: (i) => { saveSettings({ openAtLogin: i.checked }); applyLoginItem(); updateTray(); } }] : []),
@@ -389,16 +392,60 @@ function buildMenu() {
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
-function checkForUpdates() {
-  // Active only in packaged builds published with an update feed (see electron-builder.yml → publish).
-  if (!app.isPackaged || process.env.ORBITAL_DISABLE_UPDATES) return;
-  try {
-    const { autoUpdater } = require("electron-updater");
-    autoUpdater.autoDownload = true;
-    autoUpdater.on("error", () => { /* no feed configured, offline, etc. */ });
-    autoUpdater.checkForUpdatesAndNotify().catch(() => {});
-  } catch { /* updater unavailable */ }
+// ── Updates ──
+// Windows and Linux AppImage: electron-updater downloads the new version in the background and installs
+// it when Orbital restarts. macOS only allows that for apps signed with an Apple Developer ID, so until
+// MAC_SIGNED is true a Mac gets an "update available" notice with a link to the website instead.
+const MAC_SIGNED = false;
+const RELEASES_API = process.env.ORBITAL_RELEASES_URL || "https://api.github.com/repos/zaybaker132-spec/orbital/releases/latest";
+const DOWNLOAD_PAGE = "https://orbitalai.us/#download";
+let update = null; // { state: "available" | "ready", version, url? }
+const newer = (a, b) => {
+  const pa = String(a).replace(/^v\.?/, "").split(/[.-]/).map((x) => parseInt(x, 10) || 0), pb = String(b).replace(/^v\.?/, "").split(/[.-]/).map((x) => parseInt(x, 10) || 0);
+  for (let i = 0; i < 3; i++) { if ((pa[i] ?? 0) !== (pb[i] ?? 0)) return (pa[i] ?? 0) > (pb[i] ?? 0); }
+  return false;
+};
+function announceUpdate(u) {
+  update = u;
+  if (win && !win.isDestroyed()) win.webContents.send("orbital:update", update);
+  updateTray();
 }
+async function checkReleasePage() {
+  try {
+    const r = await fetch(RELEASES_API, { headers: { accept: "application/vnd.github+json", "user-agent": "Orbital-desktop" }, signal: AbortSignal.timeout(15_000) });
+    if (!r.ok) return;
+    const rel = await r.json();
+    if (rel.draft || rel.prerelease || !rel.tag_name) return;
+    if (newer(rel.tag_name, app.getVersion())) announceUpdate({ state: "available", version: String(rel.tag_name).replace(/^v\.?/, ""), url: DOWNLOAD_PAGE });
+  } catch { /* offline: try again later */ }
+}
+let autoUpdater = null;
+function checkForUpdates() {
+  if (process.env.ORBITAL_DISABLE_UPDATES || (!app.isPackaged && !process.env.ORBITAL_RELEASES_URL)) return;
+  const canInstall = app.isPackaged && (process.platform === "win32" || (process.platform === "linux" && !!process.env.APPIMAGE) || (isMac && MAC_SIGNED));
+  if (canInstall && !autoUpdater) {
+    try {
+      autoUpdater = require("electron-updater").autoUpdater;
+      autoUpdater.autoDownload = true;
+      autoUpdater.autoInstallOnAppQuit = true;
+      autoUpdater.on("update-downloaded", (info) => announceUpdate({ state: "ready", version: info.version }));
+      autoUpdater.on("error", () => { /* offline, feed missing: the next check tries again */ });
+    } catch { autoUpdater = null; }
+  }
+  if (autoUpdater) autoUpdater.checkForUpdates().catch(() => {});
+  else void checkReleasePage();
+}
+function startUpdateChecks() {
+  setTimeout(checkForUpdates, 15_000).unref?.();
+  setInterval(checkForUpdates, 6 * 60 * 60_000).unref?.();
+}
+ipcMain.handle("orbital:get-update", () => update);
+ipcMain.handle("orbital:install-update", (e) => {
+  if (!fromApp(e)) return false;
+  if (update?.state === "ready" && autoUpdater) { autoUpdater.quitAndInstall(); return true; } // quits through before-quit, which stops the server cleanly
+  if (update?.url) { shell.openExternal(update.url); return true; }
+  return false;
+});
 
 app.on("second-instance", (_e, argv) => {
   const link = argv.find((a) => typeof a === "string" && a.startsWith("orbital://"));

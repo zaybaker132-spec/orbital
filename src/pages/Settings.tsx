@@ -536,7 +536,8 @@ declare global {
   interface Window { orbitalDesktop?: {
     isDesktop: true; status(): Promise<{ version: string; platform: string; hasApiKey: boolean; secureStorage: boolean; dataDir: string }>; setApiKey(key: string | null): Promise<{ ok: boolean }>; openDataFolder(): Promise<void>;
     notify?(n: { title: string; body?: string; link?: string }): Promise<boolean>; setBadge?(count: number): Promise<void>; onNavigate?(cb: (pathname: string) => void): () => void;
-    getSettings?(): Promise<OrbitalDesktopSettings>; resetPassword?(email: string): Promise<{ ok?: true; error?: string }>; setSettings?(patch: Partial<Pick<OrbitalDesktopSettings, "background" | "openAtLogin">>): Promise<OrbitalDesktopSettings>;
+    getSettings?(): Promise<OrbitalDesktopSettings>; resetPassword?(email: string): Promise<{ ok?: true; error?: string }>;
+    getUpdate?(): Promise<{ state: "available" | "ready"; version: string } | null>; onUpdate?(cb: (u: { state: "available" | "ready"; version: string }) => void): () => void; installUpdate?(): Promise<boolean>; setSettings?(patch: Partial<Pick<OrbitalDesktopSettings, "background" | "openAtLogin">>): Promise<OrbitalDesktopSettings>;
   } }
 }
 

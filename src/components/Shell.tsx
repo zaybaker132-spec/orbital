@@ -20,6 +20,7 @@ import { navVisible, useEnvironment } from "@/state/environment";
 import type { NavKey } from "../../shared/environment";
 import { ClockWeather } from "./ClockWeather";
 import { PlanBadge } from "./Plan";
+import { UpdateBanner } from "./UpdateBanner";
 import { BookmarkButton, SidebarTrail, useTrackViews } from "./Trail";
 
 export const NAV: { id: NavKey; to: string; label: string; icon: typeof Brain; key: string }[] = [
@@ -198,6 +199,7 @@ function Sidebar({ width, collapsed, onResize }: { width: number; collapsed: boo
         </div>
       )}
       {collapsed && <div className="flex-1" />}
+      <UpdateBanner collapsed={collapsed} />
       <PlanBadge collapsed={collapsed} />
       <ClockWeather collapsed={collapsed} />
       <div className={cx("flex items-center gap-1 border-t border-line px-2.5 py-2", collapsed && "flex-col px-2")}>
