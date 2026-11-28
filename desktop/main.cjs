@@ -36,6 +36,9 @@ let tray = null;
 // Lets this app (and only this app) start a password reset on the local server: there's no email or
 // administrator on a desktop install. Never sent to the window.
 const desktopToken = crypto.randomBytes(32).toString("hex");
+// Orbital Pro (14-day trial, then paid features). Off until payments are live (docs/BILLING.md);
+// turning it on starts everyone's trial from that release.
+const PRO_ENABLED = false;
 let dueCount = 0;
 
 // ── Desktop settings: keep running in the background (so reminders arrive), open at login ──
@@ -100,6 +103,7 @@ async function startServer() {
       PORT: String(port),
       ORBITAL_DESKTOP: "1",
       ORBITAL_DESKTOP_TOKEN: desktopToken,
+      ORBITAL_BILLING: process.env.ORBITAL_BILLING || (PRO_ENABLED ? "on" : "off"),
       ORBITAL_DATA_DIR: dataDir,
       ORBITAL_STATIC_DIR: staticDir,
       COOKIE_SECURE: "false",

@@ -27,18 +27,11 @@ questions are answered from your own knowledge. For AI chat, research and writin
 
 ## What's new in 0.3.9
 
-- **Orbital Pro.** Every feature is free for 14 days. After that, the core of Orbital stays free forever, and Pro ($10/month or $96/year) unlocks deep research, meetings and recordings, the Media library, opportunity discovery, automations and knowledge health scans. Everything you've made stays yours either way. See Settings → Plan.
-
-New in 0.3.8:
-
-- **Forgot your password? Reset it right in the app.** Everything is on your computer, so no email is needed.
-- **A new install opens on "Create your Orbital"** instead of "Welcome back".
+- **The orb comes alive in voice conversations:** it breathes with your voice while listening, swirls while it turns your words into text, and pulses with each word when Orbital speaks.
+- **Voice works in the desktop app** (new since 0.3.6): talk to Orbital, dictate in Papers, and turn recordings into text. Speech recognition runs privately on your computer, after a one-time download of about 80 MB.
+- **Forgot your password? Reset it right in the app.** A new install opens on "Create your Orbital".
 - **Clearer AI setup:** chat tells you where to add your AI key, and Settings → AI & research has the key box with 3 simple steps to get one.
-- **Fixes:** the Focus page layout, a wrong "notifications are blocked" note on the Reminders page, the waitlist link and "this server" wording on the sign-in screen, and the orb not filling its space on computers without 3D graphics.
-
-New in 0.3.7:
-
-- **Voice now works in the desktop app:** talk to Orbital, dictate in Papers, and turn recordings in Media into text. Speech recognition runs privately on your computer. The first time, it downloads a speech model once (about 80 MB); after that it works offline.
+- **Fixes:** the Focus page layout, a wrong "notifications are blocked" note, sign-in screen wording, and the orb on computers without 3D graphics.
 
 New in 0.3.6:
 

@@ -1,5 +1,7 @@
 # Orbital Pro: subscriptions
 
+**Status:** built and tested, but **switched off** in the desktop app until payments are live. Turn it on with `PRO_ENABLED = true` in `desktop/main.cjs` and publish a new version; everyone's 14-day trial starts from that release.
+
 **How it works**
 
 - **Trial:** the desktop app gives everyone a 14-day trial of everything.
